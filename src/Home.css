@@ -3,7 +3,8 @@
     flex-direction: column;
     align-items: center;
     /* max-width: 1500px; */
-    margin: 10px;
+    /* background-color: lightgray; */
+    /* margin: 10px; */
 }
 
 .table {
@@ -22,5 +23,4 @@
 
 h3 {
     margin: 15px;
-    color: ;
 }

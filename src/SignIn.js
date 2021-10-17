@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
@@ -62,6 +62,7 @@ export default function SignIn() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const signIn = e => {
       e.preventDefault();
@@ -86,6 +87,10 @@ export default function SignIn() {
 
     setOpen(false);
   };
+
+  useEffect(() => {
+    setLoading(false)
+  }, [])
 
   return (
     <Container component="main" maxWidth="xs">

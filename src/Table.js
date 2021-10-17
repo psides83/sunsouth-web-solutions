@@ -14,9 +14,17 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import { collection, query, where, limit, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
+import transitions from '@material-ui/core/styles/transitions';
+import { Avatar, Typography } from '@material-ui/core';
 // import moment from 'moment';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import HomeSkeleton from './HomeSkeleton'
+import './Table.css'
+
 
 const useRowStyles = makeStyles({
   root: {
@@ -27,12 +35,31 @@ const useRowStyles = makeStyles({
 });
 
 function Row({request}) {
+  const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
   const classes = useRowStyles();
 
+  const updateStatus = () => {
+    var status = request.data.status
+
+    switch (status) {
+      case "Requested":
+        status = "In Progress";
+        break;
+      case "In Progress":
+        status = "Complete";
+        break;
+      default:
+        status = "Complete";
+    }
+
+    const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.data.id);
+    setDoc(requestRef, { status: status }, { merge: true });
+  }
+
   return (
     <React.Fragment>
-      <TableRow className={classes.root}>
+      <TableRow key={request.data.id} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell>
           <IconButton 
           aria-label="expand row" 
@@ -47,7 +74,21 @@ function Row({request}) {
         <TableCell align="left">{request.data.salesman}</TableCell>
         <TableCell align="left">{request.data.equipment[0].model}</TableCell>
         <TableCell align="left">{request.data.workOrder}</TableCell>
-        <TableCell align="left">{request.data.status}</TableCell>
+        <TableCell align="left"><Button color="success" size="small" variant="outlined" onClick={updateStatus}>{request.data.status}</Button></TableCell>
+        <TableCell align="left">{request.data.statusTimestamp}</TableCell>
+        <TableCell align="center">
+          <IconButton 
+            color="success" 
+            size="small" 
+            onClick="">
+              <div className="edit-button-bg">  
+                <EditRoundedIcon 
+                color="success" 
+                fontSizes="small"
+                />
+              </div>
+          </IconButton>
+        </TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -58,7 +99,7 @@ function Row({request}) {
               </Typography> */}
               <Table size="small" aria-label="purchases">
                 <TableHead>
-                  <TableRow>
+                  <TableRow key="subHeader">
                     <TableCell><strong>Model</strong></TableCell>
                     <TableCell><strong>Stock #</strong></TableCell>
                     <TableCell><strong>Serial #</strong></TableCell>
@@ -87,29 +128,34 @@ function Row({request}) {
 }
 
 export default function CollapsibleTable({status}) {
-
-  // const [{ user }, dispatch] = useStateValue();
+  const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const fetch = async ()=> {
+    console.log(userProfile)
+    const requestsQuery = query(
+        collection(db, 'branches', userProfile.branch, 'requests'),
+        where('status', '==', status)
+    );
     
+    onSnapshot(requestsQuery, (querySnapshot) => {
+        setRequests(querySnapshot.docs.map((doc) => ({data: doc.data()})))
+    });
+  }
 
-
-    useEffect(() => {
-        const requestsQuery = query(
-            collection(db, 'requests'),
-            where('status', '==', status)
-        );
-        
-        onSnapshot(requestsQuery, (querySnapshot) => {
-            setRequests(querySnapshot.docs.map((doc) => ({data: doc.data()})))
-        });
-    }, [])
+  useEffect(() => {
+    fetch()
+      .then(setTimeout( function() { setLoading(false) }, 1000)) 
+  }, [])
 
   return (
+    <React.Fragment>
+    {loading ? <HomeSkeleton /> : <Typography variant="h5" color='primary'>{status}</Typography>}
     <TableContainer component={Paper}>
       <Table aria-label="collapsible table">
         <TableHead>
-          <TableRow>
+          <TableRow key="header">
             <TableCell />
             <TableCell><strong>Submitted</strong></TableCell>
             <TableCell><strong>Salesman</strong></TableCell>
@@ -127,5 +173,7 @@ export default function CollapsibleTable({status}) {
         </TableBody>
       </Table>
     </TableContainer>
+    </React.Fragment>
+
   );
 };

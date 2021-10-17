@@ -1,29 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import "./Home.css";
-// import { db } from './firebase';
-// import { useStateValue } from './StateProvider';
-// import { collection, getDocs, query, orderBy, where, limit, onSnapshot } from 'firebase/firestore';
 import CollapsibleTable from './Table';
-// import { Paper } from '@mui/material';
 import { Typography } from '@material-ui/core';
+import { Box } from '@mui/system';
 
 function Home() {
     
 
 
     return (
-        <div className="home">
-            <div className="table">
-                <Typography variant="h5" color='primary'>In Progress</Typography>
-                <div className="inProgress">
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5" }}>
+            <Box sx={{ width: '100%', mt: 5, mx:5 }}>
+                <Box sx={{ flexGrow: 1, my: 5 }}>
                     <CollapsibleTable status="In Progress"/>
-                </div>
-                <Typography variant="h5" color='primary'>Requested</Typography>
-                <div className="requested">
-                <CollapsibleTable status="Requested"/>
-                </div>
-            </div>
-        </div>
+                </Box>
+                <Box sx={{ flexGrow: 1 }}>
+                    <CollapsibleTable status="Requested"/>
+                </Box>
+            </Box>
+        </Box>
     )
 }
 

@@ -7,25 +7,31 @@ import { onSnapshot, doc } from 'firebase/firestore';
 
 
 function Header() {
-    const [{ user }] = useStateValue();
-    const [userProfile, setUserProfile] = useState({});
-    const fullName = userProfile.firstName + ' ' + userProfile.lastName
+    const [{ user }, dispatch] = useStateValue();
+    const [userProfile, setProfile] = useState({});
+    const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+    
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
               onSnapshot(doc(db, "users", user?.uid), (doc) => {
                 console.log("Current data: ", doc.data());
-                setUserProfile(doc.data())
-                console.log(userProfile)
+                setProfile(doc.data())
+                dispatch({
+                    type: 'SET_USER_PROFILE',
+                    userProfile: doc.data(),
+                })
             });
             } catch (error) {
               console.log('error', error)
             }
+
+            
         }
         console.log(user)
         fetchProfile()
-    }, [user])
+    }, [user, dispatch])
 
     const handleAuthentication = () => {
             if (user) {
