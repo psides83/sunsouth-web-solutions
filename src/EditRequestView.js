@@ -1,20 +1,27 @@
-//Imports
 import React, { useState, useEffect } from 'react'
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
+import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+// import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from './firebase';
 import './SignUp.css'
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
 import { setDoc, doc } from '@firebase/firestore';
+import OutlinedInput from '@mui/material/OutlinedInput';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { FormGroup } from '@material-ui/core';
 import { Stack } from '@mui/material';
@@ -22,21 +29,7 @@ import './AddRequest.css'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useStateValue } from './StateProvider';
 import moment from 'moment';
-import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { styled } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
 
-//#region Unused imports
-// import Paper from '@mui/material/Paper';
-// import Avatar from '@material-ui/core/Avatar';
-// import Link from '@material-ui/core/Link';
-// import { createUserWithEmailAndPassword } from "firebase/auth";
-// import InputLabel from '@mui/material/InputLabel';
-// import MenuItem from '@mui/material/MenuItem';
-// import FormControl from '@mui/material/FormControl';
-// import Select from '@mui/material/Select';
-// import OutlinedInput from '@mui/material/OutlinedInput';
-//#endregion
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -46,13 +39,8 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   avatar: {
-    width: 192,
-    height: 160,
     margin: theme.spacing(1),
-    // backgroundColor: ,
-  },
-  img: {
-    padding: 1
+    backgroundColor: theme.palette.primary.main,
   },
   icon: {
     color: theme.palette.secondary.main,
@@ -96,12 +84,7 @@ function Copyright() {
   );
 };
 
-const ListItem = styled('li')(({ theme }) => ({
-  margin: theme.spacing(0.5),
-}));
-
-export default function AddRequestView() {  
-  //#region State Properties
+export default function EditRequestView() {  
   const classes = useStyles();
   const history = useHistory();
   const [{ userProfile }] = useStateValue();
@@ -123,10 +106,23 @@ export default function AddRequestView() {
   var [otherDisabled, setOtherState] = useState(true);
   var [eqString, setEqString] = useState([]);
   console.log(equipmentList)
-  //#endregion
 
-  const heading = equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request"
-    
+  const request = {
+    equipment: [{
+      model: "3025E",
+      stock: "302564",
+      serial: "1RW8370DAMB187039",
+      work: "",
+      notes:''
+    },
+    {
+      model: "3038E",
+      stock: "302564",
+      serial: "1RW8370DAMB187039",
+      work: "",
+      notes:''
+    },]
+  }
 
   var workOptions = [
     {
@@ -160,19 +156,15 @@ export default function AddRequestView() {
       checkedState: checked7
   }]
 
-  const enableOther = (event) => {
-    setOther(event.target.value)
+const enableOther = (event) => {
+  setOther(event.target.value)
 
-    if (event.target.value !== '') {
-      setOtherState(false)
-    } else if (event.target.value === '') {
-      setOtherState(true)
-    }
+  if (event.target.value !== '') {
+    setOtherState(false)
+  } else if (event.target.value === '') {
+    setOtherState(true)
   }
-
-  const handleDelete = (equipmentToDelete) => () => {
-    setEquepmentList((equipmentList) => equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id));
-  };
+}
 
   const handleChange = (event) => {
     switch (event.target.id) {
@@ -355,148 +347,116 @@ export default function AddRequestView() {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <Box className={classes.paper}>
-        {/* <Avatar className={classes.avatar}> */}
-          <img src="/ss-logo.png" alt="" className={classes.img}/>
-          {/* <SendRoundedIcon className={classes.icon} /> */}
-        {/* </Avatar> */}
+        <Avatar className={classes.avatar}>
+          <SendRoundedIcon className={classes.icon} />
+        </Avatar>
         <Typography component="h1" variant="h5">
           Submit PDI/Setup Request
         </Typography>
-        <form className={classes.form} noValidate>
-        <Stack mb={1}>
-            <Typography component="h1" variant="h6">
-                {heading}
-            </Typography>
 
-            <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  flexWrap: 'wrap',
-                  listStyle: 'none',
-                  p: 0.5,
-                  m: 0,
-                }}
-                component="ul"
-              >
-                {equipmentList.map((data) => {
-                  let icon = <AgricultureIcon />;
+{/* Form */}
+      {
+        request.equipment?.map((item) => (
 
-                  return (
-                    <ListItem key={data.id}>
-                      <Chip
-                        icon={icon}
-                        label={data.model}
-                        onDelete={handleDelete(data)}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </Box>
-
-            
+          <form className={classes.form} noValidate>
+            <Stack mb={1}>
+              <Typography component="h1" variant="h6">
+                  Equipment
+              </Typography>
+              <Stack spacing={1} direction="row">
+                
+                <Typography variant="body">
+                  {eqString.toString().replace(/,[s]*/g, ", ")}
+                </Typography>
+              </Stack>
             </Stack>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                autoComplete="fname"
-                name="model"
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                id="model"
-                label="Model"
-                autoFocus
-                onChange={e=> setModel(e.target.value)}
-                value={model}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                id="stock"
-                label="Stock"
-                name="stock"
-                onChange={e=> setStock(e.target.value)}
-                value={stock}
-              />
-            </Grid>
-            <Grid item xs={12}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
                 <TextField
+                  autoComplete="fname"
+                  name="model"
                   variant="outlined"
-                  labelId="serial"
+                  required
                   fullWidth
                   size="small"
+                  id="model"
+                  label="Model"
+                  autoFocus
+                  // onChange={e=> setModel(e.target.value)}
+                  value={item.model}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  variant="outlined"
                   required
-                  id="serial"
-                  label="Serial"
-                  onChange={e=> setSerial(e.target.value)}
-                  value={serial}
-                >
-                </TextField>
+                  fullWidth
+                  size="small"
+                  id="stock"
+                  label="Stock"
+                  name="stock"
+                  // onChange={e=> setStock(e.target.value)}
+                  value={item.stock}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    labelId="serial"
+                    fullWidth
+                    size="small"
+                    required
+                    id="serial"
+                    label="Serial"
+                    // onChange={e=> setSerial(e.target.value)}
+                    value={item.serial}
+                  >
+                  </TextField>
+              </Grid>
+              <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    labelId="serial"
+                    fullWidth
+                    size="small"
+                    required
+                    id="serial"
+                    label="Work Required"
+                    // onChange={e=> setSerial(e.target.value)}
+                    value={item.work}
+                  >
+                  </TextField>
+              </Grid>
+                  
+              <Grid item xs={12}>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  id="notes"
+                  label="Addtional Notes"
+                  name="notes"
+                  type="text"
+                  value={item.notes} 
+                  // onChange="{e=> setEmail(e.target.value)}"
+                />
+              </Grid>
+            </Grid >
+            </form>
+            ))
+          }
+            <Grid container justifyContent="flex-end">
+              <Button
+                  variant="contained"
+                  color="primary"
+                  endIcon={<SendRoundedIcon className={classes.submitIcon} />}
+                  className={classes.submit}
+                  onClick={setRequestToFirestore}
+              >
+                  <p className={classes.submitIcon}>Submit</p>
+              </Button>
             </Grid>
-                <Grid item xs={12}>
-                    <div className="checkBoxes">
-                        <FormGroup>
-                            <Typography variant="h6">Work Required</Typography>      
-                            {workOptions.map(option => (
-                              <FormControlLabel control={<Checkbox id={option.id} checked={option.checkedState} onChange={handleChange} color="primary" value={option.work}/>} label={option.work} />
-                            ))}
-                            <Stack direction="row">
-                                <FormControlLabel control={<Checkbox id="8" checked={checked8} onChange={handleChange} disabled={otherDisabled} color="primary" value={other}/>} label="Other:" />
-                                <TextField
-                                labelId="serial"
-                                fullWidth
-                                size="small"
-                                id="other"
-                                value={other}
-                                onChange={enableOther}
-                                >
-                                </TextField>
-                            </Stack>
-                        </FormGroup>
-                    </div>
-                </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                size="small"
-                id="notes"
-                label="Addtional Notes"
-                name="notes"
-                type="text"
-                value={notes} 
-                onChange="{e=> setEmail(e.target.value)}"
-              />
-            </Grid>
-          </Grid >
-          <Grid container justifyContent="space-between">
-            <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddCircleOutlineIcon />}
-                className={classes.addEquipment}
-                onClick={pushEquipmentToRequest}
-            >
-                Add More Equipment
-            </Button>
-            <Button
-                variant="contained"
-                color="primary"
-                endIcon={<SendRoundedIcon className={classes.submitIcon} />}
-                className={classes.submit}
-                onClick={setRequestToFirestore}
-            >
-                <p className={classes.submitIcon}>Submit</p>
-            </Button>
-          </Grid>
-          
-        </form>
+
       </Box>
       <Box mt={5}>
         <Copyright />

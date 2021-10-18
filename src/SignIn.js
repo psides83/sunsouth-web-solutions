@@ -108,6 +108,7 @@ export default function SignIn() {
             margin="normal"
             required
             fullWidth
+            size="small"
             id="email"
             label="Email Address"
             name="email"
@@ -122,6 +123,7 @@ export default function SignIn() {
             margin="normal"
             required
             fullWidth
+            size="small"
             name="password"
             label="Password"
             type="password"
@@ -135,7 +137,7 @@ export default function SignIn() {
               The email and password do not match
             </Alert>
           </Snackbar>
-          <Button
+          <Button 
             type="submit"
             fullWidth
             variant="contained"

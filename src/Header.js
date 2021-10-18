@@ -60,17 +60,11 @@ function Header() {
             {/* </div> */}
 
             <div className="header-nav">
-                <Link className="link" to={!user && "/signIn"}>
-                    <div onClick={handleAuthentication} className="header-option">
-                        <span className="header-optionLineOne">Hello, {user ? fullName : "Guest"}</span>
-                        <span className="header-optionLineTwo">{user ? "Logout" : "Sign-in"}</span>
-                    </div>
-                </Link>
 
-                <Link className="link" to='/orders'>
+                <Link className="link" to='/add-request'>
                     <div className="header-option">
-                        <span className="header-optionLineOne">Returns</span>
-                        <span className="header-optionLineTwo">& Orders</span>
+                        <span className="header-optionLineOne">Submit</span>
+                        <span className="header-optionLineTwo">New Request</span>
                     </div>
                 </Link>
 
@@ -81,10 +75,17 @@ function Header() {
                     </div>
                 </Link>
 
-                <Link className="link" to="/checkout">
-                    <div className="header-optionBasket">
+                <Link className="link" to={!user && "/signIn"}>
+                    <div onClick={handleAuthentication} className="header-option">
+                        <span className="header-optionLineOne">{user ? fullName : ""}</span>
+                        <span className="header-optionLineTwo">{user ? "Logout" : "Sign-in"}</span>
                     </div>
                 </Link>
+
+                {/* <Link className="link" to="/checkout">
+                    <div className="header-optionBasket">
+                    </div>
+                </Link> */}
             </div>
         </div>
     )

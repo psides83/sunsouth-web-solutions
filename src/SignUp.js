@@ -149,6 +149,7 @@ export default function SignUp() {
                 variant="outlined"
                 required
                 fullWidth
+                size="small"
                 id="firstName"
                 label="First Name"
                 autoFocus
@@ -160,6 +161,7 @@ export default function SignUp() {
                 variant="outlined"
                 required
                 fullWidth
+                size="small"
                 id="lastName"
                 label="Last Name"
                 name="lastName"
@@ -170,6 +172,7 @@ export default function SignUp() {
             <Grid item xs={12}>
               <FormControl fullWidth>
                 <TextField
+                  size="small"
                   variant="outlined"
                   labelId="demo-simple-select-label"
                   id="branch"
@@ -191,6 +194,7 @@ export default function SignUp() {
                 variant="outlined"
                 required
                 fullWidth
+                size="small"
                 id="email"
                 label="Email Address"
                 name="email"
@@ -205,6 +209,7 @@ export default function SignUp() {
                 variant="outlined"
                 required
                 fullWidth
+                size="small"
                 name="password"
                 label="Password"
                 type="password"
@@ -228,7 +233,7 @@ export default function SignUp() {
           </Button>
           <Grid container justifyContent="flex-end">
             <Grid item>
-              <Link to="/signUp" variant="body2">
+              <Link to="/signIn" variant="body2">
                 Already have an account? Sign in
               </Link>
             </Grid>

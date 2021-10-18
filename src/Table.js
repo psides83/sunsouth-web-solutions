@@ -20,11 +20,10 @@ import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import transitions from '@material-ui/core/styles/transitions';
 import { Avatar, Typography } from '@material-ui/core';
-// import moment from 'moment';
+import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
-
 
 const useRowStyles = makeStyles({
   root: {
@@ -53,8 +52,11 @@ function Row({request}) {
         status = "Complete";
     }
 
+    const timestamp = moment().format("MMM-DD-yyyy")
+
+
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.data.id);
-    setDoc(requestRef, { status: status }, { merge: true });
+    setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
   }
 
   return (
