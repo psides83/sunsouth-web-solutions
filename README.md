@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Business Web App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+ to submit and track requests by salesmen to the service department to get new e
 
 ## Available Scripts
 
