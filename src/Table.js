@@ -19,11 +19,13 @@ import { db } from './firebase';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Typography } from '@material-ui/core';
+import { Avatar, Input, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
+import { useHistory } from 'react-router';
+import CheckIcon from '@mui/icons-material/Check';
 
 const useRowStyles = makeStyles({
   root: {
@@ -34,9 +36,39 @@ const useRowStyles = makeStyles({
 });
 
 function Row({request}) {
-  const [{ userProfile }] = useStateValue();
+  const [{ userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
+  const [activeRequest, setActiveRequest] = useState({});
   const classes = useRowStyles();
+  const history = useHistory();
+  var [workOrder, setWorkOrder] = useState('');
+  var [model, setModel] = useState('');
+  var [stock, setStock] = useState('');
+  var [serial, setserial] = useState('');
+  var [work, setWork] = useState('');
+  var [notes, setNotes] = useState('');
+  var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
+  var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+
+  const editWorkOrder = async () => {
+    if (isEditingWorkOrder) { 
+      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.data.id), { workOrder: workOrder}, { merge: true })
+      setIsEditingWorkOrder(false)
+    } else { 
+      setWorkOrder(request.data.workOrder)
+      setIsEditingWorkOrder(true)
+    }
+  }
+
+  const editEquipment = async () => {
+    if (isEditingEquipment) { 
+      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.data.id), { workOrder: workOrder}, { merge: true })
+      setIsEditingWorkOrder(false)
+    } else { 
+      setWorkOrder(request.data.workOrder)
+      setIsEditingWorkOrder(true)
+    }
+  }
 
   const updateStatus = () => {
     var status = request.data.status
@@ -59,6 +91,19 @@ function Row({request}) {
     setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
   }
 
+  const editRequest = () => {
+    
+    setActiveRequest(request)
+    console.log(activeRequest)
+
+    dispatch({
+      type: 'SET_ACTIVE_REQUEST',
+      activeRequest: request.data,
+    })
+
+    history.push("/edit-request");    
+  }
+
   return (
     <React.Fragment>
       <TableRow key={request.data.id} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -75,19 +120,26 @@ function Row({request}) {
         </TableCell>
         <TableCell align="left">{request.data.salesman}</TableCell>
         <TableCell align="left">{request.data.equipment[0].model}</TableCell>
-        <TableCell align="left">{request.data.workOrder}</TableCell>
+        <TableCell align="left">
+          {isEditingWorkOrder ? <Input disableUnderline={true} onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </Input> : request.data.workOrder }
+        </TableCell>
         <TableCell align="left"><Button color="success" size="small" variant="outlined" onClick={updateStatus}>{request.data.status}</Button></TableCell>
         <TableCell align="left">{request.data.statusTimestamp}</TableCell>
         <TableCell align="center">
           <IconButton 
             color="success" 
             size="small" 
-            onClick="">
+            onClick={editWorkOrder}>
               <div className="edit-button-bg">  
-                <EditRoundedIcon 
-                color="success" 
-                fontSizes="small"
-                />
+               { 
+                  isEditingWorkOrder ? <CheckIcon 
+                  color="success" 
+                  // fontSizes="small"
+                  /> : <EditRoundedIcon 
+                  color="success" 
+                  fontSizes="small"
+                  /> 
+                }
               </div>
           </IconButton>
         </TableCell>
@@ -137,7 +189,7 @@ export default function CollapsibleTable({status}) {
   const fetch = async ()=> {
     console.log(userProfile)
     const requestsQuery = query(
-        collection(db, 'branches', userProfile.branch, 'requests'),
+        collection(db, 'branches', userProfile?.branch, 'requests'),
         where('status', '==', status)
     );
     

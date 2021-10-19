@@ -87,26 +87,13 @@ function Copyright() {
 export default function EditRequestView() {  
   const classes = useStyles();
   const history = useHistory();
-  const [{ userProfile }] = useStateValue();
+  const [{ userProfile, activeRequest }] = useStateValue();
   var [model, setModel] = useState('');
   var [stock, setStock] = useState('');
   var [serial, setSerial] = useState('');
   var [work, setWork] = useState([]);
   var [notes, setNotes] = useState('');
-  var [other, setOther] = useState('');
-  var [checked1, setChecked1] = useState(false);
-  var [checked2, setChecked2] = useState(false);
-  var [checked3, setChecked3] = useState(false);
-  var [checked4, setChecked4] = useState(false);
-  var [checked5, setChecked5] = useState(false);
-  var [checked6, setChecked6] = useState(false);
-  var [checked7, setChecked7] = useState(false);
-  var [checked8, setChecked8] = useState(false);
-  var [equipmentList, setEquepmentList] = useState([]);
-  var [otherDisabled, setOtherState] = useState(true);
-  var [eqString, setEqString] = useState([]);
-  console.log(equipmentList)
-
+  
   const request = {
     equipment: [{
       model: "3025E",
@@ -124,166 +111,14 @@ export default function EditRequestView() {
     },]
   }
 
-  var workOptions = [
-    {
-      id: '1',
-      work: 'PDI',
-      checkedState: checked1
-    },
-    {
-      id: '2',
-      work: 'Water in tires',
-      checkedState: checked2
-    }, {
-      id: '3',
-      work: 'Mount to listed tractor/CCE machine',
-      checkedState: checked3
-    }, {
-      id: '4',
-      work: 'Add 3rd function',
-      checkedState: checked4
-    }, {
-      id: '5',
-      work: 'Install radio',
-      checkedState: checked5
-    }, {
-      id: '6',
-      work: 'Mount canopy',
-      checkedState: checked6
-    }, {
-      id: '7',
-      work: 'Widen tires',
-      checkedState: checked7
-  }]
-
-const enableOther = (event) => {
-  setOther(event.target.value)
-
-  if (event.target.value !== '') {
-    setOtherState(false)
-  } else if (event.target.value === '') {
-    setOtherState(true)
-  }
-}
-
-  const handleChange = (event) => {
-    switch (event.target.id) {
-        case "1":
-          if (!checked1) {
-            setChecked1(true)
-            work[0] =event.target.value
-            setWork(work)
-          } else {
-            setChecked1(false)
-            work[0] = null
-            setWork(work)
-          };
-          break;
-        case "2":
-            if (!checked2) {
-              setChecked2(true)
-              work[1] = event.target.value
-              setWork(work)
-            } else {
-              setChecked2(false)
-              work[1] = null
-              setWork(work)
-            };
-            break;
-        case "3":
-            if (!checked3) {
-              setChecked3(true)
-              work[2] = event.target.value
-              setWork(work)
-            } else {
-              setChecked3(false)
-              work[2] = null
-              setWork(work)
-            };
-            break;
-        case "4":
-            if (!checked4) {
-              setChecked4(true)
-              work[3] = event.target.value
-              setWork(work)
-            } else {
-              setChecked4(false)
-              work[3] = null
-              setWork(work)
-            };
-            break;
-        case "5":
-            if (!checked5) {
-              setChecked5(true)
-              work[4] = event.target.value
-              setWork(work)
-            } else {
-              setChecked5(false)
-              work[4] = null
-              setWork(work)
-            };
-            break;
-        case "6":
-            if (!checked6) {
-              setChecked6(true)
-              work[5] = event.target.value
-              setWork(work)
-            } else {
-              setChecked6(false)
-              work[5] = null
-              setWork(work)
-            };
-            break;
-        case "7":
-            if (!checked7) {
-              setChecked7(true)
-              work[6] = event.target.value
-              setWork(work)
-            } else {
-              setChecked7(false)
-              work[6] = null
-              setWork(work)
-            };
-            break;
-        case "8":
-            if (!checked8) {
-              setChecked8(true)
-              work[7] = event.target.value
-              setWork(work)
-            } else {
-              setChecked8(false)
-              work[7] = null
-              setWork(work)
-            };
-            break;
-        default: break;
-      }
-
-      var temp = [];
-      
-      for(let i of work)
-      i && temp.push(i); // copy each non-empty value to the 'temp' array
-
-      work = temp; 
-
-      console.log(work.toString().replace(/,[s]*/g, ", "));
-  };
-
   const setRequestToFirestore = async (event) => {
     event.preventDefault()  
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const id = moment().format("MMDDyyyyhh:mmA")
+    
     const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
 
-    await pushEquipmentToRequest(event)
-
     const firestoreRequest = {
-      id: id,
-      timestamp: timestamp,
       salesman: salesman,
-      equipment: equipmentList,
-      status: "Requested",
-      statusTimestamp: "",
+      equipment: request.equipment,
       workOrder: ""
     }
 
@@ -291,57 +126,6 @@ const enableOther = (event) => {
 
     await setDoc(requestRef, firestoreRequest, { merge: true });
   } 
-
-  const resetForm = async () => {
-    console.log("request updated")
-    setModel("")
-    console.log("model cleared")
-    setStock("")
-    console.log("stock cleared")
-    setSerial("")
-    console.log("serial cleared")
-    setNotes("")
-    setOther("")
-    setChecked1(false)
-    console.log(checked1)
-    setChecked2(false)
-    setChecked3(false)
-    setChecked4(false)
-    setChecked5(false)
-    setChecked6(false)
-    setChecked7(false)
-    setChecked8(false)
-    setWork([])
-  }
-
-  const pushEquipmentToRequest = async (event) => {
-    event.preventDefault()  
-    var workString = work.toString().replace(/,[s]*/g, ", ")
-    
-    if (workString[0] == ',') {
-      workString = workString.substring(1).trim()
-    }
-
-    var equipment = {
-      id: equipmentList.length + 1,
-      model: model,
-      stock: stock,
-      serial: serial,
-      work: workString,
-      notes: notes
-    }
-
-    
-    eqString.push(equipment.model)
-    console.log(eqString)
-
-    equipmentList.push(equipment)
-    setEquepmentList(equipmentList)
-    console.log("Temp EQ")
-    console.log(equipmentList)
-    
-    await resetForm()
-  }
 
   return (
     <Container component="main" maxWidth="xs">
@@ -351,12 +135,12 @@ const enableOther = (event) => {
           <SendRoundedIcon className={classes.icon} />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Submit PDI/Setup Request
+          Edit PDI/Setup Request
         </Typography>
 
 {/* Form */}
       {
-        request.equipment?.map((item) => (
+        activeRequest.equipment?.map((item) => (
 
           <form className={classes.form} noValidate>
             <Stack mb={1}>
@@ -365,9 +149,6 @@ const enableOther = (event) => {
               </Typography>
               <Stack spacing={1} direction="row">
                 
-                <Typography variant="body">
-                  {eqString.toString().replace(/,[s]*/g, ", ")}
-                </Typography>
               </Stack>
             </Stack>
             <Grid container spacing={2}>

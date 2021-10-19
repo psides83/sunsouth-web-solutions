@@ -126,7 +126,6 @@ export default function AddRequestView() {
   //#endregion
 
   const heading = equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request"
-    
 
   var workOptions = [
     {
@@ -280,7 +279,7 @@ export default function AddRequestView() {
   const setRequestToFirestore = async (event) => {
     event.preventDefault()  
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const id = moment().format("MMDDyyyyhh:mmA")
+    const id = moment().format("MMDDyyyyhhmmA")
     const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
 
     await pushEquipmentToRequest(event)
@@ -320,6 +319,7 @@ export default function AddRequestView() {
     setChecked7(false)
     setChecked8(false)
     setWork([])
+    setEquepmentList([])
   }
 
   const pushEquipmentToRequest = async (event) => {
@@ -372,6 +372,8 @@ export default function AddRequestView() {
                 sx={{
                   display: 'flex',
                   justifyContent: 'flex-start',
+                  alignContent: 'center',
+                  alignItems: 'center',
                   flexWrap: 'wrap',
                   listStyle: 'none',
                   p: 0.5,
@@ -387,13 +389,15 @@ export default function AddRequestView() {
                       <Chip
                         icon={icon}
                         label={data.model}
+                        variant="outlined"
+                        color="success"
+                        // size="small"
                         onDelete={handleDelete(data)}
                       />
                     </ListItem>
                   );
                 })}
               </Box>
-
             
             </Stack>
           <Grid container spacing={2}>
