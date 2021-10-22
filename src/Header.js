@@ -65,18 +65,17 @@ function Header() {
             {/* </div> */}
 
             <div className="header-nav">
+                <Link className="link" to={user && "/add-request"}>
+                    <div className="header-option">
+                        <span className="header-optionLineOne">Submit</span>
+                        <span className="header-optionLineTwo">New Request</span>
+                    </div>
+                </Link>
 
                 <Link className="link" to={user && "/completed"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">View</span>
                         <span className="header-optionLineTwo">Completed</span>
-                    </div>
-                </Link>
-
-                <Link className="link" to={user && "/add-request"}>
-                    <div className="header-option">
-                        <span className="header-optionLineOne">Submit</span>
-                        <span className="header-optionLineTwo">New Request</span>
                     </div>
                 </Link>
 
