@@ -8,7 +8,6 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
@@ -17,7 +16,7 @@ import './SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { FormGroup } from '@material-ui/core';
-import { Stack } from '@mui/material';
+import { Alert, Stack } from '@mui/material';
 import './AddRequest.css'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useStateValue } from './StateProvider';
@@ -25,6 +24,7 @@ import moment from 'moment';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
+import Snackbar from '@material-ui/core/Snackbar';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';
@@ -105,6 +105,8 @@ export default function AddRequestView() {
   const classes = useStyles();
   const history = useHistory();
   const [{ userProfile }] = useStateValue();
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
   var [model, setModel] = useState('');
   var [stock, setStock] = useState('');
   var [serial, setSerial] = useState('');
@@ -122,8 +124,18 @@ export default function AddRequestView() {
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherState] = useState(true);
   var [eqString, setEqString] = useState([]);
-  console.log(equipmentList)
+  var lastIndex = equipmentList[equipmentList.length - 1]?.model;
+  var [validationMessage, setValidationMessage] = useState('');
   //#endregion
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSuccess(false);
+    setOpenError(false);
+  };
 
   const heading = equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request"
 
@@ -277,40 +289,70 @@ export default function AddRequestView() {
   };
 
   const setRequestToFirestore = async (event) => {
-    event.preventDefault()  
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const id = moment().format("MMDDyyyyhhmmA")
-    const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
+    if (model == '') {
+      validationMessage = "Equipment must have a model to be added to a request"
+      setOpenError(true)
+      return false
+    } else if (stock == '') {
+      validationMessage = "Equipment must have a stock number to be added to a request"
+      setOpenError(true)
+      return false
+    } else if (serial === '') {
+      validationMessage = "Equipment must have a serial number to be added to a request"
+      setOpenError(true)
+      return false
+    } else if (work.length < 1) {
+      validationMessage = "Equipment must have a work requested to be added to a request"
+      setOpenError(true)
+      return false
+    } else {
 
-    await pushEquipmentToRequest(event)
+      event.preventDefault()  
+      const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+      const id = moment().format("yyyyMMDDHHmmss")
+      const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
 
-    const firestoreRequest = {
-      id: id,
-      timestamp: timestamp,
-      salesman: salesman,
-      equipment: equipmentList,
-      status: "Requested",
-      statusTimestamp: "",
-      workOrder: ""
+      await pushEquipmentToRequest(event)
+
+      const firestoreRequest = {
+        id: id,
+        timestamp: timestamp,
+        salesman: salesman,
+        status: "Requested",
+        statusTimestamp: "",
+        workOrder: ""
+      }
+
+      const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id);
+
+      await setDoc(requestRef, firestoreRequest, { merge: true });
+
+      for (var i= 0; i < equipmentList.length ; i++){
+        const equipment = {
+          requestID: firestoreRequest.id,
+          model: equipmentList[i].model,
+          stock: equipmentList[i].stock,
+          serial: equipmentList[i].serial,
+          work: equipmentList[i].work,
+          notes: equipmentList[i].notes
+        }
+    
+        const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id, 'equipment', equipment.stock);
+        await setDoc(equipmentRef, equipment, { merge: true });
+      }
+      setEquepmentList([])
     }
-
-    const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id);
-
-    await setDoc(requestRef, firestoreRequest, { merge: true });
   } 
 
   const resetForm = async () => {
+
     console.log("request updated")
     setModel("")
-    console.log("model cleared")
     setStock("")
-    console.log("stock cleared")
     setSerial("")
-    console.log("serial cleared")
     setNotes("")
     setOther("")
     setChecked1(false)
-    console.log(checked1)
     setChecked2(false)
     setChecked3(false)
     setChecked4(false)
@@ -319,11 +361,31 @@ export default function AddRequestView() {
     setChecked7(false)
     setChecked8(false)
     setWork([])
-    setEquepmentList([])
   }
 
   const pushEquipmentToRequest = async (event) => {
     event.preventDefault()  
+
+    console.log(model)
+
+    if (model === '') {
+      setValidationMessage("Equipment must have a model to be added to a request")
+      setOpenError(true)
+      return
+    } else if (stock === '') {
+      setValidationMessage("Equipment must have a stock number to be added to a request")
+      setOpenError(true)
+      return
+    } else if (serial === '') {
+      setValidationMessage("Equipment must have a serial number to be added to a request")
+      setOpenError(true)
+      return
+    } else if (work.length < 1) {
+      setValidationMessage("Equipment must have a work requested to be added to a request")
+      setOpenError(true)
+      return
+    } else {
+
     var workString = work.toString().replace(/,[s]*/g, ", ")
     
     if (workString[0] == ',') {
@@ -349,6 +411,8 @@ export default function AddRequestView() {
     console.log(equipmentList)
     
     await resetForm()
+    setOpenSuccess(true)
+    }
   }
 
   return (
@@ -446,7 +510,7 @@ export default function AddRequestView() {
                 <Grid item xs={12}>
                     <div className="checkBoxes">
                         <FormGroup>
-                            <Typography variant="h6">Work Required</Typography>      
+                            <Typography variant="h6">Work Required*</Typography>      
                             {workOptions.map(option => (
                               <FormControlLabel control={<Checkbox id={option.id} checked={option.checkedState} onChange={handleChange} color="primary" value={option.work}/>} label={option.work} />
                             ))}
@@ -479,6 +543,19 @@ export default function AddRequestView() {
               />
             </Grid>
           </Grid >
+
+          <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
+            <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+              {lastIndex + " successfully added"}
+            </Alert>
+          </Snackbar>
+
+          <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
+            <Alert  onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+              {validationMessage}
+            </Alert>
+          </Snackbar>
+
           <Grid container justifyContent="space-between">
             <Button
                 variant="outlined"

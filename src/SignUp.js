@@ -4,9 +4,6 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
-// import Link from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
@@ -16,12 +13,9 @@ import Container from '@material-ui/core/Container';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from './firebase';
 import './SignUp.css'
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
 import { setDoc, doc } from '@firebase/firestore';
-import OutlinedInput from '@mui/material/OutlinedInput';
 
 
 

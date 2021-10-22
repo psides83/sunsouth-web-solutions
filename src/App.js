@@ -15,7 +15,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import HomeSkeleton from './HomeSkeleton'
 import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
-import EditRequestView from './EditRequestView';
 
 
 const theme = createTheme({
@@ -72,31 +71,24 @@ function App() {
       <CssBaseline/>
       <Router>
         <div className="app">
-        <Switch>
-        <Route path="/edit-request">
-            <Header />
-            <EditRequestView />
-          </Route>
+          <Switch>
+            <Route path="/add-request">
+              <Header />
+              <AddRequestView />
+            </Route>
 
-          <Route path="/add-request">
-            <Header />
-            <AddRequestView />
-          </Route>
+            <Route path="/signIn">
+              <SignIn />
+            </Route>
 
-          <Route path="/signIn">
-            <Header />
-            <SignIn />
-          </Route>
+            <Route path="/signUp">
+              <SignUp />
+            </Route>
 
-          <Route path="/signUp">
-            <Header />
-            <SignUp />
-          </Route>
-
-          <Route path="/">
-            <Header />
-            { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <SpinnerProgress /> }
-          </Route>
+            <Route path="/">
+              <Header />
+              { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <SpinnerProgress /> }
+            </Route>
           </Switch>
         </div>
       </Router>

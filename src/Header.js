@@ -61,7 +61,7 @@ function Header() {
 
             <div className="header-nav">
 
-                <Link className="link" to='/add-request'>
+                <Link className="link" to="/add-request">
                     <div className="header-option">
                         <span className="header-optionLineOne">Submit</span>
                         <span className="header-optionLineTwo">New Request</span>
@@ -81,11 +81,7 @@ function Header() {
                         <span className="header-optionLineTwo">{user ? "Logout" : "Sign-in"}</span>
                     </div>
                 </Link>
-
-                {/* <Link className="link" to="/checkout">
-                    <div className="header-optionBasket">
-                    </div>
-                </Link> */}
+                
             </div>
         </div>
     )

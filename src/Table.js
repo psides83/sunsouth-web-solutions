@@ -19,13 +19,15 @@ import { db } from './firebase';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, Typography } from '@material-ui/core';
+import { Avatar, Input, TextField, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
 import { useHistory } from 'react-router';
 import CheckIcon from '@mui/icons-material/Check';
+import { SliderRail } from '@mui/material';
+import { SdCardAlert } from '@mui/icons-material';
 
 const useRowStyles = makeStyles({
   root: {
@@ -35,6 +37,85 @@ const useRowStyles = makeStyles({
   },
 });
 
+function EquipmentRow({item}) {
+  const [{ userProfile }, dispatch] = useStateValue();
+  const classes = useRowStyles();
+  var [model, setModel] = useState('')
+  var [stock, setStock] = useState('');
+  var [serial, setSerial] = useState('');
+  var [work, setWork] = useState('');
+  var [notes, setNotes] = useState('');
+  var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+  
+  console.log(isEditingEquipment)
+
+  const editEquipment = async () => {
+    if (isEditingEquipment) { 
+
+      await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
+        model: model,
+        stock: stock,
+        serial: serial,
+        work: work,
+        notes: notes
+      }, { merge: true })
+      setIsEditingEquipment(false)
+    } else { 
+
+      setModel(item.model)
+      setStock(item.stock)
+      setSerial(item.serial)
+      setWork(item.work)
+      setNotes(item.notes)
+      setIsEditingEquipment(true)
+    }
+  }
+
+  return (
+    <React.Fragment>
+      <TableRow key={item.requestID} style={{ fontSize: 18 }}>
+
+        <TableCell  component="th" scope="row">
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value)} value={model}> </TextField> : item.model }
+        </TableCell>
+
+        <TableCell>
+        {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> : item.stock }
+        </TableCell>
+
+        <TableCell>
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value)} value={serial}> </TextField> : item.serial }
+        </TableCell>
+
+        <TableCell> 
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> : item.work}
+        </TableCell>
+
+        <TableCell>
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> : item.notes}
+        </TableCell>
+        
+        <TableCell align="center">
+          <IconButton 
+            color="success" 
+            style={{ fontSize: 20 }}
+            onClick={editEquipment}>
+              { 
+                  isEditingEquipment ? <CheckIcon 
+                  color="success" 
+                  style={{ fontSize: 18 }}
+                  /> : <EditRoundedIcon 
+                  color="success" 
+                  style={{ fontSize: 18 }}
+                  /> 
+              }
+          </IconButton>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  )
+}
+
 function Row({request}) {
   const [{ userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
@@ -42,36 +123,50 @@ function Row({request}) {
   const classes = useRowStyles();
   const history = useHistory();
   var [workOrder, setWorkOrder] = useState('');
-  var [model, setModel] = useState('');
-  var [stock, setStock] = useState('');
-  var [serial, setserial] = useState('');
-  var [work, setWork] = useState('');
-  var [notes, setNotes] = useState('');
+  var [equipment, setEquipment] = useState([]);
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
-  var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+
+  console.log(request)
+
+
+  const fetchEquipment = async ()=> {
+    const equipmentQuery = query(
+        collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
+        // where('requestID', '==', request.id)
+    );
+    
+    onSnapshot(equipmentQuery, (querySnapshot) => {
+        setEquipment(querySnapshot.docs.map((doc) => ({
+          requestID: doc.data().requestID,
+          model: doc.data().model,
+          stock: doc.data().stock,
+          serial: doc.data().serial,
+          work: doc.data().work,
+          notes: doc.data().notes,
+        })))
+    });
+  }
+    
+    
+
+  useEffect(() => {
+    fetchEquipment()
+  }, [])
 
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.data.id), { workOrder: workOrder}, { merge: true })
+      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder}, { merge: true })
       setIsEditingWorkOrder(false)
     } else { 
-      setWorkOrder(request.data.workOrder)
+      setWorkOrder(request.workOrder)
       setIsEditingWorkOrder(true)
     }
   }
 
-  const editEquipment = async () => {
-    if (isEditingEquipment) { 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.data.id), { workOrder: workOrder}, { merge: true })
-      setIsEditingWorkOrder(false)
-    } else { 
-      setWorkOrder(request.data.workOrder)
-      setIsEditingWorkOrder(true)
-    }
-  }
+  
 
-  const updateStatus = () => {
-    var status = request.data.status
+  const updateStatus = async () => {
+    var status = request.status
 
     switch (status) {
       case "Requested":
@@ -87,26 +182,14 @@ function Row({request}) {
     const timestamp = moment().format("MMM-DD-yyyy")
 
 
-    const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.data.id);
-    setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
-  }
-
-  const editRequest = () => {
-    
-    setActiveRequest(request)
-    console.log(activeRequest)
-
-    dispatch({
-      type: 'SET_ACTIVE_REQUEST',
-      activeRequest: request.data,
-    })
-
-    history.push("/edit-request");    
+    const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
+    await setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
   }
 
   return (
     <React.Fragment>
-      <TableRow key={request.data.id} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+      <TableRow key={request.id} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }} >
+
         <TableCell>
           <IconButton 
           aria-label="expand row" 
@@ -115,35 +198,51 @@ function Row({request}) {
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
-        <TableCell component="th" scope="row">
-          {request.data.timestamp}
+
+        <TableCell component="th" scope="row" >
+          {request.timestamp}
         </TableCell>
-        <TableCell align="left">{request.data.salesman}</TableCell>
-        <TableCell align="left">{request.data.equipment[0].model}</TableCell>
+
         <TableCell align="left">
-          {isEditingWorkOrder ? <Input disableUnderline={true} onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </Input> : request.data.workOrder }
+          {request.salesman}
         </TableCell>
-        <TableCell align="left"><Button color="success" size="small" variant="outlined" onClick={updateStatus}>{request.data.status}</Button></TableCell>
-        <TableCell align="left">{request.data.statusTimestamp}</TableCell>
+        
+        <TableCell align="left">{equipment[0]?.model}</TableCell>
+        
+        <TableCell align="left">
+          {isEditingWorkOrder ? <TextField variant="outlined" size="small" onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </TextField> : request.workOrder }
+        </TableCell>
+        
+        <TableCell align="left">
+          <Button color="success" size="small" variant="outlined" onClick={updateStatus}>
+            {request.status}
+          </Button>
+        </TableCell>
+        
+        <TableCell align="left">
+          {request.statusTimestamp}
+        </TableCell>
+        
         <TableCell align="center">
           <IconButton 
             color="success" 
-            size="small" 
+            className={classes.icon}
             onClick={editWorkOrder}>
-              <div className="edit-button-bg">  
+              
                { 
                   isEditingWorkOrder ? <CheckIcon 
                   color="success" 
-                  // fontSizes="small"
-                  /> : <EditRoundedIcon 
+                  style={{ fontSize: 18 }}
+                  /> : <div className="edit-button-bg">  <EditRoundedIcon 
                   color="success" 
-                  fontSizes="small"
-                  /> 
+                  style={{ fontSize: 18 }}
+                  /> </div>
                 }
-              </div>
+              
           </IconButton>
         </TableCell>
       </TableRow>
+
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
@@ -162,14 +261,8 @@ function Row({request}) {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {request.data.equipment?.map((item) => (
-                    <TableRow key={item?.model}>
-                      <TableCell  component="th" scope="row">{item?.model} </TableCell>
-                      <TableCell>{item?.stock}</TableCell>
-                      <TableCell>{item?.serial}</TableCell>
-                      <TableCell>{item?.work}</TableCell>
-                      <TableCell>{item?.notes}</TableCell>
-                    </TableRow>
+                  {equipment.map((item) => (
+                    <EquipmentRow key={item?.stock} item={item} />
                   ))}
                 </TableBody>
               </Table>
@@ -187,14 +280,20 @@ export default function CollapsibleTable({status}) {
   const [loading, setLoading] = useState(true);
 
   const fetch = async ()=> {
-    console.log(userProfile)
     const requestsQuery = query(
         collection(db, 'branches', userProfile?.branch, 'requests'),
         where('status', '==', status)
     );
     
     onSnapshot(requestsQuery, (querySnapshot) => {
-        setRequests(querySnapshot.docs.map((doc) => ({data: doc.data()})))
+        setRequests(querySnapshot.docs.map((doc) => ({
+          id: doc.data().id,
+          salesman: doc.data().salesman,
+          timestamp: doc.data().timestamp,
+          workOrder: doc.data().workOrder,
+          status: doc.data().status,
+          statusTimestamp: doc.data().statusTimestamp
+        })))
     });
   }
 
