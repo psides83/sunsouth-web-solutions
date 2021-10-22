@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import './Header.css'
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useStateValue } from './StateProvider';
 import { auth, db } from './firebase';
 import { onSnapshot, doc } from 'firebase/firestore';
+import { Skeleton } from '@mui/material';
 
 
 function Header() {
+    const history = useHistory();
     const [{ user }, dispatch] = useStateValue();
     const [userProfile, setProfile] = useState({});
+    const [showingSkeleton, setShowingSkeleton] = useState(true);
     const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
     
 
@@ -31,6 +34,7 @@ function Header() {
         }
         console.log(user)
         fetchProfile()
+        setTimeout( function() { setShowingSkeleton(false); }, 500);
     }, [user, dispatch])
 
     const handleAuthentication = () => {
@@ -38,6 +42,7 @@ function Header() {
                 // User is signed in, see docs for a list of available properties
                 // https://firebase.google.com/docs/reference/js/firebase.User
                 auth.signOut();
+                history.push("/sign-in");
             }
     };
 
@@ -61,24 +66,26 @@ function Header() {
 
             <div className="header-nav">
 
-                <Link className="link" to="/add-request">
+                <Link className="link" to={user && "/add-request"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">Submit</span>
                         <span className="header-optionLineTwo">New Request</span>
                     </div>
                 </Link>
 
-                <Link className="link">
+                {/* <Link className="link" >
                     <div className="header-option">
                         <span className="header-optionLineOne">Your</span>
                         <span className="header-optionLineTwo">Prime</span>
                     </div>
-                </Link>
+                </Link> */}
 
                 <Link className="link" to={!user && "/signIn"}>
                     <div onClick={handleAuthentication} className="header-option">
-                        <span className="header-optionLineOne">{user ? fullName : ""}</span>
-                        <span className="header-optionLineTwo">{user ? "Logout" : "Sign-in"}</span>
+                        {showingSkeleton ? <Skeleton variant="text" sx={{ bgcolor: 'grey.900' }} width="73px" height={25} /> : 
+                        <span className="header-optionLineOne">{user ? fullName : ""}</span>}
+                        {showingSkeleton ? <Skeleton variant="text"s x={{ bgcolor: 'grey.900' }} width="45px" height={28} /> : 
+                        <span className="header-optionLineTwo">{user ? "Logout" : "Sign-in"}</span>}
                     </div>
                 </Link>
                 

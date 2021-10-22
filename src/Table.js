@@ -19,7 +19,7 @@ import { db } from './firebase';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, TextField, Typography } from '@material-ui/core';
+import { Avatar, Input, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
@@ -73,18 +73,18 @@ function EquipmentRow({item}) {
 
   return (
     <React.Fragment>
-      <TableRow key={item.requestID} style={{ fontSize: 18 }}>
+      <TableRow key={item.requestID} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
 
         <TableCell  component="th" scope="row">
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value)} value={model}> </TextField> : item.model }
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField> : item.model}
         </TableCell>
 
         <TableCell>
-        {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> : item.stock }
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> : item.stock}
         </TableCell>
 
         <TableCell>
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value)} value={serial}> </TextField> : item.serial }
+          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> : item.serial }
         </TableCell>
 
         <TableCell> 
@@ -101,13 +101,20 @@ function EquipmentRow({item}) {
             style={{ fontSize: 20 }}
             onClick={editEquipment}>
               { 
-                  isEditingEquipment ? <CheckIcon 
+                  isEditingEquipment 
+                  ? 
+                  <Tooltip title="Save">
+                  <CheckIcon 
                   color="success" 
-                  style={{ fontSize: 18 }}
-                  /> : <EditRoundedIcon 
+                  style={{ fontSize: 18 }}/> 
+                  </Tooltip>
+                  : 
+                  <Tooltip title="Edit">
+                  <EditRoundedIcon 
                   color="success" 
-                  style={{ fontSize: 18 }}
-                  /> 
+                  style={{ fontSize: 18 }}/> 
+                  </Tooltip>
+
               }
           </IconButton>
         </TableCell>
@@ -188,7 +195,7 @@ function Row({request}) {
 
   return (
     <React.Fragment>
-      <TableRow key={request.id} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }} >
+      <TableRow key={request.id} className={classes.root}  >
 
         <TableCell>
           <IconButton 
@@ -207,16 +214,18 @@ function Row({request}) {
           {request.salesman}
         </TableCell>
         
-        <TableCell align="left">{equipment[0]?.model}</TableCell>
+        <TableCell align="left"><p className="model">{equipment[0]?.model}</p></TableCell>
         
         <TableCell align="left">
-          {isEditingWorkOrder ? <TextField variant="outlined" size="small" onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </TextField> : request.workOrder }
+          {isEditingWorkOrder ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} size="small" onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </TextField> : request.workOrder }
         </TableCell>
         
         <TableCell align="left">
-          <Button color="success" size="small" variant="outlined" onClick={updateStatus}>
-            {request.status}
-          </Button>
+          <Tooltip title="Update Status">
+            <Button color="success" size="small" variant="outlined" onClick={updateStatus}>
+              {request.status}
+            </Button>
+          </Tooltip>
         </TableCell>
         
         <TableCell align="left">
@@ -230,13 +239,19 @@ function Row({request}) {
             onClick={editWorkOrder}>
               
                { 
-                  isEditingWorkOrder ? <CheckIcon 
+                  isEditingWorkOrder 
+                  ? 
+                  <CheckIcon 
                   color="success" 
-                  style={{ fontSize: 18 }}
-                  /> : <div className="edit-button-bg">  <EditRoundedIcon 
+                  style={{ fontSize: 16 }}/> 
+                  : 
+                  <div className="edit-button-bg">  
+                  <Tooltip title="Edit">
+                  <EditRoundedIcon 
                   color="success" 
-                  style={{ fontSize: 18 }}
-                  /> </div>
+                  style={{ fontSize: 16 }}/>
+                  </Tooltip>
+                  </div>
                 }
               
           </IconButton>
@@ -250,7 +265,7 @@ function Row({request}) {
               {/* <Typography variant="h6" gutterBottom component="div">
                 Details
               </Typography> */}
-              <Table size="small" aria-label="purchases">
+              <Table size="small" aria-label="equipment">
                 <TableHead>
                   <TableRow key="subHeader">
                     <TableCell><strong>Model</strong></TableCell>
@@ -258,6 +273,7 @@ function Row({request}) {
                     <TableCell><strong>Serial #</strong></TableCell>
                     <TableCell><strong>Work Require</strong></TableCell>
                     <TableCell><strong>Notes</strong></TableCell>
+                    <TableCell />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -304,19 +320,19 @@ export default function CollapsibleTable({status}) {
 
   return (
     <React.Fragment>
-    {loading ? <HomeSkeleton /> : <Typography variant="h5" color='primary'>{status}</Typography>}
+    {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{status}</Typography>}
     <TableContainer component={Paper}>
-      <Table aria-label="collapsible table">
+      <Table  size="small"aria-label="collapsible table">
         <TableHead>
           <TableRow key="header">
             <TableCell />
-            <TableCell><strong>Submitted</strong></TableCell>
-            <TableCell><strong>Salesman</strong></TableCell>
-            <TableCell><strong>Model</strong></TableCell>
-            <TableCell><strong>WO#</strong></TableCell>
-            <TableCell><strong>Status</strong></TableCell>
-            <TableCell><strong>Updated</strong></TableCell>
-            <TableCell></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>Submitted</strong></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>Model</strong></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>WO#</strong></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>Status</strong></TableCell>
+            <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell>
+            <TableCell />
           </TableRow>
         </TableHead>
         <TableBody>

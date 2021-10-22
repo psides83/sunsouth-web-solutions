@@ -38,6 +38,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 // import OutlinedInput from '@mui/material/OutlinedInput';
 //#endregion
 
+// Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({
   paper: {
     marginTop: theme.spacing(4),
@@ -83,6 +84,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// copyright view at the footer of the page.
 function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
@@ -99,6 +101,7 @@ function Copyright() {
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5),
 }));
+
 
 export default function AddRequestView() {  
   //#region State Properties
@@ -124,10 +127,10 @@ export default function AddRequestView() {
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherState] = useState(true);
   var [eqString, setEqString] = useState([]);
-  var lastIndex = equipmentList[equipmentList.length - 1]?.model;
   var [validationMessage, setValidationMessage] = useState('');
   //#endregion
 
+  // Handle closing of the alerts.
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -137,8 +140,10 @@ export default function AddRequestView() {
     setOpenError(false);
   };
 
+  // Dynamic heading for the form.
   const heading = equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request"
 
+  // Array of work options that populate the checkbox setion of the form.
   var workOptions = [
     {
       id: '1',
@@ -171,6 +176,7 @@ export default function AddRequestView() {
       checkedState: checked7
   }]
 
+  // Set the state of the "other" checkbox. It's disabled if the textfield is empty.
   const enableOther = (event) => {
     setOther(event.target.value)
 
@@ -181,10 +187,12 @@ export default function AddRequestView() {
     }
   }
 
+  // Handle deleting of equipment from the request.
   const handleDelete = (equipmentToDelete) => () => {
     setEquepmentList((equipmentList) => equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id));
   };
 
+  // Handle changes in the checkboxes.
   const handleChange = (event) => {
     switch (event.target.id) {
         case "1":
@@ -288,62 +296,44 @@ export default function AddRequestView() {
       console.log(work.toString().replace(/,[s]*/g, ", "));
   };
 
-  const setRequestToFirestore = async (event) => {
-    if (model == '') {
-      validationMessage = "Equipment must have a model to be added to a request"
-      setOpenError(true)
-      return false
-    } else if (stock == '') {
-      validationMessage = "Equipment must have a stock number to be added to a request"
-      setOpenError(true)
-      return false
-    } else if (serial === '') {
-      validationMessage = "Equipment must have a serial number to be added to a request"
-      setOpenError(true)
-      return false
-    } else if (work.length < 1) {
-      validationMessage = "Equipment must have a work requested to be added to a request"
-      setOpenError(true)
-      return false
-    } else {
-
-      event.preventDefault()  
-      const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-      const id = moment().format("yyyyMMDDHHmmss")
-      const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
-
-      await pushEquipmentToRequest(event)
-
-      const firestoreRequest = {
-        id: id,
-        timestamp: timestamp,
-        salesman: salesman,
-        status: "Requested",
-        statusTimestamp: "",
-        workOrder: ""
-      }
-
-      const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id);
-
-      await setDoc(requestRef, firestoreRequest, { merge: true });
-
-      for (var i= 0; i < equipmentList.length ; i++){
-        const equipment = {
-          requestID: firestoreRequest.id,
-          model: equipmentList[i].model,
-          stock: equipmentList[i].stock,
-          serial: equipmentList[i].serial,
-          work: equipmentList[i].work,
-          notes: equipmentList[i].notes
-        }
+  // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection. 
+  const setRequestToFirestore = async () => {
     
-        const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id, 'equipment', equipment.stock);
-        await setDoc(equipmentRef, equipment, { merge: true });
-      }
-      setEquepmentList([])
+    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const id = moment().format("yyyyMMDDHHmmss")
+    const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
+
+    const firestoreRequest = {
+      id: id,
+      timestamp: timestamp,
+      salesman: salesman,
+      status: "Requested",
+      statusTimestamp: "",
+      workOrder: ""
     }
+
+    const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id);
+
+    await setDoc(requestRef, firestoreRequest, { merge: true });
+
+    for (var i= 0; i < equipmentList.length ; i++) {
+      const equipment = {
+        requestID: firestoreRequest.id,
+        model: equipmentList[i].model,
+        stock: equipmentList[i].stock,
+        serial: equipmentList[i].serial,
+        work: equipmentList[i].work,
+        notes: equipmentList[i].notes
+      }
+      
+      const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id, 'equipment', equipment.stock);
+      await setDoc(equipmentRef, equipment, { merge: true });
+    }
+    resetForm()
+    setEquepmentList([])
   } 
 
+  // Reset the form
   const resetForm = async () => {
 
     console.log("request updated")
@@ -363,28 +353,8 @@ export default function AddRequestView() {
     setWork([])
   }
 
-  const pushEquipmentToRequest = async (event) => {
-    event.preventDefault()  
-
-    console.log(model)
-
-    if (model === '') {
-      setValidationMessage("Equipment must have a model to be added to a request")
-      setOpenError(true)
-      return
-    } else if (stock === '') {
-      setValidationMessage("Equipment must have a stock number to be added to a request")
-      setOpenError(true)
-      return
-    } else if (serial === '') {
-      setValidationMessage("Equipment must have a serial number to be added to a request")
-      setOpenError(true)
-      return
-    } else if (work.length < 1) {
-      setValidationMessage("Equipment must have a work requested to be added to a request")
-      setOpenError(true)
-      return
-    } else {
+  // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
+  const pushEquipmentToRequest = async () => {
 
     var workString = work.toString().replace(/,[s]*/g, ", ")
     
@@ -411,10 +381,67 @@ export default function AddRequestView() {
     console.log(equipmentList)
     
     await resetForm()
-    setOpenSuccess(true)
+  }
+
+  // Squipment submission validation.
+  const equipmentSubmitValidation = async (event) => {
+    event.preventDefault()  
+
+    if (model === '') {
+      setValidationMessage("Equipment must have a model to be added to a request")
+      setOpenError(true)
+      return
+    } else if (stock.length !== 6) {
+      setValidationMessage("Equipment must have a 6 digit stock number to be added to a request")
+      setOpenError(true)
+      return
+    } else if (serial === '') {
+      setValidationMessage("Equipment must have a serial number to be added to a request")
+      setOpenError(true)
+      return
+    } else if (work.length === 0) {
+      setValidationMessage("Equipment must have a work requested to be added to a request")
+      setOpenError(true)
+      return
+    } else {
+      pushEquipmentToRequest()
+      const lastIndex = equipmentList[equipmentList.length - 1]?.model;
+      setValidationMessage(lastIndex + " successfully added to the request")
+      setOpenSuccess(true)
     }
   }
 
+  // Requst submission validation.
+  const requestSubmitValidation = async (event) => {
+    event.preventDefault()  
+
+    if (model == '' && equipmentList.length === 0) {
+      setValidationMessage("Equipment must have a model to be added to a request")
+      setOpenError(true)
+      return false
+    } else if (stock.length !== 6 && equipmentList.length === 0) {
+      setValidationMessage("Equipment must have a 6 digit stock number to be added to a request")
+      setOpenError(true)
+      return false
+    } else if (serial == '' && equipmentList.length === 0) {
+      setValidationMessage("Equipment must have a serial number to be added to a request")
+      setOpenError(true)
+      return false
+    } else if (work.length === 0 && equipmentList.length === 0) {
+      setValidationMessage("Equipment must have a work requested to be added to a request")
+      setOpenError(true)
+      return false
+    } else if (model == '' || stock == '' || serial == '' || work.length === 0 && equipmentList > 0) {
+      await setRequestToFirestore()
+      setValidationMessage("Request successfully submitted")
+      setOpenSuccess(true)
+    } else {
+      await pushEquipmentToRequest()
+      await setRequestToFirestore()
+    }
+  }
+
+  // UI view of the submission form
   return (
     <Container component="main" maxWidth="xs">
       <CssBaseline />
@@ -476,7 +503,7 @@ export default function AddRequestView() {
                 id="model"
                 label="Model"
                 autoFocus
-                onChange={e=> setModel(e.target.value)}
+                onChange={e=> setModel(e.target.value.toUpperCase())}
                 value={model}
               />
             </Grid>
@@ -502,7 +529,7 @@ export default function AddRequestView() {
                   required
                   id="serial"
                   label="Serial"
-                  onChange={e=> setSerial(e.target.value)}
+                  onChange={e=> setSerial(e.target.value.toUpperCase())}
                   value={serial}
                 >
                 </TextField>
@@ -546,7 +573,7 @@ export default function AddRequestView() {
 
           <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
             <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-              {lastIndex + " successfully added"}
+              {validationMessage}
             </Alert>
           </Snackbar>
 
@@ -562,7 +589,7 @@ export default function AddRequestView() {
                 color="primary"
                 startIcon={<AddCircleOutlineIcon />}
                 className={classes.addEquipment}
-                onClick={pushEquipmentToRequest}
+                onClick={equipmentSubmitValidation}
             >
                 Add More Equipment
             </Button>
@@ -571,7 +598,7 @@ export default function AddRequestView() {
                 color="primary"
                 endIcon={<SendRoundedIcon className={classes.submitIcon} />}
                 className={classes.submit}
-                onClick={setRequestToFirestore}
+                onClick={requestSubmitValidation}
             >
                 <p className={classes.submitIcon}>Submit</p>
             </Button>

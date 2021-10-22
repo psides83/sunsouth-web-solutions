@@ -16,7 +16,6 @@ import HomeSkeleton from './HomeSkeleton'
 import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
 
-
 const theme = createTheme({
   palette: {
     primary: {
@@ -58,6 +57,7 @@ function App() {
         })
       } else {
         // User is signed out
+        setTimeout( function() { setLoading(false); }, 500);
         dispatch({
           type: 'SET_USER',
           user: null
