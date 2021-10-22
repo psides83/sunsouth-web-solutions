@@ -15,6 +15,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import HomeSkeleton from './HomeSkeleton'
 import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
+import Completed from './Completed';
 
 const theme = createTheme({
   palette: {
@@ -72,6 +73,11 @@ function App() {
       <Router>
         <div className="app">
           <Switch>
+          <Route path="/completed">
+              <Header />
+              <Completed />
+            </Route>
+
             <Route path="/add-request">
               <Header />
               <AddRequestView />
