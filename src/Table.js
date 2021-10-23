@@ -104,15 +104,15 @@ function EquipmentRow({item}) {
                   isEditingEquipment 
                   ? 
                   <Tooltip title="Save">
-                  <CheckIcon 
-                  color="success" 
-                  style={{ fontSize: 18 }}/> 
+                    <CheckIcon 
+                    color="success" 
+                    style={{ fontSize: 18 }}/> 
                   </Tooltip>
                   : 
                   <Tooltip title="Edit">
-                  <EditRoundedIcon 
-                  color="success" 
-                  style={{ fontSize: 18 }}/> 
+                    <EditRoundedIcon 
+                    color="success" 
+                    style={{ fontSize: 18 }}/> 
                   </Tooltip>
 
               }
@@ -133,9 +133,6 @@ function Row({request}) {
   var [equipment, setEquipment] = useState([]);
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
 
-  console.log(request)
-
-
   const fetchEquipment = async ()=> {
     const equipmentQuery = query(
         collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
@@ -152,9 +149,7 @@ function Row({request}) {
           notes: doc.data().notes,
         })))
     });
-  }
-    
-    
+  } 
 
   useEffect(() => {
     fetchEquipment()
@@ -199,9 +194,9 @@ function Row({request}) {
 
         <TableCell>
           <IconButton 
-          aria-label="expand row" 
-          size="small" 
-          onClick={() => setOpen(!open)}>
+            aria-label="expand row" 
+            size="small" 
+            onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
@@ -217,7 +212,17 @@ function Row({request}) {
         <TableCell align="left"><p className="model">{equipment[0]?.model}</p></TableCell>
         
         <TableCell align="left">
-          {isEditingWorkOrder ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} size="small" onChange={e=> setWorkOrder(e.target.value)} value={workOrder}> </TextField> : request.workOrder }
+          {isEditingWorkOrder 
+          ? 
+          <TextField 
+            variant="outlined" 
+            inputProps={{style: {fontSize: 14}}} 
+            size="small" 
+            onChange={e=> setWorkOrder(e.target.value)} 
+            value={workOrder}> 
+          </TextField> 
+          : 
+          request.workOrder}
         </TableCell>
         
         <TableCell align="left">
@@ -237,25 +242,23 @@ function Row({request}) {
             color="success" 
             className={classes.icon}
             onClick={editWorkOrder}>
-              
-               { 
-                  isEditingWorkOrder 
+               {isEditingWorkOrder 
                   ? 
                   <CheckIcon 
-                  color="success" 
-                  style={{ fontSize: 16 }}/> 
+                    color="success" 
+                    style={{ fontSize: 16 }}/> 
                   : 
                   <div className="edit-button-bg">  
-                  <Tooltip title="Edit">
-                  <EditRoundedIcon 
-                  color="success" 
-                  style={{ fontSize: 16 }}/>
-                  </Tooltip>
+                    <Tooltip title="Edit">
+                      <EditRoundedIcon 
+                        color="success" 
+                        style={{ fontSize: 16 }}/>
+                    </Tooltip>
                   </div>
                 }
-              
           </IconButton>
         </TableCell>
+
       </TableRow>
 
       <TableRow>
@@ -320,28 +323,28 @@ export default function CollapsibleTable({status}) {
 
   return (
     <React.Fragment>
-    {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{status}</Typography>}
-    <TableContainer component={Paper}>
-      <Table  size="small"aria-label="collapsible table">
-        <TableHead>
-          <TableRow key="header">
-            <TableCell />
-            <TableCell style={{ fontSize: 18 }}><strong>Submitted</strong></TableCell>
-            <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell>
-            <TableCell style={{ fontSize: 18 }}><strong>Model</strong></TableCell>
-            <TableCell style={{ fontSize: 18 }}><strong>WO#</strong></TableCell>
-            <TableCell style={{ fontSize: 18 }}><strong>Status</strong></TableCell>
-            <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell>
-            <TableCell />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {requests.map(request => (
-            <Row request={request} />
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+      {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{status}</Typography>}
+      <TableContainer component={Paper}>
+        <Table  size="small"aria-label="collapsible table" sx={{ paddingTop: 2 }}>
+          <TableHead>
+            <TableRow key="header">
+              <TableCell />
+              <TableCell style={{ fontSize: 18 }}><strong>Submitted</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }}><strong>Model</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }}><strong>WO#</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }}><strong>Status</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell>
+              <TableCell />
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {requests.map(request => (
+              <Row request={request} />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </React.Fragment>
 
   );
