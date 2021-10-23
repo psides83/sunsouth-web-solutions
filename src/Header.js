@@ -32,8 +32,9 @@ function Header() {
 
             
         }
-        console.log(user)
+
         fetchProfile()
+        
         setTimeout( function() { setShowingSkeleton(false); }, 500);
     }, [user, dispatch])
 
@@ -69,6 +70,13 @@ function Header() {
                     <div className="header-option">
                         <span className="header-optionLineOne">Submit</span>
                         <span className="header-optionLineTwo">New Request</span>
+                    </div>
+                </Link>
+
+                <Link className="link" to={user && "/"}>
+                    <div className="header-option">
+                        <span className="header-optionLineOne">View</span>
+                        <span className="header-optionLineTwo">Active</span>
                     </div>
                 </Link>
 
