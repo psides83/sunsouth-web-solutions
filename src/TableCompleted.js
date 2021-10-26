@@ -16,18 +16,14 @@ import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { collection, query, where, orderBy, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, TextField, Tooltip, Typography } from '@material-ui/core';
+import { TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
 import { useHistory } from 'react-router';
 import CheckIcon from '@mui/icons-material/Check';
-import { SliderRail } from '@mui/material';
-import { SdCardAlert } from '@mui/icons-material';
 
 const useRowStyles = makeStyles({
   root: {

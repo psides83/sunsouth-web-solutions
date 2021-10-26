@@ -19,15 +19,14 @@ import { db } from './firebase';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
 import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, TextField, Tooltip, Typography } from '@material-ui/core';
+import { Avatar, Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
 import { useHistory } from 'react-router';
 import CheckIcon from '@mui/icons-material/Check';
-import { SliderRail } from '@mui/material';
-import { SdCardAlert } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
 
 const useRowStyles = makeStyles({
   root: {
@@ -131,7 +130,13 @@ function Row({request}) {
   const history = useHistory();
   var [workOrder, setWorkOrder] = useState('');
   var [equipment, setEquipment] = useState([]);
+  var [model, setModel] = useState('')
+  var [stock, setStock] = useState('');
+  var [serial, setSerial] = useState('');
+  var [work, setWork] = useState('');
+  var [notes, setNotes] = useState('');
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
+  var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
 
   const fetchEquipment = async ()=> {
     const equipmentQuery = query(
@@ -165,7 +170,26 @@ function Row({request}) {
     }
   }
 
-  
+  const addEquipment = async () => {
+    const equipment = {
+      requestID: request.id,
+      model: model,
+      stock: stock,
+      serial: serial,
+      work: work,
+      notes: notes
+    }
+    
+    const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
+    await setDoc(equipmentRef, equipment, { merge: true });
+    setIsShowingAddEquipment(false)
+    setEquipment([])
+    setModel('')
+    setStock('')
+    setSerial('')
+    setWork('')
+    setNotes('')
+  }
 
   const updateStatus = async () => {
     var status = request.status
@@ -284,7 +308,56 @@ function Row({request}) {
                   {equipment.map((item) => (
                     <EquipmentRow key={item?.stock} item={item} />
                   ))}
+                  { isShowingAddEquipment ?  
+                    <TableRow key={request.id} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+
+                      <TableCell  component="th" scope="row">
+                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField>
+                      </TableCell>
+
+                      <TableCell>
+                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> 
+                      </TableCell>
+
+                      <TableCell>
+                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> 
+                      </TableCell>
+
+                      <TableCell> 
+                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> 
+                      </TableCell>
+
+                      <TableCell>
+                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> 
+                      </TableCell>
+
+                      <TableCell align="center">
+                        <IconButton 
+                          color="success" 
+                          style={{ fontSize: 20 }}
+                          onClick={addEquipment}>
+                          <Tooltip title="Save">
+                            <CheckIcon 
+                            color="success" 
+                            style={{ fontSize: 18 }}
+                            /> 
+                          </Tooltip>
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                    :
+                    null
+                  }
                 </TableBody>
+                <TableFooter>
+                  <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+                    <TableCell>
+                      <Button startIcon={<AddIcon />} color="success" >
+                        Add Equipment
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
               </Table>
             </Box>
           </Collapse>
@@ -294,7 +367,7 @@ function Row({request}) {
   );
 }
 
-export default function CollapsibleTable({status}) {
+export default function CollapsibleTable() {
   const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -302,7 +375,7 @@ export default function CollapsibleTable({status}) {
   const fetch = async ()=> {
     const requestsQuery = query(
         collection(db, 'branches', userProfile?.branch, 'requests'),
-        where('status', '==', status)
+        where('status', '!=', 'Completed')
     );
     
     onSnapshot(requestsQuery, (querySnapshot) => {
@@ -324,7 +397,7 @@ export default function CollapsibleTable({status}) {
 
   return (
     <React.Fragment>
-      {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{status}</Typography>}
+      {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Requests"}</Typography>}
       <TableContainer component={Paper}>
         <Table  size="small"aria-label="collapsible table" sx={{ paddingTop: 2 }}>
           <TableHead>
