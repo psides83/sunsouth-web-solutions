@@ -186,6 +186,7 @@ function Row({request}) {
 
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
     await setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
+    window.location.reload(false);
   }
 
   return (
