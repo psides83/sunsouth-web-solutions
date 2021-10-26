@@ -10,11 +10,11 @@ function Home() {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
             <Box sx={{ width: '100%', mt: 5, mx:5 }}>
                 <Box sx={{ flexGrow: 1, my: 5 }}>
-                    <CollapsibleTable status="In Progress"/>
+                    <CollapsibleTable/>
                 </Box>
-                <Box sx={{ flexGrow: 1 }}>
+                {/* <Box sx={{ flexGrow: 1 }}>
                     <CollapsibleTable status="Requested"/>
-                </Box>
+                </Box> */}
             </Box>
         </Box>
     )
