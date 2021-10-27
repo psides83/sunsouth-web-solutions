@@ -27,6 +27,7 @@ import './Table.css'
 import { useHistory } from 'react-router';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
+import CloseIcon from '@mui/icons-material/Close';
 
 const useRowStyles = makeStyles({
   root: {
@@ -171,28 +172,32 @@ function Row({request}) {
   }
 
   const addEquipment = async () => {
-    
+     
     if(isShowingAddEquipment) {
 
-      const equipment = {
+      if(model != '' && stock != '' && serial != '' && work != '') {
+        const equipment = {
 
-        requestID: request.id,
-        model: model,
-        stock: stock,
-        serial: serial,
-        work: work,
-        notes: notes
+          requestID: request.id,
+          model: model,
+          stock: stock,
+          serial: serial,
+          work: work,
+          notes: notes
+        }
+        
+        const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
+        await setDoc(equipmentRef, equipment, { merge: true });
+        setIsShowingAddEquipment(false)
+        setEquipment([])
+        setModel('')
+        setStock('')
+        setSerial('')
+        setWork('')
+        setNotes('')
+      } else {
+        setIsShowingAddEquipment(false)
       }
-      
-      const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
-      await setDoc(equipmentRef, equipment, { merge: true });
-      setIsShowingAddEquipment(false)
-      setEquipment([])
-      setModel('')
-      setStock('')
-      setSerial('')
-      setWork('')
-      setNotes('')
     } else {
 
       setIsShowingAddEquipment(true)
@@ -344,12 +349,24 @@ function Row({request}) {
                           color="success" 
                           style={{ fontSize: 20 }}
                           onClick={addEquipment}>
-                          <Tooltip title="Save">
-                            <CheckIcon 
-                            color="success" 
-                            style={{ fontSize: 18 }}
-                            /> 
-                          </Tooltip>
+                            { model != '' && stock != '' && serial != '' && work != '' 
+                              ?
+                              <Tooltip title="Save">
+                                <CheckIcon 
+                                  color="success" 
+                                  style={{ fontSize: 18 }}
+                                  onClick={addEquipment}
+                                />
+                              </Tooltip>
+                              :
+                              <Tooltip title="Close">
+                                <CloseIcon 
+                                  color="success" 
+                                  style={{ fontSize: 18 }}
+                                  onClick={addEquipment}
+                                />
+                              </Tooltip>
+                            }   
                         </IconButton>
                       </TableCell>
                     </TableRow>
