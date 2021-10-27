@@ -195,6 +195,7 @@ function Row({request}) {
         setSerial('')
         setWork('')
         setNotes('')
+        window.location.reload(false);
       } else {
         setIsShowingAddEquipment(false)
       }
