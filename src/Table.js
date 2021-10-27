@@ -171,24 +171,32 @@ function Row({request}) {
   }
 
   const addEquipment = async () => {
-    const equipment = {
-      requestID: request.id,
-      model: model,
-      stock: stock,
-      serial: serial,
-      work: work,
-      notes: notes
-    }
     
-    const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
-    await setDoc(equipmentRef, equipment, { merge: true });
-    setIsShowingAddEquipment(false)
-    setEquipment([])
-    setModel('')
-    setStock('')
-    setSerial('')
-    setWork('')
-    setNotes('')
+    if(isShowingAddEquipment) {
+
+      const equipment = {
+
+        requestID: request.id,
+        model: model,
+        stock: stock,
+        serial: serial,
+        work: work,
+        notes: notes
+      }
+      
+      const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
+      await setDoc(equipmentRef, equipment, { merge: true });
+      setIsShowingAddEquipment(false)
+      setEquipment([])
+      setModel('')
+      setStock('')
+      setSerial('')
+      setWork('')
+      setNotes('')
+    } else {
+
+      setIsShowingAddEquipment(true)
+    }
   }
 
   const updateStatus = async () => {
@@ -349,15 +357,21 @@ function Row({request}) {
                     null
                   }
                 </TableBody>
-                <TableFooter>
-                  <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
-                    <TableCell>
-                      <Button startIcon={<AddIcon />} color="success" >
-                        Add Equipment
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
+                { 
+                  !isShowingAddEquipment 
+                  ?
+                  <TableFooter>
+                    <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+                      <TableCell>
+                        <Button startIcon={<AddIcon />} color="success" onClick={addEquipment}>
+                          Add Equipment
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  </TableFooter>
+                  : 
+                  null
+                }
               </Table>
             </Box>
           </Collapse>
