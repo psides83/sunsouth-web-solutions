@@ -25,6 +25,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import Snackbar from '@material-ui/core/Snackbar';
+import emailjs from 'emailjs-com';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';
@@ -128,6 +129,7 @@ export default function AddRequestView() {
   var [otherDisabled, setOtherState] = useState(true);
   var [eqString, setEqString] = useState([]);
   var [validationMessage, setValidationMessage] = useState('');
+  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
   //#endregion
 
   // Handle closing of the alerts.
@@ -329,6 +331,8 @@ export default function AddRequestView() {
       const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id, 'equipment', equipment.stock);
       await setDoc(equipmentRef, equipment, { merge: true });
     }
+
+    // sendEmail(timestamp)
     resetForm()
     setEquepmentList([])
   } 
@@ -439,6 +443,43 @@ export default function AddRequestView() {
       await pushEquipmentToRequest()
       await setRequestToFirestore()
     }
+  }
+
+  const sendEmail = (timestamp) => {
+
+    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+    const subject = fullName + ', ' + equipmentList[0].model + ', ' + equipmentList[0].stock + ', ' + equipmentList[0].serial
+
+    var body = '<body>';
+
+    body += '<section>' + '<p>' + timestamp + '</p>' + '<p>' + fullName + " is requesting work to be done on the following equipment." + '</p>' + '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<h3>' + "First Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[0].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[0].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[0].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[0].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[0].notes + '</p>' + '</section>';
+    
+    if(equipmentList.length == 2) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Second Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[1].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[1].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[1].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[1].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[1].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 3) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Third Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[2].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[2].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[2].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[2].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[2].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 4) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fourth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[3].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[3].stock + '</p>' +  '<p>' + "Serial Number: " + equipmentList[3].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[3].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[3].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 5) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fifth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[4].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[4].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[4].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[4].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[4].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 6) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Sith Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[5].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[5].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[5].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[5].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[5].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 7) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Seventh Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[6].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[6].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[6].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[6].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[6].notes + '</p>' + '</section>'};
+
+    if(equipmentList.length == 8) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Eihght Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[7].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[7].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[7].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[7].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[7].notes + '</p>' + '</section>'};
+
+    body += '<body>';
+
+    const templateParams = {
+      to: "psides83@hotmail.com",
+      replyTo: userProfile.email, 
+      from: "PDI/Setup Requests", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    }
+
+    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
   // UI view of the submission form

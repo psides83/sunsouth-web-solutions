@@ -14,7 +14,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import { collection, query, where, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
@@ -28,6 +28,7 @@ import { useHistory } from 'react-router';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import emailjs from 'emailjs-com'
 
 const useRowStyles = makeStyles({
   root: {
@@ -47,8 +48,6 @@ function EquipmentRow({item}) {
   var [notes, setNotes] = useState('');
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
   
-  console.log(isEditingEquipment)
-
   const editEquipment = async () => {
     if (isEditingEquipment) { 
 
@@ -59,6 +58,7 @@ function EquipmentRow({item}) {
         work: work,
         notes: notes
       }, { merge: true })
+
       setIsEditingEquipment(false)
     } else { 
 
@@ -161,9 +161,29 @@ function Row({request}) {
     fetchEquipment()
   }, [])
 
+  const sendWorkOrderEmail = (workOrder) => {
+
+    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
+    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
+
+    const templateParams = {
+      to: "psides83@hotmail.com",
+      replyTo: userProfile.email, 
+      from: "PDI/Setup Requests", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    }
+
+    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+  }
+
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
       await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder}, { merge: true })
+      // sendWorkOrderEmail(workOrder)
       setIsEditingWorkOrder(false)
     } else { 
       setWorkOrder(request.workOrder)
@@ -195,7 +215,7 @@ function Row({request}) {
         setSerial('')
         setWork('')
         setNotes('')
-        window.location.reload(false);
+        // window.location.reload(false);
       } else {
         setIsShowingAddEquipment(false)
       }
@@ -203,6 +223,25 @@ function Row({request}) {
 
       setIsShowingAddEquipment(true)
     }
+  }
+
+  const sendStatusEmail = (status) => {
+
+    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
+    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Status of ' + equipment[0]?.model + " ST# " +equipment[0]?.stock +  " has been updated to " + status + '.</p>' + '<body>';
+
+    const templateParams = {
+      to: "psides83@hotmail.com",
+      replyTo: userProfile.email, 
+      from: "PDI/Setup Requests", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    }
+
+    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
   const updateStatus = async () => {
@@ -224,7 +263,9 @@ function Row({request}) {
 
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
     await setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
-    window.location.reload(false);
+    // sendStatusEmail(status)
+    console.log("email sent")
+    // window.location.reload(false);
   }
 
   return (
