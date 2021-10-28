@@ -332,7 +332,7 @@ export default function AddRequestView() {
       await setDoc(equipmentRef, equipment, { merge: true });
     }
 
-    // sendEmail(timestamp)
+    sendEmail(timestamp)
     resetForm()
     setEquepmentList([])
   } 

@@ -225,7 +225,7 @@ function Row({request}) {
     }
   }
 
-  const sendStatusEmail = (status) => {
+  const sendStatusEmail = async (status) => {
 
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
@@ -241,7 +241,10 @@ function Row({request}) {
       message: body
     }
 
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+      .then(() => {
+        window.location.reload(false);
+      })
   }
 
   const updateStatus = async () => {
@@ -263,9 +266,8 @@ function Row({request}) {
 
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
     await setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
-    // sendStatusEmail(status)
-    console.log("email sent")
-    // window.location.reload(false);
+    sendStatusEmail(status)
+    // console.log("email sent")
   }
 
   return (
