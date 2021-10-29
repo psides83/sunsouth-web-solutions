@@ -30,6 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import emailjs from 'emailjs-com'
 
+// Styles:
 const useRowStyles = makeStyles({
   root: {
     '& > *': {
@@ -38,6 +39,7 @@ const useRowStyles = makeStyles({
   },
 });
 
+// Equipment row view:
 function EquipmentRow({item}) {
   const [{ userProfile }, dispatch] = useStateValue();
   const classes = useRowStyles();
@@ -48,6 +50,7 @@ function EquipmentRow({item}) {
   var [notes, setNotes] = useState('');
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
   
+  // Handles editing of the equipment values. either opens the edit textfields or sets new edits to firestore:
   const editEquipment = async () => {
     if (isEditingEquipment) { 
 
@@ -71,6 +74,7 @@ function EquipmentRow({item}) {
     }
   }
 
+  // Equipment row UI:
   return (
     <React.Fragment>
       <TableRow key={item.requestID} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -123,6 +127,7 @@ function EquipmentRow({item}) {
   )
 }
 
+// Request row view:
 function Row({request}) {
   const [{ userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
@@ -138,7 +143,9 @@ function Row({request}) {
   var [notes, setNotes] = useState('');
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
+  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
 
+  // Fetches equipment from firestore:
   const fetchEquipment = async ()=> {
     const equipmentQuery = query(
         collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
@@ -153,6 +160,7 @@ function Row({request}) {
           serial: doc.data().serial,
           work: doc.data().work,
           notes: doc.data().notes,
+          changeLog: doc.data().changeLog
         })))
     });
   } 
@@ -161,15 +169,18 @@ function Row({request}) {
     fetchEquipment()
   }, [])
 
+  // Sends email when work order number is added or updated:
   const sendWorkOrderEmail = (workOrder) => {
 
+    // creates the paramaters for the email template:
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
+    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated by " + fullName + " to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
 
+    // Sets paramaters for the email template:
     const templateParams = {
-      to: "psides83@hotmail.com",
+      to: userProfile.email,
       replyTo: userProfile.email, 
       from: "PDI/Setup Requests", 
       copy: userProfile.email,
@@ -177,12 +188,25 @@ function Row({request}) {
       message: body
     }
 
+    // sends thw email:
     emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
+  // Handles adding or editing the work order number for the request:
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder}, { merge: true })
+
+      const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated to ${workOrder}`
+
+      const changeLogEntry = {
+        user: fullName,
+        change: workOrderStatus, 
+        timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+      }
+  
+      request.changeLog.push(changeLogEntry)
+
+      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
       // sendWorkOrderEmail(workOrder)
       setIsEditingWorkOrder(false)
     } else { 
@@ -191,6 +215,7 @@ function Row({request}) {
     }
   }
 
+  // Handles adding equipment to the request:
   const addEquipment = async () => {
      
     if(isShowingAddEquipment) {
@@ -206,6 +231,7 @@ function Row({request}) {
           notes: notes
         }
         
+        // Sets the added equipment to firestore:
         const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
         await setDoc(equipmentRef, equipment, { merge: true });
         setIsShowingAddEquipment(false)
@@ -225,15 +251,16 @@ function Row({request}) {
     }
   }
 
+  // Send email when request status is updated:
   const sendStatusEmail = async (status) => {
 
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Status of ' + equipment[0]?.model + " ST# " +equipment[0]?.stock +  " has been updated to " + status + '.</p>' + '<body>';
+    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Status of ' + equipment[0]?.model + " ST# " +equipment[0]?.stock +  " has been updated by " + fullName + " to " + status + '.</p>' + '<body>';
 
     const templateParams = {
-      to: "psides83@hotmail.com",
+      to: userProfile.email,
       replyTo: userProfile.email, 
       from: "PDI/Setup Requests", 
       copy: userProfile.email,
@@ -247,6 +274,7 @@ function Row({request}) {
       })
   }
 
+  // Handles updating the request status:
   const updateStatus = async () => {
     var status = request.status
 
@@ -261,26 +289,44 @@ function Row({request}) {
         status = "Complete";
     }
 
-    const timestamp = moment().format("MMM-DD-yyyy")
+    const changeLogEntry = {
 
+      user: fullName,
+      change: `Status updated to ${status}`, 
+      timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+    }
+
+    request.changeLog.push(changeLogEntry)
 
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
-    await setDoc(requestRef, { status: status, statusTimestamp: timestamp }, { merge: true });
+
+    await setDoc(requestRef, { 
+
+      status: status, 
+      statusTimestamp: moment().format("MMM-DD-yyyy"), 
+      changeLog: request.changeLog 
+    }, { 
+      
+      merge: true 
+    });
+
     sendStatusEmail(status)
-    // console.log("email sent")
   }
 
+  // Request row UI:
   return (
     <React.Fragment>
       <TableRow key={request.id} className={classes.root}  >
 
         <TableCell>
-          <IconButton 
-            aria-label="expand row" 
-            size="small" 
-            onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
+          <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
+            <IconButton 
+              aria-label="expand row" 
+              size="small" 
+              onClick={() => setOpen(!open)}>
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          </Tooltip>
         </TableCell>
 
         <TableCell component="th" scope="row" >
@@ -309,7 +355,7 @@ function Row({request}) {
         
         <TableCell align="left">
           <Tooltip title="Update Status">
-            <Button color="success" size="small" variant="outlined" onClick={updateStatus}>
+            <Button color="success" size="small" variant={request.status == 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
               {request.status}
             </Button>
           </Tooltip>
@@ -442,11 +488,13 @@ function Row({request}) {
   );
 }
 
+// Whole table view:
 export default function CollapsibleTable() {
   const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch requests from firestore:
   const fetch = async ()=> {
     const requestsQuery = query(
         collection(db, 'branches', userProfile?.branch, 'requests'),
@@ -460,7 +508,8 @@ export default function CollapsibleTable() {
           timestamp: doc.data().timestamp,
           workOrder: doc.data().workOrder,
           status: doc.data().status,
-          statusTimestamp: doc.data().statusTimestamp
+          statusTimestamp: doc.data().statusTimestamp,
+          changeLog: doc.data().changeLog
         })))
     });
   }
@@ -470,6 +519,7 @@ export default function CollapsibleTable() {
       .then(setTimeout( function() { setLoading(false) }, 1000)) 
   }, [])
 
+  // Table UI:
   return (
     <React.Fragment>
       {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Requests"}</Typography>}

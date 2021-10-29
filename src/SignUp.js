@@ -10,14 +10,14 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth, db } from './firebase';
 import './SignUp.css'
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { setDoc, doc } from '@firebase/firestore';
-
-
+import Snackbar from '@material-ui/core/Snackbar';
+import { Alert } from '@mui/material';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -71,6 +71,9 @@ export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [branch, setBranch] = useState('');
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  var [validationMessage, setValidationMessage] = useState('');
 
   const branches = [
                     "Abbeville",
@@ -96,8 +99,7 @@ export default function SignUp() {
                     "Tuscaloosa"
                   ]
 
-  const register = e => {
-      e.preventDefault()
+  const register = (e) => {
 
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
@@ -113,6 +115,8 @@ export default function SignUp() {
               email: email,
               branch: branch
             }
+            setValidationMessage("Registration successful.")
+            setOpenSuccess(true)
             setDoc(newUser, userData, { merge: true });
             history.push("/");
           }
@@ -120,8 +124,71 @@ export default function SignUp() {
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          // ..
+          setValidationMessage("User already registered with this email address.")
+          setOpenError(true)
         });
+  };
+
+    // Squipment submission validation.
+    const signUpValidation = async (event) => {
+      event.preventDefault()  
+  
+      if (firstName === '') {
+
+        setValidationMessage("First name is required to register.")
+        setOpenError(true)
+        return
+      } else if (lastName === '') {
+
+        setValidationMessage("Last name is required to register.")
+        setOpenError(true)
+        return
+      } else if (branch === '') {
+
+        setValidationMessage("User must select a branch to register.")
+        setOpenError(true)
+        return
+      } else if (email.includes('@sunsouth.com') === false) {
+
+        setValidationMessage("User must register with a SunSouth company email.")
+        setOpenError(true)
+        return
+      } else if (password.length < 8) {
+
+        setValidationMessage("Password must be at least 8 characters.")
+        setOpenError(true)
+        return
+      } else {
+        register()
+      }
+    }
+
+    // Forgot password.
+    const forgotPassword = async () => {
+
+      await sendPasswordResetEmail(auth, email)
+              .then(() => {
+                // Password reset email sent!
+                setValidationMessage("An email has been sent to reset your password")
+                setOpenSuccess(true)
+              })
+              .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                // ..
+              });
+      }
+
+    
+
+    // Handle closing of the alerts.
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSuccess(false);
+    setOpenError(false);
   };
 
   return (
@@ -168,6 +235,7 @@ export default function SignUp() {
                 <TextField
                   size="small"
                   variant="outlined"
+                  required
                   labelId="demo-simple-select-label"
                   id="branch"
                   className={classes.select}
@@ -215,17 +283,35 @@ export default function SignUp() {
               />
             </Grid>
           </Grid>
+
+          <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
+            <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+              {validationMessage}
+            </Alert>
+          </Snackbar>
+
+          <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
+            <Alert  onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+              {validationMessage}
+            </Alert>
+          </Snackbar>
+
           <Button
             type="submit"
             fullWidth
             variant="contained"
             color="primary"
             className={classes.submit}
-            onClick={register}
+            onClick={signUpValidation}
           >
             Sign Up
           </Button>
-          <Grid container justifyContent="flex-end">
+          <Grid container justifyContent="space-between">
+            <Grid item>
+              <Link onClick={forgotPassword} variant="body2">
+               Forgot password?
+              </Link>  
+            </Grid>
             <Grid item>
               <Link to="/signIn" variant="body2">
                 Already have an account? Sign in

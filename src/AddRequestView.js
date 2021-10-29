@@ -304,6 +304,11 @@ export default function AddRequestView() {
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
     const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
+    const changeLog = [{
+      user: fullName,
+      change: `request created`,
+      timestamp: timestamp
+    }]
 
     const firestoreRequest = {
       id: id,
@@ -311,7 +316,8 @@ export default function AddRequestView() {
       salesman: salesman,
       status: "Requested",
       statusTimestamp: "",
-      workOrder: ""
+      workOrder: "", 
+      changeLog: changeLog
     }
 
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id);
@@ -366,13 +372,21 @@ export default function AddRequestView() {
       workString = workString.substring(1).trim()
     }
 
+    const changeLog = [{
+      user: fullName,
+      change: `equipment added`,
+      timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+
+    }]
+
     var equipment = {
       id: equipmentList.length + 1,
       model: model,
       stock: stock,
       serial: serial,
       work: workString,
-      notes: notes
+      notes: notes,
+      changeLog: changeLog
     }
 
     
