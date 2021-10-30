@@ -87,6 +87,13 @@ function Header() {
                     </div>
                 </Link>
 
+                <Link className="link" to={user && "/add-loaner"}>
+                    <div className="header-option">
+                        <span className="header-optionLineOne">Add</span>
+                        <span className="header-optionLineTwo">Loaner</span>
+                    </div>
+                </Link>
+
                 <Link className="link" to={!user && "/signIn"}>
                     <div onClick={handleAuthentication} className="header-option">
                         {showingSkeleton ? <Skeleton variant="text" sx={{ bgcolor: 'grey.900' }} width="73px" height={25} /> : 

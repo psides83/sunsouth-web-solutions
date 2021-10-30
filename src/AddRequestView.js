@@ -405,11 +405,14 @@ export default function AddRequestView() {
   const equipmentSubmitValidation = async (event) => {
     event.preventDefault()  
 
+    const lowerCaseLetters = /[a-z]/g;
+    const upperCaseLetters = /[A-Z]/g;
+
     if (model === '') {
       setValidationMessage("Equipment must have a model to be added to a request")
       setOpenError(true)
       return
-    } else if (stock.length !== 6) {
+    } else if (stock.length !== 6 || stock.match(lowerCaseLetters) || stock.match(upperCaseLetters)) {
       setValidationMessage("Equipment must have a 6 digit stock number to be added to a request")
       setOpenError(true)
       return
@@ -433,11 +436,14 @@ export default function AddRequestView() {
   const requestSubmitValidation = async (event) => {
     event.preventDefault()  
 
+    const lowerCaseLetters = /[a-z]/g;
+    const upperCaseLetters = /[A-Z]/g;
+
     if (model == '' && equipmentList.length === 0) {
       setValidationMessage("Equipment must have a model to be added to a request")
       setOpenError(true)
       return false
-    } else if (stock.length !== 6 && equipmentList.length === 0) {
+    } else if (stock.length !== 6 || stock.match(lowerCaseLetters) || stock.match(upperCaseLetters) && equipmentList.length === 0) {
       setValidationMessage("Equipment must have a 6 digit stock number to be added to a request")
       setOpenError(true)
       return false
@@ -456,6 +462,8 @@ export default function AddRequestView() {
     } else {
       await pushEquipmentToRequest()
       await setRequestToFirestore()
+      setValidationMessage("Request successfully submitted")
+      setOpenSuccess(true)
     }
   }
 

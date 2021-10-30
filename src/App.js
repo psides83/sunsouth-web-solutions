@@ -16,6 +16,7 @@ import HomeSkeleton from './HomeSkeleton'
 import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
 import Completed from './Completed';
+import AddLoanerView from './AddLoanerView';
 
 const theme = createTheme({
   palette: {
@@ -73,7 +74,12 @@ function App() {
       <Router>
         <div className="app">
           <Switch>
-          <Route path="/completed">
+            <Route path="/add-loaner">
+              <Header />
+              <AddLoanerView />
+            </Route>
+
+            <Route path="/completed">
               <Header />
               <Completed />
             </Route>
