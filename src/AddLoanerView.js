@@ -146,7 +146,7 @@ export default function AddLoanerView() {
     
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
-    const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
+    const employee = userProfile?.firstName + ' ' + userProfile?.lastName
     // const changeLog = [{
     //   user: fullName,
     //   change: `request created`,
@@ -156,7 +156,7 @@ export default function AddLoanerView() {
     const firestoreLoaner = {
       id: id,
       timestamp: timestamp,
-      salesman: salesman,
+      employee: employee,
       status: "Out",
       statusTimestamp: "",
       dateOut: dateOut, 

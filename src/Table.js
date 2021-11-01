@@ -79,24 +79,31 @@ function EquipmentRow({item}) {
     <React.Fragment>
       <TableRow key={item.requestID} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
 
-        <TableCell  component="th" scope="row">
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField> : item.model}
+        <TableCell align="left" component="th" scope="row">
+          {isEditingEquipment ? <TextField variant="outlined" label="Model" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField> : item.model}
         </TableCell>
 
-        <TableCell>
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> : item.stock}
+        {
+          isEditingEquipment ?
+            <TableCell align="left">
+                <br/>
+                <p><TextField variant="outlined" label="Stock" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField></p>
+                <br/>
+                <p><small><TextField variant="outlined" label="Serial" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField></small></p>
+            </TableCell>
+          :
+            <TableCell align="left">
+                { item.stock }
+                <p><small>{ item.serial }</small></p>
+            </TableCell>
+        }
+
+        <TableCell align="left"> 
+          {isEditingEquipment ? <TextField variant="outlined" label="Work" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> : item.work}
         </TableCell>
 
-        <TableCell>
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> : item.serial }
-        </TableCell>
-
-        <TableCell> 
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> : item.work}
-        </TableCell>
-
-        <TableCell>
-          {isEditingEquipment ? <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> : item.notes}
+        <TableCell align="left">
+          {isEditingEquipment ? <TextField variant="outlined" label="Notes" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> : item.notes}
         </TableCell>
         
         <TableCell align="center">
@@ -196,15 +203,17 @@ function Row({request}) {
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
 
-      const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated to ${workOrder}`
+      const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
 
       const changeLogEntry = {
         user: fullName,
         change: workOrderStatus, 
         timestamp: moment().format("MMM-DD-yyyy hh:mmA")
       }
-  
+      
+      if (request.workOrder != workOrder) {
       request.changeLog.push(changeLogEntry)
+    }
 
       await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
       // sendWorkOrderEmail(workOrder)
@@ -329,21 +338,32 @@ function Row({request}) {
           </Tooltip>
         </TableCell>
 
-        <TableCell component="th" scope="row" >
-          {request.timestamp}
+        <TableCell align="left">
+          <strong className="model">
+            {equipment[0]?.model}
+          </strong>
+          <p>
+            <small>
+              {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
+            </small>
+          </p>
         </TableCell>
 
-        <TableCell align="left">
-          {request.salesman}
-        </TableCell>
-        
-        <TableCell align="left"><p className="model">{equipment[0]?.model}</p></TableCell>
+        <TableCell component="th" scope="row" >
+          <p>
+            {request.salesman}
+          </p>
+          <small>
+            {request.timestamp}
+          </small>
+        </TableCell>        
         
         <TableCell align="left">
           {isEditingWorkOrder 
           ? 
           <TextField 
             variant="outlined" 
+            label="Work Order"
             inputProps={{style: {fontSize: 14}}} 
             size="small" 
             onChange={e=> setWorkOrder(e.target.value)} 
@@ -359,10 +379,9 @@ function Row({request}) {
               {request.status}
             </Button>
           </Tooltip>
-        </TableCell>
-        
-        <TableCell align="left">
+          <p><small>
           {request.statusTimestamp}
+          </small></p>
         </TableCell>
         
         <TableCell align="center">
@@ -400,11 +419,11 @@ function Row({request}) {
                 <TableHead>
                   <TableRow key="subHeader">
                     <TableCell><strong>Model</strong></TableCell>
-                    <TableCell><strong>Stock #</strong></TableCell>
-                    <TableCell><strong>Serial #</strong></TableCell>
+                    <TableCell>
+                      <strong>ID #'s</strong>
+                    </TableCell>
                     <TableCell><strong>Work Require</strong></TableCell>
                     <TableCell><strong>Notes</strong></TableCell>
-                    <TableCell />
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -415,23 +434,23 @@ function Row({request}) {
                     <TableRow key={request.id} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
 
                       <TableCell  component="th" scope="row">
-                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField>
+                        <TextField variant="outlined" label="Model" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField>
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> 
+                        <TextField variant="outlined" label="Stock" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> 
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> 
+                        <TextField variant="outlined" label="Serial" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> 
                       </TableCell>
 
                       <TableCell> 
-                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> 
+                        <TextField variant="outlined" label="Work" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> 
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> 
+                        <TextField variant="outlined" label="notes" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> 
                       </TableCell>
 
                       <TableCell align="center">
@@ -523,17 +542,17 @@ export default function CollapsibleTable() {
   return (
     <React.Fragment>
       {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Requests"}</Typography>}
-      <TableContainer component={Paper}>
-        <Table  size="small"aria-label="collapsible table" sx={{ paddingTop: 2 }}>
+      <TableContainer component={Paper} style={{ borderRadius: 20 }}>
+        <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
           <TableHead>
             <TableRow key="header">
               <TableCell />
-              <TableCell style={{ fontSize: 18 }}><strong>Submitted</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }}><strong>Model</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }}><strong>WO#</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }}><strong>Status</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
+              {/* <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell> */}
+              <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
+              {/* <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell> */}
               <TableCell />
             </TableRow>
           </TableHead>

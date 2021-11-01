@@ -17,6 +17,7 @@ import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
 import Completed from './Completed';
 import AddLoanerView from './AddLoanerView';
+import LoanerManager from './LoanerManager';
 
 const theme = createTheme({
   palette: {
@@ -74,6 +75,12 @@ function App() {
       <Router>
         <div className="app">
           <Switch>
+
+            <Route path="/loaner-manager">
+              <Header />
+              <LoanerManager />
+            </Route>
+
             <Route path="/add-loaner">
               <Header />
               <AddLoanerView />

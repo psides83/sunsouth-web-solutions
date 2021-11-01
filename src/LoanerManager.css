@@ -1,0 +1,36 @@
+.edit-button-bg {
+    padding: 0px 5px 0 5px;
+    border: 1px solid #367c2b8f;
+    border-radius: 6px;
+}
+
+input {
+    border: none;
+}
+
+.home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* max-width: 1500px; */
+    /* background-color: lightgray; */
+    /* margin: 10px; */
+}
+
+.table {
+    /* min-width: 1000px; */
+    margin: 20px;
+}
+
+.inProgress {
+    margin-bottom: 50px;
+}
+
+.requested {
+    margin-bottom: 50px;
+
+}
+
+h3 {
+    margin: 15px;
+}
