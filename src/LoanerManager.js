@@ -27,7 +27,7 @@ import emailjs from 'emailjs-com'
 const useRowStyles = makeStyles({
     root: {
       '& > *': {
-        borderBottom: 'unset',
+        // borderBottom: 'unset',
       },
     },
   });
@@ -68,7 +68,7 @@ function Row({loaner}) {
     //     message: body
     //   }
   
-    //   // sends thw email:
+    //   // sends the email:
     //   emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
     // }
   
@@ -98,27 +98,24 @@ function Row({loaner}) {
     // }
   
     // Send email when request status is updated:
-    // const sendStatusEmail = async (status) => {
+    const sendStatusEmail = async () => {
   
-    //   const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    //   const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    //   const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    //   const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Status of ' + equipment[0]?.model + " ST# " +equipment[0]?.stock +  " has been updated by " + fullName + " to " + status + '.</p>' + '<body>';
+      const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+      const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+      const subject = `${loaner?.model}, ${loaner?.stock} has been returned`
+      const body = `<body><p>${timestamp}</p><br><p>${loaner.model} Stock Number ${loaner?.stock} on loan to ${loaner.customer} by ${fullName} has been returned.</p><body>`;
   
-    //   const templateParams = {
-    //     to: userProfile.email,
-    //     replyTo: userProfile.email, 
-    //     from: "PDI/Setup Requests", 
-    //     copy: userProfile.email,
-    //     subject: subject,
-    //     message: body
-    //   }
+      const templateParams = {
+        to: userProfile.email,
+        replyTo: userProfile.email, 
+        from: "Loaned Equipment Manager", 
+        copy: userProfile.email,
+        subject: subject,
+        message: body
+      }
   
-    //   await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-    //     .then(() => {
-    //       window.location.reload(false);
-    //     })
-    // }
+      await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    }
   
     // Handles updating the request status:
     const updateStatus = async () => {
@@ -153,7 +150,7 @@ function Row({loaner}) {
         merge: true 
       });
   
-    //   sendStatusEmail(status)
+      sendStatusEmail(status)
     }
   
     // Request row UI:
@@ -161,11 +158,11 @@ function Row({loaner}) {
       <React.Fragment>
         <TableRow key={loaner.id} className={classes.root}  >
 
-        <TableCell align="left">
+        {/* <TableCell align="left">
             <strong className="model">
               {loaner?.dateOut}
             </strong>
-          </TableCell>
+          </TableCell> */}
   
           <TableCell component="th" scope="row" >
             <p>
@@ -260,7 +257,7 @@ function LoanerManager() {
           customer: doc.data().customer,
           status: doc.data().status,
           statusTimestamp: doc.data().statusTimestamp,
-        //   changeLog: doc.data().changeLog
+          changeLog: doc.data().changeLog
         })))
     });
   }
@@ -280,7 +277,7 @@ function LoanerManager() {
             <HomeSkeleton /> 
             : 
             <div className="tableHead">
-              <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment"}</Typography>
+              <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment Manager"}</Typography>
               <Link className="link" to={"/add-loaner"}>
               <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
                 Add Loaner
@@ -292,14 +289,14 @@ function LoanerManager() {
               <Table  size="small" aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
                 <TableHead>
                   <TableRow key="header">
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                
+                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                 */}
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>Employee</strong></TableCell>
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>ID's</strong></TableCell>
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell>
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell>
                       <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-                      <TableCell />
+                      {/* <TableCell /> */}
                   </TableRow>
                 </TableHead>
                 <TableBody>

@@ -147,24 +147,24 @@ export default function AddLoanerView() {
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
     const employee = userProfile?.firstName + ' ' + userProfile?.lastName
-    // const changeLog = [{
-    //   user: fullName,
-    //   change: `request created`,
-    //   timestamp: timestamp
-    // }]
+    const changeLog = [{
+      user: employee,
+      change: `Loaner record created`,
+      timestamp: timestamp
+    }]
 
     const firestoreLoaner = {
       id: id,
       timestamp: timestamp,
       employee: employee,
       status: "Out",
-      statusTimestamp: "",
-      dateOut: dateOut, 
+      statusTimestamp: dateOut,
       model: model,
       stock: stock,
       serial: serial,
       hours: hours,
-      customer: customer
+      customer: customer,
+      changeLog: changeLog
     }
 
     const loanerRef = doc(db, 'branches',  userProfile.branch, 'loaners', firestoreLoaner.id);
@@ -239,13 +239,9 @@ export default function AddLoanerView() {
 
 //     if(equipmentList.length == 4) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fourth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[3].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[3].stock + '</p>' +  '<p>' + "Serial Number: " + equipmentList[3].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[3].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[3].notes + '</p>' + '</section>'};
 
-//     if(equipmentList.length == 5) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fifth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[4].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[4].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[4].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[4].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[4].notes + '</p>' + '</section>'};
 
-//     if(equipmentList.length == 6) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Sith Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[5].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[5].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[5].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[5].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[5].notes + '</p>' + '</section>'};
 
-//     if(equipmentList.length == 7) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Seventh Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[6].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[6].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[6].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[6].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[6].notes + '</p>' + '</section>'};
 
-//     if(equipmentList.length == 8) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Eihght Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[7].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[7].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[7].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[7].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[7].notes + '</p>' + '</section>'};
 
 //     body += '<body>';
 

@@ -95,7 +95,7 @@ function Header() {
 
                 <Link className="link" to={user && "/loaner-manager"}>
                     <div className="header-option">
-                        <span className="header-optionLineOne">Loaner</span>
+                        <span className="header-optionLineOne">Loaned Equipment</span>
                         <span className="header-optionLineTwo">Manager</span>
                     </div>
                 </Link>
