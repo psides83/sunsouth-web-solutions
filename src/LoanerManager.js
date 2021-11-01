@@ -2,29 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { useStateValue } from './StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
-import Collapse from '@material-ui/core/Collapse';
-import IconButton from '@material-ui/core/IconButton';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-// import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { collection, query, where, orderBy, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
+import { Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
-import './Table.css'
-import { useHistory } from 'react-router';
+import './LoanerManager.css'
+import { Link, useHistory } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -136,7 +129,7 @@ function Row({loaner}) {
           status = "Returned";
           break;
         default:
-          status = "Complete";
+          status = "Returned";
       }
   
       const changeLogEntry = {
@@ -279,31 +272,46 @@ function LoanerManager() {
 
   // Table UI:
   return (
-    <React.Fragment>
-      {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment"}</Typography>}
-      <TableContainer component={Paper} style={{ borderRadius: 20 }}>
-        <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
-          <TableHead>
-            <TableRow key="header">
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Employee</strong></TableCell>
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>ID's</strong></TableCell>
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell>
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell>
-                <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-                <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {loaners.map(loaner => (
-              <Row loaner={loaner} />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </React.Fragment>
-
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
+        <Box sx={{ width: '100%', mt: 5, mx:5 }}>
+          <Box sx={{ flexGrow: 1, my: 5 }}>
+          {loading 
+            ? 
+            <HomeSkeleton /> 
+            : 
+            <div className="tableHead">
+              <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment"}</Typography>
+              <Link className="link" to={"/add-loaner"}>
+              <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
+                Add Loaner
+              </Button>
+              </Link>
+            </div>
+          }
+            <TableContainer component={Paper} style={{ borderRadius: 20 }}>
+              <Table  size="small" aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
+                <TableHead>
+                  <TableRow key="header">
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Employee</strong></TableCell>
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>ID's</strong></TableCell>
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell>
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell>
+                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
+                      <TableCell />
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {loaners.map(loaner => (
+                    <Row loaner={loaner} />
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+        </Box>
+      </Box> 
   );
 }
 

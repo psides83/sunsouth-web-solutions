@@ -65,32 +65,38 @@ function Header() {
                 {/* Logo */}
             {/* </div> */}
 
+            {/* <div className="title">
+                <h1>
+                    SunSouth Auburn
+                </h1>
+            </div> */}
+
             <div className="header-nav">
-                <Link className="link" to={user && "/add-request"}>
+                {/* <Link className="link" to={user && "/add-request"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">Submit</span>
                         <span className="header-optionLineTwo">New Request</span>
                     </div>
-                </Link>
+                </Link> */}
 
                 <Link className="link" to={user && "/"}>
                     <div className="header-option">
-                        <span className="header-optionLineOne">View</span>
-                        <span className="header-optionLineTwo">Active</span>
+                        <span className="header-optionLineOne">Active</span>
+                        <span className="header-optionLineTwo">Setup Rquests</span>
                     </div>
                 </Link>
 
-                <Link className="link" to={user && "/completed"}>
+                {/* <Link className="link" to={user && "/completed"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">View</span>
                         <span className="header-optionLineTwo">Completed</span>
                     </div>
-                </Link>
+                </Link> */}
 
-                <Link className="link" to={user && "/add-loaner"}>
+                <Link className="link" to={user && "/loaner-manager"}>
                     <div className="header-option">
-                        <span className="header-optionLineOne">Add</span>
-                        <span className="header-optionLineTwo">Loaner</span>
+                        <span className="header-optionLineOne">Loaner</span>
+                        <span className="header-optionLineTwo">Manager</span>
                     </div>
                 </Link>
 

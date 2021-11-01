@@ -63,6 +63,14 @@
     margin: 5px;
     /* color: white; */
   }
+
+  .title {
+    flex-direction: row;
+    color: white;
+    /* text-decoration: none; */
+    padding: auto;
+    /* margin: 5px; */
+  }
   
   .link {
     flex-direction: row;

@@ -24,7 +24,7 @@ import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
-import { useHistory } from 'react-router';
+import { Link, useHistory } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -541,7 +541,19 @@ export default function CollapsibleTable() {
   // Table UI:
   return (
     <React.Fragment>
-      {loading ? <HomeSkeleton /> : <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Requests"}</Typography>}
+      {loading 
+        ? 
+        <HomeSkeleton /> 
+        : 
+        <div className="tableHead">
+          <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>Active Setup Requests</Typography>
+          <Link className="link" to={"/add-request"}>
+          <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
+            Submit Request
+          </Button>
+          </Link>
+        </div>
+      }
       <TableContainer component={Paper} style={{ borderRadius: 20 }}>
         <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
           <TableHead>
@@ -563,6 +575,11 @@ export default function CollapsibleTable() {
           </TableBody>
         </Table>
       </TableContainer>
+      <div className="completed-link">
+        <Link to={"/completed"}>
+           <h3>View completed requests</h3>
+        </Link>
+      </div>
     </React.Fragment>
 
   );

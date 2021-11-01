@@ -22,15 +22,15 @@ input {
     margin: 20px;
 }
 
-.inProgress {
-    margin-bottom: 50px;
-}
-
-.requested {
-    margin-bottom: 50px;
-
-}
-
 h3 {
     margin: 15px;
 }
+
+.tableHead {
+    display: flex;
+    justify-content: space-between;
+}
+
+.link {
+    text-decoration: none;
+  }
