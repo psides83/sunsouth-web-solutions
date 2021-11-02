@@ -76,28 +76,28 @@ export default function SignUp() {
   var [validationMessage, setValidationMessage] = useState('');
 
   const branches = [
-                    "Abbeville",
-                    "Andalusia",
-                    "Auburn",
-                    "Barnesville",
-                    "Blakely",
-                    "Brundidge",
-                    "Carrollton",
-                    "Carthage",
-                    "Clanton",
-                    "Columbus",
-                    "Demopolis",
-                    "Donalsonville",
-                    "Dothan",
-                    "Foley",
-                    "Gulfport",
-                    "Lucedale",
-                    "Meridian",
-                    "Mobile",
-                    "Montgomery",
-                    "Samson",
-                    "Tuscaloosa"
-                  ]
+    "Abbeville",
+    "Andalusia",
+    "Auburn",
+    "Barnesville",
+    "Blakely",
+    "Brundidge",
+    "Carrollton",
+    "Carthage",
+    "Clanton",
+    "Columbus",
+    "Demopolis",
+    "Donalsonville",
+    "Dothan",
+    "Foley",
+    "Gulfport",
+    "Lucedale",
+    "Meridian",
+    "Mobile",
+    "Montgomery",
+    "Samson",
+    "Tuscaloosa"
+  ]
 
   const register = (e) => {
 
@@ -122,8 +122,7 @@ export default function SignUp() {
           }
         })
         .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
+
           setValidationMessage("User already registered with this email address.")
           setOpenError(true)
         });
@@ -173,9 +172,9 @@ export default function SignUp() {
                 setOpenSuccess(true)
               })
               .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                // ..
+                
+                setValidationMessage("An email has been sent to reset your password")
+                setOpenSuccess(true)
               });
       }
 
@@ -277,7 +276,6 @@ export default function SignUp() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                type="password"
                 value={password} 
                 onChange={e=> setPassword(e.target.value)}
               />

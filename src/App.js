@@ -3,7 +3,7 @@ import './App.css';
 import Header from './Header';
 import Home from './Home';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 // import Login from './Login';
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from './firebase';
@@ -12,7 +12,6 @@ import SignIn from './SignIn';
 import SignUp from './SignUp';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import HomeSkeleton from './HomeSkeleton'
 import SpinnerProgress from './SpinnerProgress';
 import AddRequestView from './AddRequestView';
 import Completed from './Completed';
@@ -34,16 +33,8 @@ const theme = createTheme({
   },
 });
 
-function LoadView(user) {
-  return (
-    <div>
-      {user ? <Home /> : <SignIn />}
-    </div>
-  );
-};
-
 function App() {
-  const history = useHistory();
+  // const history = useHistory();
   const [{ user }, dispatch] = useStateValue();
   const [loading, setLoading] = useState(true);
 
@@ -67,50 +58,50 @@ function App() {
         })
       }  
     });
-  }, [])
+  }, [dispatch])
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline/>
-      <Router>
-        <div className="app">
-          <Switch>
+      <div className="app">
+        <Router>
+            <Switch>
 
-            <Route path="/loaner-manager">
-              <Header />
-              <LoanerManager />
-            </Route>
+              <Route path="/loaner-manager">
+                <Header />
+                <LoanerManager />
+              </Route>
 
-            <Route path="/add-loaner">
-              <Header />
-              <AddLoanerView />
-            </Route>
+              <Route path="/add-loaner">
+                <Header />
+                <AddLoanerView />
+              </Route>
 
-            <Route path="/completed">
-              <Header />
-              <Completed />
-            </Route>
+              <Route path="/completed">
+                <Header />
+                <Completed />
+              </Route>
 
-            <Route path="/add-request">
-              <Header />
-              <AddRequestView />
-            </Route>
+              <Route path="/add-request">
+                <Header />
+                <AddRequestView />
+              </Route>
 
-            <Route path="/signIn">
-              <SignIn />
-            </Route>
+              <Route path="/signIn">
+                <SignIn />
+              </Route>
 
-            <Route path="/signUp">
-              <SignUp />
-            </Route>
+              <Route path="/signUp">
+                <SignUp />
+              </Route>
 
-            <Route path="/">
-              <Header />
-              { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <SpinnerProgress /> }
-            </Route>
-          </Switch>
-        </div>
-      </Router>
+              <Route path="/">
+                {user && <Header />}
+                { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <SpinnerProgress /> }
+              </Route>
+            </Switch>
+        </Router>
+      </div>
     </ThemeProvider>
   );
 };

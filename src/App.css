@@ -1,3 +1,9 @@
 .app {
     background-color: #367c2b1a;
 }
+
+html, body {
+    width: '100vh';
+    height: '100vh';
+    background-color: #367c2b1a;
+  }
