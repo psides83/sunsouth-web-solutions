@@ -235,9 +235,9 @@ function Row({request}) {
     onSnapshot(equipmentQuery, (querySnapshot) => {
         setEquipment(querySnapshot.docs.map((doc) => ({
           requestID: doc.data().requestID,
-          model: doc.data().model,
+          model: doc.data().model.toString().toUpperCase(),
           stock: doc.data().stock,
-          serial: doc.data().serial,
+          serial: doc.data().serial.toString().toUpperCase(),
           work: doc.data().work,
           notes: doc.data().notes,
           changeLog: doc.data().changeLog
