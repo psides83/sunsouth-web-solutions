@@ -27,10 +27,6 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import emailjs from 'emailjs-com'
 
-// import Typography from '@material-ui/core/Typography';
-// import Stack from '@mui/material/Stack';
-// import transitions from '@material-ui/core/styles/transitions';
-
 // Styles:
 const useRowStyles = makeStyles({
   root: {
@@ -41,7 +37,7 @@ const useRowStyles = makeStyles({
 });
 
 // Equipment row view:
-function EquipmentRow({item}) {
+function EquipmentRow({request, item}) {
   const [{ userProfile }] = useStateValue();
   const classes = useRowStyles();
   var [model, setModel] = useState('')
@@ -49,10 +45,64 @@ function EquipmentRow({item}) {
   var [serial, setSerial] = useState('');
   var [work, setWork] = useState('');
   var [notes, setNotes] = useState('');
+  const [currentValues, setCurrentValues] = useState({});
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+
+  // Sends email when equipment is updated:
+  const sendEquipmentUpdateEmail = async () => {
+
+    // creates the paramaters for the email template:
+    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+    const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`
+    const body = `<body>
+                    <section>
+                      <p>${timestamp}</p>
+                      <p><strong>Work Order:</strong> ${request.workOrder}</p>
+                      <p><strong>Updated by:</strong> ${fullName}</p>
+                    </section>
+                    <hr style="height:3px;border-width:0;color:gray;background-color:gray">
+                    <section>
+                      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
+                        <dl style="margin-right: 75px;">
+                          <dt><h4>Previous</h4></dt>
+                          <dt><strong>Model:</strong> ${currentValues.model}</dt>
+                          <dt><strong>Stock Number:</strong> ${currentValues.stock}</dt>
+                          <dt><strong>Serial Number:</strong> ${currentValues.serial}</dt>
+                          <dt><strong>Work:</strong> ${currentValues.work}</dt>
+                          <dt><strong>Notes:</strong> ${currentValues.notes}</dt>
+                        </dl>
+                        
+                        <dl>
+                          <dt><h4>Updated</h4></dt>
+                          <dt><strong>Model:</strong> ${model}</dt>
+                          <dt><strong>Stock Number:</strong> ${stock}</dt>
+                          <dt><strong>Serial Number:</strong> ${serial}</dt>
+                          <dt><strong>Work:</strong> ${work}</dt>
+                          <dt><strong>Notes:</strong> ${notes}</dt>
+                        </dl>
+                      </div>
+                    </section>
+                  <body>`
+
+    // Sets paramaters for the email template:
+    const templateParams = {
+      to: userProfile.email,
+      replyTo: userProfile.email, 
+      from: "PDI/Setup Requests", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    }
+
+    // sends the email:
+    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+  }
   
   // Handles editing of the equipment values. either opens the edit textfields or sets new edits to firestore:
   const editEquipment = async () => {
+
     if (isEditingEquipment) { 
 
       await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
@@ -63,8 +113,17 @@ function EquipmentRow({item}) {
         notes: notes
       }, { merge: true })
 
+      sendEquipmentUpdateEmail()
       setIsEditingEquipment(false)
     } else { 
+
+      setCurrentValues({
+        model: item.model,
+        stock: item.stock,
+        serial: item.serial,
+        work: item.work,
+        notes: item.notes
+      })
 
       setModel(item.model)
       setStock(item.stock)
@@ -77,6 +136,7 @@ function EquipmentRow({item}) {
 
   // Equipment row UI:
   return (
+
     <React.Fragment>
       <TableRow 
         key={item.requestID} 
@@ -85,24 +145,24 @@ function EquipmentRow({item}) {
         sx={{ '& > *': { borderBottom: 'unset' } }}
       >
         
-        <TableCell align="left" component="th" scope="row">
-          {isEditingEquipment 
-            ? 
-            <TextField 
-              variant="outlined" 
-              label="Model" 
-              inputProps={{style: {fontSize: 14}}} 
-              style={{ fontSize: 18 }} 
-              size="small" 
-              onChange={e=> setModel(e.target.value.toUpperCase())} 
-              value={model}> 
-            </TextField> 
-            : 
-            item.model
-          }
+        <TableCell align="left" component="th" scope="row"> {
+          isEditingEquipment 
+          ? 
+          <TextField 
+            variant="outlined" 
+            label="Model" 
+            inputProps={{style: {fontSize: 14}}} 
+            style={{ fontSize: 18 }} 
+            size="small" 
+            onChange={e=> setModel(e.target.value.toUpperCase())} 
+            value={model}> 
+          </TextField> 
+          : 
+          item.model
+        }
         </TableCell>
 
-        {isEditingEquipment 
+        { isEditingEquipment 
           ?
           <TableCell align="left">
               <br/>
@@ -145,61 +205,59 @@ function EquipmentRow({item}) {
           </TableCell>
         }
 
-        <TableCell align="left"> 
-          {isEditingEquipment 
-            ? 
-            <TextField 
-              variant="outlined" 
-              label="Work" 
-              inputProps={{style: {fontSize: 14}}} 
-              style={{ fontSize: 18 }} 
-              size="small" 
-              onChange={e=> setWork(e.target.value)} 
-              value={work}>
-            </TextField> 
-            : 
-            item.work
-          }
+        <TableCell align="left">  {
+          isEditingEquipment 
+          ? 
+          <TextField 
+            variant="outlined" 
+            label="Work" 
+            inputProps={{style: {fontSize: 14}}} 
+            style={{ fontSize: 18 }} 
+            size="small" 
+            onChange={e=> setWork(e.target.value)} 
+            value={work}>
+          </TextField> 
+          : 
+          item.work
+        }
         </TableCell>
 
-        <TableCell align="left">
-          {isEditingEquipment 
-            ? 
-            <TextField 
-              variant="outlined" 
-              label="Notes" 
-              inputProps={{style: {fontSize: 14}}} 
-              style={{ fontSize: 18 }} 
-              size="small" 
-              onChange={e=> setNotes(e.target.value)} 
-              value={notes}>
-            </TextField> 
-            : 
-            item.notes
-          }
+        <TableCell align="left"> {
+          isEditingEquipment 
+          ? 
+          <TextField 
+            variant="outlined" 
+            label="Notes" 
+            inputProps={{style: {fontSize: 14}}} 
+            style={{ fontSize: 18 }} 
+            size="small" 
+            onChange={e=> setNotes(e.target.value)} 
+            value={notes}>
+          </TextField> 
+          : 
+          item.notes
+        }
         </TableCell>
         
         <TableCell align="center">
           <IconButton 
             color="success" 
             style={{ fontSize: 20 }}
-            onClick={editEquipment}>
-              { 
-                  isEditingEquipment 
-                  ? 
-                  <Tooltip title="Save">
-                    <CheckIcon 
-                    color="success" 
-                    style={{ fontSize: 18 }}/> 
-                  </Tooltip>
-                  : 
-                  <Tooltip title="Edit">
-                    <EditRoundedIcon 
-                    color="success" 
-                    style={{ fontSize: 18 }}/> 
-                  </Tooltip>
-
-              }
+            onClick={editEquipment}> { 
+              isEditingEquipment 
+              ? 
+              <Tooltip title="Save">
+                <CheckIcon 
+                color="success" 
+                style={{ fontSize: 18 }}/> 
+              </Tooltip>
+              : 
+              <Tooltip title="Edit">
+                <EditRoundedIcon 
+                color="success" 
+                style={{ fontSize: 18 }}/> 
+              </Tooltip>
+            }
           </IconButton>
         </TableCell>
       </TableRow>
@@ -211,9 +269,7 @@ function EquipmentRow({item}) {
 function Row({request}) {
   const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
-  // const [activeRequest, setActiveRequest] = useState({});
   const classes = useRowStyles();
-  // const history = useHistory();
   var [workOrder, setWorkOrder] = useState('');
   var [equipment, setEquipment] = useState([]);
   var [model, setModel] = useState('')
@@ -229,7 +285,6 @@ function Row({request}) {
   const fetchEquipment = useCallback( ()=> {
     const equipmentQuery = query(
         collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
-        // where('requestID', '==', request.id)
     );
     
     onSnapshot(equipmentQuery, (querySnapshot) => {
@@ -363,12 +418,15 @@ function Row({request}) {
     var status = request.status
 
     switch (status) {
+
       case "Requested":
         status = "In Progress";
         break;
+
       case "In Progress":
         status = "Complete";
         break;
+
       default:
         status = "Complete";
     }
@@ -400,7 +458,7 @@ function Row({request}) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.id} className={classes.root}  >
+      <TableRow key={request.id} className={classes.root}>
 
         <TableCell>
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
@@ -433,8 +491,8 @@ function Row({request}) {
           </small>
         </TableCell>        
         
-        <TableCell align="left">
-          {isEditingWorkOrder 
+        <TableCell align="left"> {
+          isEditingWorkOrder 
           ? 
           <TextField 
             variant="outlined" 
@@ -445,39 +503,49 @@ function Row({request}) {
             value={workOrder}> 
           </TextField> 
           : 
-          request.workOrder}
+          request.workOrder
+        }
         </TableCell>
         
         <TableCell align="left">
           <Tooltip title="Update Status">
-            <Button color="success" size="small" variant={request.status === 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
-              {request.status}
+            <Button 
+              color="success" 
+              size="small" 
+              variant={request.status === 'In Progress' ? "contained" : "outlined"} 
+              onClick={updateStatus}
+            > {
+              request.status
+            }
             </Button>
           </Tooltip>
-          <p><small>
-          {request.statusTimestamp}
-          </small></p>
+          <p>
+            <small>
+              {request.statusTimestamp}
+            </small>
+          </p>
         </TableCell>
         
         <TableCell align="center">
           <IconButton 
             color="success" 
             className={classes.icon}
-            onClick={editWorkOrder}>
-               {isEditingWorkOrder 
-                  ? 
-                  <CheckIcon 
+            onClick={editWorkOrder}> {
+              isEditingWorkOrder 
+              ? 
+              <CheckIcon 
+                color="success" 
+                style={{ fontSize: 16 }}/> 
+              : 
+              <div className="edit-button-bg">  
+                <Tooltip title="Edit">
+                  <EditRoundedIcon 
                     color="success" 
-                    style={{ fontSize: 16 }}/> 
-                  : 
-                  <div className="edit-button-bg">  
-                    <Tooltip title="Edit">
-                      <EditRoundedIcon 
-                        color="success" 
-                        style={{ fontSize: 16 }}/>
-                    </Tooltip>
-                  </div>
-                }
+                    style={{ fontSize: 16 }}
+                  />
+                </Tooltip>
+              </div>
+            }
           </IconButton>
         </TableCell>
 
@@ -487,78 +555,142 @@ function Row({request}) {
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
-              {/* <Typography variant="h6" gutterBottom component="div">
-                Details
-              </Typography> */}
               <Table size="small" aria-label="equipment">
                 <TableHead>
                   <TableRow key="subHeader">
-                    <TableCell><strong>Model</strong></TableCell>
+
                     <TableCell>
-                      <strong>ID #'s</strong>
+                      <strong>
+                        Model
+                      </strong>
                     </TableCell>
-                    <TableCell><strong>Work Require</strong></TableCell>
-                    <TableCell><strong>Notes</strong></TableCell>
+
+                    <TableCell>
+                      <strong>
+                        ID #'s
+                      </strong>
+                    </TableCell>
+
+                    <TableCell>
+                      <strong>
+                        Work Require
+                      </strong>
+                    </TableCell>
+
+                    <TableCell>
+                      <strong>
+                        Notes
+                      </strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
-                <TableBody>
-                  {equipment.map((item) => (
-                    <EquipmentRow key={item?.stock} item={item} />
-                  ))}
-                  { isShowingAddEquipment ?  
-                    <TableRow key={request.id} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+                <TableBody> { 
+                  equipment.map((item) => (
+                    <EquipmentRow key={item?.stock} request={request} item={item} />
+                  ))
+                }
+                  { isShowingAddEquipment 
+                    ?  
+                    <TableRow 
+                      key={request.id} 
+                      style={{ fontSize: 18 }} 
+                      className={classes.root} 
+                      sx={{ '& > *': { borderBottom: 'unset' } }}
+                    >
 
                       <TableCell  component="th" scope="row">
-                        <TextField variant="outlined" label="Model" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField>
+                        <TextField v
+                          ariant="outlined" 
+                          label="Model" 
+                          inputProps={{style: {fontSize: 14}}} 
+                          style={{ fontSize: 18 }} size="small" 
+                          onChange={e=> setModel(e.target.value.toUpperCase())} 
+                          value={model}>
+                        </TextField>
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" label="Stock" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField> 
+                        <TextField 
+                          variant="outlined" 
+                          label="Stock" 
+                          inputProps={{style: {fontSize: 14}}} 
+                          style={{ fontSize: 18 }} 
+                          size="small" 
+                          onChange={e=> setStock(e.target.value)} 
+                          value={stock}
+                        >
+                        </TextField> 
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" label="Serial" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField> 
+                        <TextField 
+                          variant="outlined"
+                          label="Serial"
+                          inputProps={{style: {fontSize: 14}}} 
+                          style={{ fontSize: 18 }} 
+                          size="small" 
+                          onChange={e=> setSerial(e.target.value.toUpperCase())} 
+                       
+                        >
+                        </TextField> 
                       </TableCell>
 
                       <TableCell> 
-                        <TextField variant="outlined" label="Work" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> 
+                        <TextField 
+                          variant="outlined" 
+                          label="Work" 
+                          inputProps={{style: {fontSize: 14}}} 
+                          style={{ fontSize: 18 }} 
+                          size="small" 
+                          onChange={e=> setWork(e.target.value)} 
+                          value={work}
+                        > 
+                        </TextField> 
                       </TableCell>
 
                       <TableCell>
-                        <TextField variant="outlined" label="notes" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> 
+                        <TextField 
+                          variant="outlined" 
+                          label="Notes" 
+                          inputProps={{style: {fontSize: 14}}} 
+                          style={{ fontSize: 18 }} 
+                          size="small" 
+                          onChange={e=> setNotes(e.target.value)} 
+                          value={notes}
+                        >
+                        </TextField> 
                       </TableCell>
 
                       <TableCell align="center">
                         <IconButton 
                           color="success" 
                           style={{ fontSize: 20 }}
-                          onClick={addEquipment}>
-                            { model !== '' && stock !== '' && serial !== '' && work !== '' 
-                              ?
-                              <Tooltip title="Save">
-                                <CheckIcon 
-                                  color="success" 
-                                  style={{ fontSize: 18 }}
-                                  onClick={addEquipment}
-                                />
-                              </Tooltip>
-                              :
-                              <Tooltip title="Close">
-                                <CloseIcon 
-                                  color="success" 
-                                  style={{ fontSize: 18 }}
-                                  onClick={addEquipment}
-                                />
-                              </Tooltip>
-                            }   
+                          onClick={addEquipment}> { 
+                            model !== '' && stock !== '' && serial !== '' && work !== '' 
+                            ?
+                            <Tooltip title="Save">
+                              <CheckIcon 
+                                color="success" 
+                                style={{ fontSize: 18 }}
+                                onClick={addEquipment}
+                              />
+                            </Tooltip>
+                            :
+                            <Tooltip title="Close">
+                              <CloseIcon 
+                                color="success" 
+                                style={{ fontSize: 18 }}
+                                onClick={addEquipment}
+                              />
+                            </Tooltip>
+                          }   
                         </IconButton>
                       </TableCell>
                     </TableRow>
                     :
                     null
                   }
-                </TableBody>
-                { 
+                </TableBody> { 
                   !isShowingAddEquipment 
                   ?
                   <TableFooter>
@@ -616,19 +748,34 @@ export default function CollapsibleTable() {
   // Table UI:
   return (
     <React.Fragment>
-      {loading 
+      
+      { loading 
         ? 
         <HomeSkeleton /> 
         : 
         <div className="tableHead">
-          <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>Active Setup Requests</Typography>
+          <Typography 
+            variant="h4" 
+            color='primary' 
+            style={{ marginLeft: 25, marginBottom: 10 }}
+          >
+            Active Setup Requests
+          </Typography>
+          
           <Link className="link" to={"/add-request"}>
-          <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
-            Submit Request
-          </Button>
+            <Button 
+              color="success" 
+              size="small" 
+              variant="outlined" 
+              startIcon={<AddIcon />} 
+              sx={{ mx: 4, mb: 1, mt: 1 }}
+            >
+              Submit Request
+            </Button>
           </Link>
         </div>
       }
+
       <TableContainer component={Paper} style={{ borderRadius: 20 }}>
         <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
           <TableHead>
@@ -636,10 +783,8 @@ export default function CollapsibleTable() {
               <TableCell />
               <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
               <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
-              {/* <TableCell style={{ fontSize: 18 }}><strong>Salesman</strong></TableCell> */}
               <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
               <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-              {/* <TableCell style={{ fontSize: 18 }}><strong>Updated</strong></TableCell> */}
               <TableCell />
             </TableRow>
           </TableHead>
@@ -656,6 +801,5 @@ export default function CollapsibleTable() {
         </Link>
       </div>
     </React.Fragment>
-
   );
 };
