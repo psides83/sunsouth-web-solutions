@@ -1,29 +1,22 @@
 //Imports
-import React, { useState, useEffect } from 'react'
-import { useHistory } from 'react-router-dom';
+import React, { useState } from 'react'
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { auth, db } from './firebase';
+import { db } from './firebase';
 import './SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import { FormGroup } from '@material-ui/core';
-import { Alert, Stack } from '@mui/material';
+import { Alert } from '@mui/material';
 import './AddRequest.css'
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { useStateValue } from './StateProvider';
 import moment from 'moment';
-import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { styled } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
+// import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import emailjs from 'emailjs-com';
 
@@ -90,7 +83,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <a target="_blank" href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
+      <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
         TheWayMedia Web Solutions
       </a>{' '}
       {new Date().getFullYear()}
@@ -99,15 +92,14 @@ function Copyright() {
   );
 };
 
-const ListItem = styled('li')(({ theme }) => ({
-  margin: theme.spacing(0.5),
-}));
+// const ListItem = styled('li')(({ theme }) => ({
+//   margin: theme.spacing(0.5),
+// }));
 
 
 export default function AddLoanerView() {  
   //#region State Properties
   const classes = useStyles();
-  const history = useHistory();
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -116,11 +108,9 @@ export default function AddLoanerView() {
   var [serial, setSerial] = useState('');
   var [hours, setHours] = useState([]);
   var [dateOut, setDateOut] = useState('');
-  var [other, setOther] = useState('');
   var [customer, setCustomer] = useState('');
-  var [otherDisabled, setOtherState] = useState(true);
   var [validationMessage, setValidationMessage] = useState('');
-  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+  const employee = userProfile?.firstName + ' ' + userProfile?.lastName
   //#endregion
 
   // Handle closing of the alerts.
@@ -133,20 +123,11 @@ export default function AddLoanerView() {
     setOpenError(false);
   };
 
-  // Handle change of date picker.
-  const handleChange = (newValue) => {
-    setDateOut(newValue);
-  };
-
-  // Dynamic heading for the form.
-  const heading = ""
-
   // Add the loaner to the firestore "loaners" collection. 
   const setLoanerToFirestore = async () => {
     
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
-    const employee = userProfile?.firstName + ' ' + userProfile?.lastName
     const changeLog = [{
       user: employee,
       change: `Loaner record created`,
@@ -171,7 +152,7 @@ export default function AddLoanerView() {
 
     await setDoc(loanerRef, firestoreLoaner, { merge: true });
 
-    // sendEmail(timestamp)
+    sendEmail()
     resetForm()
   } 
 
@@ -193,7 +174,7 @@ export default function AddLoanerView() {
 
     const lowerCaseLetters = /[a-z]/g;
     const upperCaseLetters = /[A-Z]/g;
-    if (model == '') {
+    if (model === '') {
         setValidationMessage("Loaner must have a model")
         setOpenError(true)
         return false
@@ -201,19 +182,19 @@ export default function AddLoanerView() {
         setValidationMessage("Loaner must have a 6 digit stock number")
         setOpenError(true)
         return false
-    } else if (serial == '') {
+    } else if (serial === '') {
         setValidationMessage("Loaner must have a serial number")
         setOpenError(true)
         return false
-    } else if (dateOut == '') {
+    } else if (dateOut === '') {
         setValidationMessage("Loaner must have a date loaned")
         setOpenError(true)
         return false
-    } else if (hours == '') {
+    } else if (hours === '') {
         setValidationMessage("Loaner must have hours")
         setOpenError(true)
         return false
-    } else if (customer == '') {
+    } else if (customer === '') {
         setValidationMessage("Loaner must have a customer")
         setOpenError(true)
         return false
@@ -224,38 +205,35 @@ export default function AddLoanerView() {
     }
   }
 
-//   const sendEmail = (timestamp) => {
+  // Send email when loaner is logged.
+  const sendEmail = () => {
 
-//     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-//     const subject = fullName + ', ' + equipmentList[0].model + ', ' + equipmentList[0].stock + ', ' + equipmentList[0].serial
+    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+    const subject = `${model}, ${stock} has been loaned out`
 
-//     var body = '<body>';
-
-//     body += '<section>' + '<p>' + timestamp + '</p>' + '<p>' + fullName + " is requesting work to be done on the following equipment." + '</p>' + '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<h3>' + "First Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[0].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[0].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[0].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[0].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[0].notes + '</p>' + '</section>';
-    
-//     if(equipmentList.length == 2) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Second Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[1].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[1].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[1].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[1].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[1].notes + '</p>' + '</section>'};
-
-//     if(equipmentList.length == 3) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Third Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[2].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[2].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[2].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[2].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[2].notes + '</p>' + '</section>'};
-
-//     if(equipmentList.length == 4) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fourth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[3].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[3].stock + '</p>' +  '<p>' + "Serial Number: " + equipmentList[3].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[3].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[3].notes + '</p>' + '</section>'};
-
-
-
+    const body = `<body>
+                    <h2>Equipment Loaned Out</h2>
+                    <dl>
+                      <dt>Date Loaned: ${dateOut}</dt>
+                      <dt>model: ${model}</dt>
+                      <dt>Stock Number: ${stock}</dt>
+                      <dt>Customer: ${customer}</dt>
+                      <dt>Loaning Employee: ${employee}</dt>
+                    </dl>
+                  </body>`
 
 
-//     body += '<body>';
+    const templateParams = {
+      to: userProfile.email,
+      replyTo: userProfile.email, 
+      from: "Loaned Equipment Manager", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    }
 
-//     const templateParams = {
-//       to: "psides83@hotmail.com",
-//       replyTo: userProfile.email, 
-//       from: "PDI/Setup Requests", 
-//       copy: userProfile.email,
-//       subject: subject,
-//       message: body
-//     }
-
-//     emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-//   }
+    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+  }
 
   // UI view of the submission form
   return (
@@ -367,7 +345,6 @@ export default function AddLoanerView() {
                   required
                   id="serial"
                   label="Serial"
-                  labelId="sseial"
                   onChange={e=> setSerial(e.target.value.toUpperCase())}
                   value={serial}
                 >

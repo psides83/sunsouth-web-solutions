@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useStateValue } from './StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -9,7 +9,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import { collection, query, where, orderBy, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import Button from '@mui/material/Button';
 import { Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
@@ -34,17 +34,15 @@ const useRowStyles = makeStyles({
 
 // Loaner row view:
 function Row({loaner}) {
-    const [{ userProfile }, dispatch] = useStateValue();
-    const [open, setOpen] = useState(false);
-    const [activeRequest, setActiveRequest] = useState({});
+    const [{ userProfile }] = useStateValue();
     const classes = useRowStyles();
-    const history = useHistory();
-    var [dateOut, setDateOut] = useState('');
-    var [model, setModel] = useState('')
-    var [stock, setStock] = useState('');
-    var [serial, setSerial] = useState('');
-    var [hours, setWork] = useState('');
-    var [customer, setNotes] = useState('');
+    // // const history = useHistory();
+    // var [dateOut, setDateOut] = useState('');
+    // var [model, setModel] = useState('')
+    // var [stock, setStock] = useState('');
+    // var [serial, setSerial] = useState('');
+    // var [hours, setWork] = useState('');
+    // var [customer, setNotes] = useState('');
     // var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
     // var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
     const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
@@ -103,7 +101,16 @@ function Row({loaner}) {
       const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
       const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
       const subject = `${loaner?.model}, ${loaner?.stock} has been returned`
-      const body = `<body><p>${timestamp}</p><br><p>${loaner.model} Stock Number ${loaner?.stock} on loan to ${loaner.customer} by ${fullName} has been returned.</p><body>`;
+      const body = `<body>
+                      <h2>Loaned Equipment Returned</h2>
+                      <dl>
+                        <dt>Date Returned: ${timestamp}</dt>
+                        <dt>Model: ${loaner.model}</dt>
+                        <dt>Stock Number: ${loaner?.stock}</dt>
+                        <dt>Customer: ${loaner.customer}</dt>
+                        <dt>Loaning Employee: ${fullName}</dt>
+                      </dl>
+                    </body>`;
   
       const templateParams = {
         to: userProfile.email,
@@ -196,7 +203,7 @@ function Row({loaner}) {
           
           <TableCell align="left">
             <Tooltip title="Update Status">
-              <Button color="success" size="small" variant={loaner.status == 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
+              <Button color="success" size="small" variant={loaner.status === 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
                 {loaner.status}
               </Button>
             </Tooltip>
@@ -232,40 +239,44 @@ function Row({loaner}) {
     );
   }
 
-function LoanerManager() {
-    const [{ userProfile }] = useStateValue();
+  // Whole table view:
+  export default function LoanerManager() {
+  const [{ userProfile }] = useStateValue();
   const [loaners, setLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch loanerss from firestore:
-  const fetch = async ()=> {
-    const loanersQuery = query(
-        collection(db, 'branches', userProfile?.branch, 'loaners'),
-        where('status', '!=', 'Returned')
-    );
-    
-    onSnapshot(loanersQuery, (querySnapshot) => {
-        setLoaners(querySnapshot.docs.map((doc) => ({
-          id: doc.data().id,
-          dateOut: doc.data().dateOut,
-          employee: doc.data().employee,
-          timestamp: doc.data().timestamp,
-          model: doc.data().model,
-          stock: doc.data().stock,
-          serial: doc.data().serial,
-          hours: doc.data().hours,
-          customer: doc.data().customer,
-          status: doc.data().status,
-          statusTimestamp: doc.data().statusTimestamp,
-          changeLog: doc.data().changeLog
-        })))
-    });
-  }
+  const fetch = useCallback( async ()=> {
+    console.log(userProfile?.branch)
+    if(userProfile) {
+      const loanersQuery = query(
+          collection(db, 'branches', userProfile?.branch, 'loaners'),
+          where('status', '!=', 'Returned')
+      );
+      
+      await onSnapshot(loanersQuery, (querySnapshot) => {
+          setLoaners(querySnapshot.docs.map((doc) => ({
+            id: doc.data().id,
+            dateOut: doc.data().dateOut,
+            employee: doc.data().employee,
+            timestamp: doc.data().timestamp,
+            model: doc.data().model,
+            stock: doc.data().stock,
+            serial: doc.data().serial,
+            hours: doc.data().hours,
+            customer: doc.data().customer,
+            status: doc.data().status,
+            statusTimestamp: doc.data().statusTimestamp,
+            changeLog: doc.data().changeLog
+          })))
+      });
+    }
+  }, [userProfile?.branch])
 
   useEffect(() => {
     fetch()
-      .then(setTimeout( function() { setLoading(false) }, 1000)) 
-  }, [])
+    setTimeout( function() { setLoading(false) }, 1000)
+  }, [fetch])
 
   // Table UI:
   return (
@@ -311,5 +322,3 @@ function LoanerManager() {
       </Box> 
   );
 }
-
-export default LoanerManager
