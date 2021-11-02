@@ -116,7 +116,7 @@ export default function SignIn() {
 
   useEffect(() => {
     setLoading(false)
-  })
+  }, [setLoading])
 
   return (
     <Container component="main" maxWidth="xs">

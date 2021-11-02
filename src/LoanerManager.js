@@ -271,7 +271,7 @@ function Row({loaner}) {
           })))
       });
     }
-  }, [userProfile?.branch])
+  }, [userProfile])
 
   useEffect(() => {
     fetch()

@@ -26,18 +26,6 @@ import Chip from '@mui/material/Chip';
 import Snackbar from '@material-ui/core/Snackbar';
 import emailjs from 'emailjs-com';
 
-//#region Unused imports
-// import Paper from '@mui/material/Paper';
-// import Avatar from '@material-ui/core/Avatar';
-// import Link from '@material-ui/core/Link';
-// import { createUserWithEmailAndPassword } from "firebase/auth";
-// import InputLabel from '@mui/material/InputLabel';
-// import MenuItem from '@mui/material/MenuItem';
-// import FormControl from '@mui/material/FormControl';
-// import Select from '@mui/material/Select';
-// import OutlinedInput from '@mui/material/OutlinedInput';
-//#endregion
-
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({
   paper: {
