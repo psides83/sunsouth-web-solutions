@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useStateValue } from './StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
@@ -10,25 +10,26 @@ import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
-// import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import { collection, query, where, orderBy, limit, onSnapshot, setDoc, doc } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import transitions from '@material-ui/core/styles/transitions';
-import { Avatar, Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
+import { TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
 import './Table.css'
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import emailjs from 'emailjs-com'
+
+// import Typography from '@material-ui/core/Typography';
+// import Stack from '@mui/material/Stack';
+// import transitions from '@material-ui/core/styles/transitions';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -41,7 +42,7 @@ const useRowStyles = makeStyles({
 
 // Equipment row view:
 function EquipmentRow({item}) {
-  const [{ userProfile }, dispatch] = useStateValue();
+  const [{ userProfile }] = useStateValue();
   const classes = useRowStyles();
   var [model, setModel] = useState('')
   var [stock, setStock] = useState('');
@@ -77,33 +78,105 @@ function EquipmentRow({item}) {
   // Equipment row UI:
   return (
     <React.Fragment>
-      <TableRow key={item.requestID} style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
-
+      <TableRow 
+        key={item.requestID} 
+        style={{ fontSize: 18 }} 
+        className={classes.root} 
+        sx={{ '& > *': { borderBottom: 'unset' } }}
+      >
+        
         <TableCell align="left" component="th" scope="row">
-          {isEditingEquipment ? <TextField variant="outlined" label="Model" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setModel(e.target.value.toUpperCase())} value={model}> </TextField> : item.model}
+          {isEditingEquipment 
+            ? 
+            <TextField 
+              variant="outlined" 
+              label="Model" 
+              inputProps={{style: {fontSize: 14}}} 
+              style={{ fontSize: 18 }} 
+              size="small" 
+              onChange={e=> setModel(e.target.value.toUpperCase())} 
+              value={model}> 
+            </TextField> 
+            : 
+            item.model
+          }
         </TableCell>
 
-        {
-          isEditingEquipment ?
-            <TableCell align="left">
-                <br/>
-                <p><TextField variant="outlined" label="Stock" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setStock(e.target.value)} value={stock}> </TextField></p>
-                <br/>
-                <p><small><TextField variant="outlined" label="Serial" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setSerial(e.target.value.toUpperCase())} value={serial}> </TextField></small></p>
-            </TableCell>
+        {isEditingEquipment 
+          ?
+          <TableCell align="left">
+              <br/>
+              <p>
+                <TextField 
+                  variant="outlined" 
+                  label="Stock" 
+                  inputProps={{style: {fontSize: 14}}} 
+                  style={{ fontSize: 18 }} 
+                  size="small" 
+                  onChange={e=> setStock(e.target.value)} 
+                  value={stock}>
+                </TextField>
+              </p>
+              <br/>
+              <p>
+                <small>
+                  <TextField 
+                    variant="outlined" 
+                    label="Serial" 
+                    inputProps={{style: {fontSize: 14}}} 
+                    style={{ fontSize: 18 }} 
+                    size="small" 
+                    onChange={e=> setSerial(e.target.value.toUpperCase())} 
+                    value={serial}>
+                  </TextField>
+                </small>
+              </p>
+          </TableCell>
           :
-            <TableCell align="left">
-                { item.stock }
-                <p><small>{ item.serial }</small></p>
-            </TableCell>
+          <TableCell align="left">
+            
+              { item.stock }
+
+              <p>
+                <small>
+                  { item.serial }
+                </small>
+              </p>
+          </TableCell>
         }
 
         <TableCell align="left"> 
-          {isEditingEquipment ? <TextField variant="outlined" label="Work" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setWork(e.target.value)} value={work}> </TextField> : item.work}
+          {isEditingEquipment 
+            ? 
+            <TextField 
+              variant="outlined" 
+              label="Work" 
+              inputProps={{style: {fontSize: 14}}} 
+              style={{ fontSize: 18 }} 
+              size="small" 
+              onChange={e=> setWork(e.target.value)} 
+              value={work}>
+            </TextField> 
+            : 
+            item.work
+          }
         </TableCell>
 
         <TableCell align="left">
-          {isEditingEquipment ? <TextField variant="outlined" label="Notes" inputProps={{style: {fontSize: 14}}} style={{ fontSize: 18 }} size="small" onChange={e=> setNotes(e.target.value)} value={notes}> </TextField> : item.notes}
+          {isEditingEquipment 
+            ? 
+            <TextField 
+              variant="outlined" 
+              label="Notes" 
+              inputProps={{style: {fontSize: 14}}} 
+              style={{ fontSize: 18 }} 
+              size="small" 
+              onChange={e=> setNotes(e.target.value)} 
+              value={notes}>
+            </TextField> 
+            : 
+            item.notes
+          }
         </TableCell>
         
         <TableCell align="center">
@@ -136,11 +209,11 @@ function EquipmentRow({item}) {
 
 // Request row view:
 function Row({request}) {
-  const [{ userProfile }, dispatch] = useStateValue();
+  const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
-  const [activeRequest, setActiveRequest] = useState({});
+  // const [activeRequest, setActiveRequest] = useState({});
   const classes = useRowStyles();
-  const history = useHistory();
+  // const history = useHistory();
   var [workOrder, setWorkOrder] = useState('');
   var [equipment, setEquipment] = useState([]);
   var [model, setModel] = useState('')
@@ -153,7 +226,7 @@ function Row({request}) {
   const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
 
   // Fetches equipment from firestore:
-  const fetchEquipment = async ()=> {
+  const fetchEquipment = useCallback( ()=> {
     const equipmentQuery = query(
         collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
         // where('requestID', '==', request.id)
@@ -170,11 +243,11 @@ function Row({request}) {
           changeLog: doc.data().changeLog
         })))
     });
-  } 
+  }, [request.id, userProfile.branch])
 
   useEffect(() => {
     fetchEquipment()
-  }, [])
+  }, [fetchEquipment])
 
   // Sends email when work order number is added or updated:
   const sendWorkOrderEmail = (workOrder) => {
@@ -183,7 +256,10 @@ function Row({request}) {
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated by " + fullName + " to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
+    const body = `<body>
+                    <p>${timestamp}</p><br>
+                    <p>Work order # ${workOrder} has been added or updated by ${fullName} to the request on ${model} ${equipment[0]?.model}, ST# ${equipment[0]?.stock}.</p>
+                  <body>`
 
     // Sets paramaters for the email template:
     const templateParams = {
@@ -203,7 +279,7 @@ function Row({request}) {
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
 
-      const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
+      const workOrderStatus = request.workOrder === '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
 
       const changeLogEntry = {
         user: fullName,
@@ -211,12 +287,12 @@ function Row({request}) {
         timestamp: moment().format("MMM-DD-yyyy hh:mmA")
       }
       
-      if (request.workOrder != workOrder) {
+      if (request.workOrder !== workOrder) {
       request.changeLog.push(changeLogEntry)
     }
 
       await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-      // sendWorkOrderEmail(workOrder)
+      sendWorkOrderEmail(workOrder)
       setIsEditingWorkOrder(false)
     } else { 
       setWorkOrder(request.workOrder)
@@ -229,7 +305,7 @@ function Row({request}) {
      
     if(isShowingAddEquipment) {
 
-      if(model != '' && stock != '' && serial != '' && work != '') {
+      if(model !== '' && stock !== '' && serial !== '' && work !== '') {
         const equipment = {
 
           requestID: request.id,
@@ -250,7 +326,6 @@ function Row({request}) {
         setSerial('')
         setWork('')
         setNotes('')
-        // window.location.reload(false);
       } else {
         setIsShowingAddEquipment(false)
       }
@@ -266,7 +341,10 @@ function Row({request}) {
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Status of ' + equipment[0]?.model + " ST# " +equipment[0]?.stock +  " has been updated by " + fullName + " to " + status + '.</p>' + '<body>';
+    const body = `<body>
+                    <p>${timestamp}</p><br> 
+                    <p>The status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
+                  <body>`
 
     const templateParams = {
       to: userProfile.email,
@@ -278,9 +356,6 @@ function Row({request}) {
     }
 
     await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-      .then(() => {
-        window.location.reload(false);
-      })
   }
 
   // Handles updating the request status:
@@ -375,7 +450,7 @@ function Row({request}) {
         
         <TableCell align="left">
           <Tooltip title="Update Status">
-            <Button color="success" size="small" variant={request.status == 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
+            <Button color="success" size="small" variant={request.status === 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
               {request.status}
             </Button>
           </Tooltip>
@@ -458,7 +533,7 @@ function Row({request}) {
                           color="success" 
                           style={{ fontSize: 20 }}
                           onClick={addEquipment}>
-                            { model != '' && stock != '' && serial != '' && work != '' 
+                            { model !== '' && stock !== '' && serial !== '' && work !== '' 
                               ?
                               <Tooltip title="Save">
                                 <CheckIcon 
@@ -514,7 +589,7 @@ export default function CollapsibleTable() {
   const [loading, setLoading] = useState(true);
 
   // Fetch requests from firestore:
-  const fetch = async ()=> {
+  const fetch = useCallback( async ()=> {
     const requestsQuery = query(
         collection(db, 'branches', userProfile?.branch, 'requests'),
         where('status', '!=', 'Completed')
@@ -531,12 +606,12 @@ export default function CollapsibleTable() {
           changeLog: doc.data().changeLog
         })))
     });
-  }
+  }, [userProfile?.branch])
 
   useEffect(() => {
     fetch()
-      .then(setTimeout( function() { setLoading(false) }, 1000)) 
-  }, [])
+    setTimeout( function() { setLoading(false) }, 1000)
+  }, [fetch])
 
   // Table UI:
   return (

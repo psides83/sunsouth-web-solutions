@@ -1,6 +1,5 @@
 //Imports
-import React, { useState, useEffect } from 'react'
-import { useHistory } from 'react-router-dom';
+import React, { useState } from 'react'
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
@@ -11,7 +10,7 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { auth, db } from './firebase';
+import { db } from './firebase';
 import './SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
@@ -90,7 +89,7 @@ function Copyright() {
   return (
     <Typography variant="body2" color="textSecondary" align="center">
       {'Copyright © '}
-      <a target="_blank" href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
+      <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
         TheWayMedia Web Solutions
       </a>{' '}
       {new Date().getFullYear()}
@@ -107,7 +106,6 @@ const ListItem = styled('li')(({ theme }) => ({
 export default function AddRequestView() {  
   //#region State Properties
   const classes = useStyles();
-  const history = useHistory();
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -127,7 +125,7 @@ export default function AddRequestView() {
   var [checked8, setChecked8] = useState(false);
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherState] = useState(true);
-  var [eqString, setEqString] = useState([]);
+  var [eqString] = useState([]);
   var [validationMessage, setValidationMessage] = useState('');
   const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
   //#endregion
@@ -368,7 +366,7 @@ export default function AddRequestView() {
 
     var workString = work.toString().replace(/,[s]*/g, ", ")
     
-    if (workString[0] == ',') {
+    if (workString[0] === ',') {
       workString = workString.substring(1).trim()
     }
 
@@ -439,15 +437,15 @@ export default function AddRequestView() {
     const lowerCaseLetters = /[a-z]/g;
     const upperCaseLetters = /[A-Z]/g;
 
-    if (model == '' && equipmentList.length === 0) {
+    if (model === '' && equipmentList.length === 0) {
       setValidationMessage("Equipment must have a model to be added to a request")
       setOpenError(true)
       return false
-    } else if (stock.length !== 6 || stock.match(lowerCaseLetters) || stock.match(upperCaseLetters) && equipmentList.length === 0) {
+    } else if ((stock.length !== 6 || stock.match(lowerCaseLetters) || stock.match(upperCaseLetters)) && equipmentList.length === 0) {
       setValidationMessage("Equipment must have a 6 digit stock number to be added to a request")
       setOpenError(true)
       return false
-    } else if (serial == '' && equipmentList.length === 0) {
+    } else if (serial === '' && equipmentList.length === 0) {
       setValidationMessage("Equipment must have a serial number to be added to a request")
       setOpenError(true)
       return false
@@ -455,7 +453,7 @@ export default function AddRequestView() {
       setValidationMessage("Equipment must have a work requested to be added to a request")
       setOpenError(true)
       return false
-    } else if (model == '' || stock == '' || serial == '' || work.length === 0 && equipmentList > 0) {
+    } else if ((model === '' || stock === '' || serial === '' || work.length === 0) && equipmentList > 0) {
       await setRequestToFirestore()
       setValidationMessage("Request successfully submitted")
       setOpenSuccess(true)
@@ -472,23 +470,25 @@ export default function AddRequestView() {
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = fullName + ', ' + equipmentList[0].model + ', ' + equipmentList[0].stock + ', ' + equipmentList[0].serial
 
-    var body = '<body>';
+    var body = `<body>`;
 
-    body += '<section>' + '<p>' + timestamp + '</p>' + '<p>' + fullName + " is requesting work to be done on the following equipment." + '</p>' + '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<h3>' + "First Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[0].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[0].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[0].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[0].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[0].notes + '</p>' + '</section>';
-    
-    if(equipmentList.length == 2) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Second Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[1].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[1].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[1].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[1].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[1].notes + '</p>' + '</section>'};
+    body +=  `<section>
+                <p>${timestamp}</p>
+                <p>${fullName} is requesting work to be done on the following equipment.</p>
+              </section>`;
+          
+    for (var i = 0; i < equipmentList.length; i++) {
 
-    if(equipmentList.length == 3) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Third Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[2].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[2].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[2].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[2].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[2].notes + '</p>' + '</section>'};
-
-    if(equipmentList.length == 4) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fourth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[3].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[3].stock + '</p>' +  '<p>' + "Serial Number: " + equipmentList[3].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[3].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[3].notes + '</p>' + '</section>'};
-
-    if(equipmentList.length == 5) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Fifth Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[4].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[4].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[4].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[4].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[4].notes + '</p>' + '</section>'};
-
-    if(equipmentList.length == 6) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Sith Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[5].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[5].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[5].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[5].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[5].notes + '</p>' + '</section>'};
-
-    if(equipmentList.length == 7) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Seventh Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[6].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[6].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[6].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[6].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[6].notes + '</p>' + '</section>'};
-
-    if(equipmentList.length == 8) {body += '<hr style="height:3px;border-width:0;color:gray;background-color:gray">' + '<section>' + '<h3>' + "Eihght Equipment".bold() + '</h3>' + '<p>' + "Model: " + equipmentList[7].model + '</p>' + '<p>' + "Stock Number: " + equipmentList[7].stock + '</p>' + '<p>' + "Serial Number: " + equipmentList[7].serial + '</p>' + '<p>' + "Work Required: " + equipmentList[7].work + '</p>' + '<p>' + "Additional Notes: " + equipmentList[7].notes + '</p>' + '</section>'};
+      body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray">
+                <section>
+                  <h3>Equipment ${i + 1}</h3>
+                  <p>Model: ${equipmentList[i].model}</p>
+                  <p>Stock Number: ${equipmentList[i].stock}</p>
+                  <p>Serial Number: ${equipmentList[i].serial}</p>
+                  <p>Work Required: ${equipmentList[i].work}</p>
+                  <p>Additional Notes: ${equipmentList[i].notes}</p>
+                </section>`
+    }
 
     body += '<body>';
 
