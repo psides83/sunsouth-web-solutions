@@ -1,7 +1,5 @@
 import React from 'react';
 import "./Home.css";
-import CollapsibleTable from './Table';
-import { Typography } from '@material-ui/core';
 import { Box } from '@mui/system';
 import CompletedTable from './TableCompleted';
 
