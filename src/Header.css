@@ -18,8 +18,9 @@
   }
   
   .header-logo {
-    flex-direction: column;
-    width: 250px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     /* object-fit: contain; */
     /* margin-top: 18px; */
   }
@@ -65,10 +66,9 @@
   }
 
   .title {
-    flex-direction: row;
     color: white;
     /* text-decoration: none; */
-    padding: auto;
+    margin-left: 100px;
     /* margin: 5px; */
   }
   

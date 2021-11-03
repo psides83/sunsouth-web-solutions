@@ -12,7 +12,7 @@ function Header() {
     const [{ user }, dispatch] = useStateValue();
     const [userProfile, setProfile] = useState({});
     const [showingSkeleton, setShowingSkeleton] = useState(true);
-    const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+    const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
     
 
     useEffect(() => {
@@ -53,7 +53,7 @@ function Header() {
             <Link className="link" to="/">
                 <img src="/logo-ss-deere.png" alt=""/>
             </Link>
-                <h4>{}</h4>
+                <h1 className="title">{`SunSouth ${userProfile?.branch} Web Utility`}</h1>
             </div>
             
 
