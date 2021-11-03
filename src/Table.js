@@ -47,13 +47,13 @@ function EquipmentRow({request, item}) {
   var [notes, setNotes] = useState('');
   const [currentValues, setCurrentValues] = useState({});
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+  const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
 
   // Sends email when equipment is updated:
   const sendEquipmentUpdateEmail = async () => {
 
     // creates the paramaters for the email template:
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`
     const body = `<body>
@@ -105,16 +105,59 @@ function EquipmentRow({request, item}) {
 
     if (isEditingEquipment) { 
 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
-        model: model,
-        stock: stock,
-        serial: serial,
-        work: work,
-        notes: notes
-      }, { merge: true })
+      var changeDetails = []
+      var equipmentHasChanges = false
 
-      sendEquipmentUpdateEmail()
-      setIsEditingEquipment(false)
+      if (currentValues.model !== model) {
+        equipmentHasChanges = true
+        changeDetails.push(`equipment model updated from ${currentValues.model} to ${model}`)
+      }
+
+      if (currentValues.stock !== stock) {
+        equipmentHasChanges = true
+        changeDetails.push(`equipment stock number updated from ${currentValues.stock} to ${stock}`)
+      }
+
+      if (currentValues.serial !== serial) {
+        equipmentHasChanges = true
+        changeDetails.push(`equipment serial number updated from ${currentValues.serial} to ${serial}`)
+      }
+
+      if (currentValues.work !== work) {
+        equipmentHasChanges = true
+        changeDetails.push(`equipment work required updated from ${currentValues.work} to ${work}`)
+      }
+
+      if (currentValues.notes !== notes) {
+        equipmentHasChanges = true
+        changeDetails.push(`equipment notes from ${currentValues.notes === '' ? 'blank' : currentValues.notes} to ${notes}`)
+      }
+      
+      if (equipmentHasChanges) {
+
+        const changeLogEntry = {
+          user: fullName,
+          change: changeDetails, 
+          timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+        }
+        
+        item.changeLog.push(changeLogEntry)
+
+        await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
+          model: model,
+          stock: stock,
+          serial: serial,
+          work: work,
+          notes: notes,
+          changeLog: item.changeLog
+        }, { merge: true })
+
+        sendEquipmentUpdateEmail()
+        setIsEditingEquipment(false)
+      } else {
+        console.log("no changes to equipment")
+        setIsEditingEquipment(false)
+      }
     } else { 
 
       setCurrentValues({
@@ -279,7 +322,7 @@ function Row({request}) {
   var [notes, setNotes] = useState('');
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
-  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+  const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
 
   // Fetches equipment from firestore:
   const fetchEquipment = useCallback( ()=> {
@@ -343,8 +386,8 @@ function Row({request}) {
       }
       
       if (request.workOrder !== workOrder) {
-      request.changeLog.push(changeLogEntry)
-    }
+        request.changeLog.push(changeLogEntry)
+      }
 
       await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
       sendWorkOrderEmail(workOrder)
@@ -445,7 +488,7 @@ function Row({request}) {
     await setDoc(requestRef, { 
 
       status: status, 
-      statusTimestamp: moment().format("MMM-DD-yyyy"), 
+      statusTimestamp: moment().format("MMM-DD-yyyy h:mmA"), 
       changeLog: request.changeLog 
     }, { 
       
@@ -486,9 +529,6 @@ function Row({request}) {
           <p>
             {request.salesman}
           </p>
-          <small>
-            {request.timestamp}
-          </small>
         </TableCell>        
         
         <TableCell align="left"> {
@@ -512,6 +552,7 @@ function Row({request}) {
             <Button 
               color="success" 
               size="small" 
+              sx={{ width: '115px', pt: '5px' }}
               variant={request.status === 'In Progress' ? "contained" : "outlined"} 
               onClick={updateStatus}
             > {
@@ -599,8 +640,8 @@ function Row({request}) {
                     >
 
                       <TableCell  component="th" scope="row">
-                        <TextField v
-                          ariant="outlined" 
+                        <TextField 
+                          variant="outlined" 
                           label="Model" 
                           inputProps={{style: {fontSize: 14}}} 
                           style={{ fontSize: 18 }} size="small" 
@@ -748,7 +789,7 @@ export default function CollapsibleTable() {
   // Table UI:
   return (
     <React.Fragment>
-      
+
       { loading 
         ? 
         <HomeSkeleton /> 

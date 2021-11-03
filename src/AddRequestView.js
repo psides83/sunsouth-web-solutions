@@ -301,7 +301,7 @@ export default function AddRequestView() {
       timestamp: timestamp,
       salesman: salesman,
       status: "Requested",
-      statusTimestamp: "",
+      statusTimestamp: timestamp,
       workOrder: "", 
       changeLog: changeLog
     }
@@ -317,7 +317,8 @@ export default function AddRequestView() {
         stock: equipmentList[i].stock,
         serial: equipmentList[i].serial,
         work: equipmentList[i].work,
-        notes: equipmentList[i].notes
+        notes: equipmentList[i].notes,
+        changeLog: equipmentList[i].changeLog
       }
       
       const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', firestoreRequest.id, 'equipment', equipment.stock);
