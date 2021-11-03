@@ -53,7 +53,7 @@ function Header() {
             <Link className="link" to="/">
                 <img src="/logo-ss-deere.png" alt=""/>
             </Link>
-                <h1 className="title">{`SunSouth ${userProfile?.branch} Web Utility`}</h1>
+                <h1 className="title">{`SunSouth ${userProfile?.branch}`}</h1>
             </div>
             
 
