@@ -45,8 +45,16 @@ function EquipmentRow({request, item}) {
   var [serial, setSerial] = useState('');
   var [work, setWork] = useState('');
   var [notes, setNotes] = useState('');
-  const [currentValues, setCurrentValues] = useState({});
+  const [currentValues, setCurrentValues] = useState({
+    model: '',
+    stock: '',
+    serial: '',
+    work: '',
+    notes: ''
+  });
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
+  var [equipmentHasChanges, setEquipmentHasChanges] = useState(false);
+  var [changeDetails, setChangeDetails] = useState([])
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
 
   // Sends email when equipment is updated:
@@ -106,30 +114,24 @@ function EquipmentRow({request, item}) {
     if (isEditingEquipment) { 
 
       var changeDetails = []
-      var equipmentHasChanges = false
 
       if (currentValues.model !== model) {
-        equipmentHasChanges = true
         changeDetails.push(`equipment model updated from ${currentValues.model} to ${model}`)
       }
 
       if (currentValues.stock !== stock) {
-        equipmentHasChanges = true
         changeDetails.push(`equipment stock number updated from ${currentValues.stock} to ${stock}`)
       }
 
       if (currentValues.serial !== serial) {
-        equipmentHasChanges = true
         changeDetails.push(`equipment serial number updated from ${currentValues.serial} to ${serial}`)
       }
 
       if (currentValues.work !== work) {
-        equipmentHasChanges = true
         changeDetails.push(`equipment work required updated from ${currentValues.work} to ${work}`)
       }
 
       if (currentValues.notes !== notes) {
-        equipmentHasChanges = true
         changeDetails.push(`equipment notes from ${currentValues.notes === '' ? 'blank' : currentValues.notes} to ${notes}`)
       }
       
@@ -176,6 +178,17 @@ function EquipmentRow({request, item}) {
       setIsEditingEquipment(true)
     }
   }
+
+  useEffect(() => {
+
+    if (currentValues.model !== model || currentValues.stock !== stock || currentValues.serial !== serial || currentValues.work !== work || currentValues.notes !== notes) {
+
+      setEquipmentHasChanges(true)
+    } else {
+
+      setEquipmentHasChanges(false)
+    }
+  }, [currentValues, model, stock, serial, work, notes, setEquipmentHasChanges])
 
   // Equipment row UI:
   return (
@@ -289,10 +302,19 @@ function EquipmentRow({request, item}) {
             onClick={editEquipment}> { 
               isEditingEquipment 
               ? 
+              equipmentHasChanges
+              ?
               <Tooltip title="Save">
                 <CheckIcon 
                 color="success" 
                 style={{ fontSize: 18 }}/> 
+              </Tooltip>
+              :
+              <Tooltip title="Cancel">
+                <CloseIcon 
+                  color="success" 
+                  style={{ fontSize: 18 }}
+                />
               </Tooltip>
               : 
               <Tooltip title="Edit">
@@ -717,7 +739,7 @@ function Row({request}) {
                               />
                             </Tooltip>
                             :
-                            <Tooltip title="Close">
+                            <Tooltip title="Cancel">
                               <CloseIcon 
                                 color="success" 
                                 style={{ fontSize: 18 }}
