@@ -38,3 +38,23 @@ input {
 .statusButton {
     margin-right: 50px;
 }
+
+.closeButtonContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.closeButton {
+    /* padding: 10px 10px 0 0; */
+    margin: 30px 10px 0 0;
+}
+
+.addRequestView {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    margin-top: -50px;
+}

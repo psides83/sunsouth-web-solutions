@@ -14,7 +14,7 @@ import { db } from '../Services/firebase';
 import '../Styles/SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
-import { FormGroup } from '@material-ui/core';
+import { Avatar, FormGroup } from '@material-ui/core';
 import { Alert, Stack } from '@mui/material';
 import '../Styles/AddRequest.css'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -35,16 +35,19 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   avatar: {
-    width: 192,
-    height: 160,
+    width: 64,
+    height: 64,
     margin: theme.spacing(1),
-    // backgroundColor: ,
+    backgroundColor: theme.palette.primary.main,
   },
   img: {
     padding: 1
   },
   icon: {
     color: theme.palette.secondary.main,
+  },
+  title: {
+    color: theme.palette.primary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
@@ -499,11 +502,10 @@ export default function AddRequestView() {
     <Container component="main" maxWidth="xs" sx={{ margin: 20 }}>
       <CssBaseline />
       <Box className={classes.paper}>
-        {/* <Avatar className={classes.avatar}> */}
-          {/* <img src="/ss-logo.png" alt="" className={classes.img}/> */}
-          {/* <SendRoundedIcon className={classes.icon} /> */}
-        {/* </Avatar> */}
-        <Typography component="h1" variant="h">
+        <Avatar className={classes.avatar}>
+          <AgricultureIcon className={classes.icon} fontSize="large"/>
+        </Avatar>
+        <Typography component="h1" variant="h" className={classes.title}>
           Submit PDI/Setup Request
         </Typography>
         <form className={classes.form} noValidate>

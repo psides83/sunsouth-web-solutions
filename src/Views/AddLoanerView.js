@@ -19,6 +19,8 @@ import moment from 'moment';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import emailjs from 'emailjs-com';
+import { Avatar } from '@material-ui/core';
+import AgricultureIcon from '@mui/icons-material/Agriculture';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';
@@ -41,16 +43,19 @@ const useStyles = makeStyles((theme) => ({
     alignItems: 'center',
   },
   avatar: {
-    width: 192,
-    height: 160,
+    width: 64,
+    height: 64,
     margin: theme.spacing(1),
-    // backgroundColor: ,
+    backgroundColor: theme.palette.primary.main,
   },
   img: {
     padding: 1
   },
   icon: {
     color: theme.palette.secondary.main,
+  },
+  title: {
+    color: theme.palette.primary.main,
   },
   form: {
     width: '100%', // Fix IE 11 issue.
@@ -240,12 +245,11 @@ export default function AddLoanerView() {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <Box className={classes.paper}>
-        {/* <Avatar className={classes.avatar}> */}
-          {/* <img src="/ss-logo.png" alt="" className={classes.img} id="logo" style={{ marginBottom: "15px" }}/> */}
-          {/* <SendRoundedIcon className={classes.icon} /> */}
-        {/* </Avatar> */}
-        <Typography component="h1" variant="h">
-          Logout Loaned Equipment
+        <Avatar className={classes.avatar}>
+          <AgricultureIcon className={classes.icon} fontSize="large" />
+        </Avatar>
+        <Typography component="h1" variant="h" className={classes.title}>
+          Log Loaned Equipment
         </Typography>
         <form className={classes.form} noValidate>
         {/* <Stack mb={1}>

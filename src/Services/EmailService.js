@@ -1,9 +1,8 @@
-import React from 'react'
 import emailjs from 'emailjs-com'
 import moment from 'moment';
 
 // Sends email when equipment is updated:
-export const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model, stock, serial, work, notes, userProfile) => {
+const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model, stock, serial, work, notes, userProfile) => {
 
     // Creates the paramaters for the email template:
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
@@ -54,7 +53,7 @@ export const sendEquipmentUpdateEmail = async (currentValues, request, fullName,
 }
 
 // Sends email when work order number is added or updated:
-export const sendWorkOrderEmail = (equipment, request, workOrder, fullName, model, userProfile) => {
+const sendWorkOrderEmail = (equipment, request, workOrder, fullName, model, userProfile) => {
 
     // creates the paramaters for the email template:
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
@@ -81,7 +80,7 @@ export const sendWorkOrderEmail = (equipment, request, workOrder, fullName, mode
 }
 
 // Sends email when equipment is added to a request from the Active Requests Table
-export const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile) => {
+const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile) => {
 
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = request.workOrder !== '' ? `Equipment Added to request with WO# ${request.workOrder}` : `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`
@@ -117,7 +116,7 @@ export const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, m
 }
 
 // Send email when request status is updated:
-export const sendStatusEmail = async (status, equipment, request, fullName, userProfile) => {
+const sendStatusEmail = async (status, equipment, request, fullName, userProfile) => {
 
     const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
@@ -139,3 +138,5 @@ export const sendStatusEmail = async (status, equipment, request, fullName, user
 
     await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
+
+  export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } 

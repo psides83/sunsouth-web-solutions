@@ -34,3 +34,18 @@ h3 {
 .link {
     text-decoration: none;
   }
+
+.closeButtonContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+}
+
+.closeButton {
+    /* padding: 10px 10px 0 0; */
+    margin: 30px 10px 0 0;
+}
+
+.addLoaner {
+    margin-top: -50px;
+}

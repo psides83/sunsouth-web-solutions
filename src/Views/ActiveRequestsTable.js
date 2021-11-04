@@ -36,6 +36,7 @@ import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import AddRequestView from '../Views/AddRequestView';
 import { EquipmentTableHeaderView, RequestsTableHeaderView, } from '../Components/TableHeaderViews';
 import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../Services/EmailService'
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -801,21 +802,29 @@ export default function ActiveRequestsTable() {
             Active Setup Requests
           </Typography>
           
-            <Button 
-              color="success" 
-              size="small" 
-              variant="outlined" 
-              startIcon={<AddIcon />} 
-              onClick={handleToggleAddRequestView}
-              sx={{ mx: 4, mb: 1, mt: 1 }}
-            >
-              Submit Request
-            </Button>
-          <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
-            <AddRequestView className="addRequestView" />
-          </Dialog>
+          <Button 
+            color="success" 
+            size="small" 
+            variant="outlined" 
+            startIcon={<AddIcon />} 
+            onClick={handleToggleAddRequestView}
+            sx={{ mx: 4, mb: 1, mt: 1 }}
+          >
+            Submit Request
+          </Button>
         </div>
       }
+
+          <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
+            <div className="closeButtonContainer">
+              <Button onClick={handleCloseAddRequestView} color="success">
+                <CancelOutlinedIcon/>
+              </Button>
+            </div>
+            <div className="addRequestView">
+              <AddRequestView />
+            </div>
+          </Dialog>
 
       <TableContainer component={Paper} 
       style={{ borderRadius: 10 }}

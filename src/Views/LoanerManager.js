@@ -23,6 +23,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import emailjs from 'emailjs-com'
 import AddLoanerView from '../Views/AddLoanerView'
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -298,16 +299,21 @@ function Row({loaner}) {
             : 
             <div className="tableHead">
               <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment Manager"}</Typography>
-              {/* <Link className="link" to={"/add-loaner"}> */}
               <Button onClick={handleToggleAddLoanerView} color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
                 Add Loaner
               </Button>
-              {/* </Link> */}
-              <Dialog onClose={handleCloseAddLoanerView} open={openAddLoanerView}>
-                <AddLoanerView />
-              </Dialog>
             </div>
           }
+            <Dialog onClose={handleCloseAddLoanerView} open={openAddLoanerView}>
+              <div className="closeButtonContainer">
+                <Button onClick={handleCloseAddLoanerView} color="success">
+                  <CancelOutlinedIcon/>
+                </Button>
+              </div>
+              <div className="addLoaner" >
+              <AddLoanerView/>
+              </div>
+            </Dialog>
             <TableContainer component={Paper} style={{ borderRadius: 10, paddingRight: 20 }}>
               <Table  size="small" aria-label="collapsible table" style={{ margin: 15, paddingTop: 2 }}>
                 <TableHead>
