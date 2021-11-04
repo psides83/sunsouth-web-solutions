@@ -313,6 +313,7 @@ export default function AddRequestView() {
     for (var i= 0; i < equipmentList.length ; i++) {
       const equipment = {
         requestID: firestoreRequest.id,
+        timestamp: firestoreRequest.timestamp,
         model: equipmentList[i].model,
         stock: equipmentList[i].stock,
         serial: equipmentList[i].serial,
@@ -361,7 +362,7 @@ export default function AddRequestView() {
 
     const changeLog = [{
       user: fullName,
-      change: `equipment added`,
+      change: `equipment added to request`,
       timestamp: moment().format("MMM-DD-yyyy hh:mmA")
 
     }]
@@ -457,7 +458,7 @@ export default function AddRequestView() {
   const sendEmail = (timestamp) => {
 
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = fullName + ', ' + equipmentList[0].model + ', ' + equipmentList[0].stock + ', ' + equipmentList[0].serial
+    const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`
 
     var body = `<body>`;
 
