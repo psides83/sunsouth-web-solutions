@@ -281,8 +281,8 @@ function Row({loaner}) {
   // Table UI:
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
-        <Box sx={{ width: '100%', mt: 5, mx:5 }}>
-          <Box sx={{ flexGrow: 1, my: 5 }}>
+        <Box sx={{ width: '100%', mt: 5, mx: 5 }}>
+          <Box sx={{ flexGrow: 1, my: 4 }}>
           {loading 
             ? 
             <HomeSkeleton /> 
@@ -296,8 +296,8 @@ function Row({loaner}) {
               </Link>
             </div>
           }
-            <TableContainer component={Paper} style={{ borderRadius: 20 }}>
-              <Table  size="small" aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
+            <TableContainer component={Paper} style={{ borderRadius: 10, paddingRight: 20 }}>
+              <Table  size="small" aria-label="collapsible table" style={{ margin: 15, paddingTop: 2 }}>
                 <TableHead>
                   <TableRow key="header">
                       {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                 */}
