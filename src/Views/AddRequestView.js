@@ -283,8 +283,6 @@ export default function AddRequestView() {
       i && temp.push(i); // copy each non-empty value to the 'temp' array
 
       work = temp; 
-
-      console.log(work.toString().replace(/,[s]*/g, ", "));
   };
 
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection. 
@@ -337,7 +335,6 @@ export default function AddRequestView() {
   // Reset the form
   const resetForm = async () => {
 
-    console.log("request updated")
     setModel("")
     setStock("")
     setSerial("")
@@ -352,6 +349,7 @@ export default function AddRequestView() {
     setChecked7(false)
     setChecked8(false)
     setWork([])
+    console.log("form reset")
   }
 
   // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
@@ -379,10 +377,6 @@ export default function AddRequestView() {
       notes: notes,
       changeLog: changeLog
     }
-
-    
-    eqString.push(equipment.model)
-    console.log(eqString)
 
     equipmentList.push(equipment)
     setEquepmentList(equipmentList)
@@ -446,12 +440,12 @@ export default function AddRequestView() {
       setValidationMessage("Equipment must have a work requested to be added to a request")
       setOpenError(true)
       return false
-    } else if ((model === '' || stock === '' || serial === '' || work.length === 0) && equipmentList > 0) {
-      await setRequestToFirestore()
-      setValidationMessage("Request successfully submitted")
-      setOpenSuccess(true)
     } else {
-      await pushEquipmentToRequest()
+      console.log('eq added directly from submit')
+      if (model !== '' && (stock.length == 6 || stock.match(lowerCaseLetters) === false || stock.match(upperCaseLetters) === false) && serial !== '' && work.length !== 0) {
+        console.log("another eq added first")
+        await pushEquipmentToRequest()
+      }
       await setRequestToFirestore()
       setValidationMessage("Request successfully submitted")
       setOpenSuccess(true)
