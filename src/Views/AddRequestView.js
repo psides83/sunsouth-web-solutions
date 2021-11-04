@@ -290,7 +290,7 @@ export default function AddRequestView() {
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection. 
   const setRequestToFirestore = async () => {
     
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
     const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
     const changeLog = [{
@@ -366,7 +366,7 @@ export default function AddRequestView() {
     const changeLog = [{
       user: fullName,
       change: `equipment added to request`,
-      timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+      timestamp: moment().format("DD-MMM-yyyy hh:mmA")
 
     }]
 

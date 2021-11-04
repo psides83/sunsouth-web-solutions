@@ -114,7 +114,7 @@ function EquipmentRow({request, item}) {
         const changeLogEntry = {
           user: fullName,
           change: changeDetails, 
-          timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+          timestamp: moment().format("DD-MMM-yyyy hh:mmA")
         }
 
         item.changeLog.push(changeLogEntry)
@@ -378,7 +378,7 @@ function Row({request}) {
         const changeLogEntry = {
           user: fullName,
           change: workOrderStatus, 
-          timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+          timestamp: moment().format("DD-MMM-yyyy hh:mmA")
         }
         
         if (request.workOrder !== workOrder) {
@@ -404,7 +404,7 @@ function Row({request}) {
 
   // Handles adding equipment to the request:
   const addEquipment = async () => {
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA") 
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA") 
 
     if(isShowingAddEquipment) {
 
@@ -435,7 +435,7 @@ function Row({request}) {
         const changeLogEntry = {
           user: fullName,
           change: `Equipment model ${model} added to the request`, 
-          timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+          timestamp: moment().format("DD-MMM-yyyy hh:mmA")
         }
     
         request.changeLog.push(changeLogEntry)
@@ -485,7 +485,7 @@ function Row({request}) {
 
       user: fullName,
       change: `Status updated to ${status}`, 
-      timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+      timestamp: moment().format("DD-MMM-yyyy hh:mmA")
     }
 
     request.changeLog.push(changeLogEntry)
@@ -493,7 +493,7 @@ function Row({request}) {
     await setDoc(requestRef, { 
 
       status: status, 
-      statusTimestamp: moment().format("MMM-DD-yyyy h:mmA"), 
+      statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"), 
       changeLog: request.changeLog 
     }, { 
       
@@ -573,8 +573,8 @@ function Row({request}) {
                     {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
                   </TimelineSeparator>
                   <TimelineContent>
-                    <p><small>{change.user}</small></p>
-                    <small>{change.timestamp}</small>
+                    <p><small>{change.timestamp}</small></p>
+                    <small>{change.user}</small>
                     <p><small>{change.change}</small></p>
                   </TimelineContent>
                 </TimelineItem>

@@ -131,7 +131,7 @@ export default function AddLoanerView() {
   // Add the loaner to the firestore "loaners" collection. 
   const setLoanerToFirestore = async () => {
     
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
     const changeLog = [{
       user: employee,

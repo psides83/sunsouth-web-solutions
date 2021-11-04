@@ -81,7 +81,7 @@ function Row({loaner}) {
     //     const changeLogEntry = {
     //       user: fullName,
     //       change: workOrderStatus, 
-    //       timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+    //       timestamp: moment().format("DD-MMM-yyyy hh:mmA")
     //     }
         
     //     if (request.workOrder != workOrder) {
@@ -100,7 +100,7 @@ function Row({loaner}) {
     // Send email when request status is updated:
     const sendStatusEmail = async () => {
   
-      const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+      const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
       const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
       const subject = `${loaner?.model}, ${loaner?.stock} has been returned`
       const body = `<body>
@@ -142,7 +142,7 @@ function Row({loaner}) {
   
         user: fullName,
         change: `Status updated to ${status}`, 
-        timestamp: moment().format("MMM-DD-yyyy hh:mmA")
+        timestamp: moment().format("DD-MMM-yyyy hh:mmA")
       }
   
       loaner.changeLog.push(changeLogEntry)
@@ -152,7 +152,7 @@ function Row({loaner}) {
       await setDoc(loanerRef, { 
   
         status: status, 
-        statusTimestamp: moment().format("MMM-DD-yyyy"), 
+        statusTimestamp: moment().format("DD-MMM-yyyy"), 
         changeLog: loaner.changeLog 
       }, { 
         

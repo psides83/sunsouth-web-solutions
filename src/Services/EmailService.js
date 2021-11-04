@@ -5,7 +5,7 @@ import moment from 'moment';
 const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model, stock, serial, work, notes, userProfile) => {
 
     // Creates the paramaters for the email template:
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`
     const body = `<body>
@@ -56,7 +56,7 @@ const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model,
 const sendWorkOrderEmail = (equipment, request, workOrder, fullName, model, userProfile) => {
 
     // creates the paramaters for the email template:
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
     const body = `<body>
@@ -118,7 +118,7 @@ const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, model, s
 // Send email when request status is updated:
 const sendStatusEmail = async (status, equipment, request, fullName, userProfile) => {
 
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
     const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
     const body = `<body>
