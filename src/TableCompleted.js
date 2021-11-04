@@ -611,7 +611,7 @@ export default function CompletedTable() {
           </TextField>
         </div>
       }
-      <TableContainer component={Paper} style={{ borderRadius: 20 }}>
+      <TableContainer component={Paper} style={{ borderRadius: 10 }}>
         <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
           <TableHead>
             <TableRow key="header">
