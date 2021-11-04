@@ -1,6 +1,6 @@
 import React from 'react';
 import "./Home.css";
-import CollapsibleTable from './Table';
+import ActiveRequestsTable from './ActiveRequestsTable';
 import { Box } from '@mui/system';
 
 function Home() {
@@ -9,10 +9,10 @@ function Home() {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
             <Box sx={{ width: '100%', mt: 5, mx:5 }}>
                 <Box sx={{ flexGrow: 1, my: 5 }}>
-                    <CollapsibleTable/>
+                    <ActiveRequestsTable/>
                 </Box>
                 {/* <Box sx={{ flexGrow: 1 }}>
-                    <CollapsibleTable status="Requested"/>
+                    <ActiveRequestsTable status="Requested"/>
                 </Box> */}
             </Box>
         </Box>

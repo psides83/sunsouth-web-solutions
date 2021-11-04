@@ -496,14 +496,14 @@ export default function AddRequestView() {
 
   // UI view of the submission form
   return (
-    <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs" sx={{ margin: 20 }}>
       <CssBaseline />
       <Box className={classes.paper}>
         {/* <Avatar className={classes.avatar}> */}
-          <img src="/ss-logo.png" alt="" className={classes.img}/>
+          {/* <img src="/ss-logo.png" alt="" className={classes.img}/> */}
           {/* <SendRoundedIcon className={classes.icon} /> */}
         {/* </Avatar> */}
-        <Typography component="h1" variant="h5">
+        <Typography component="h1" variant="h">
           Submit PDI/Setup Request
         </Typography>
         <form className={classes.form} noValidate>
@@ -659,9 +659,9 @@ export default function AddRequestView() {
           
         </form>
       </Box>
-      <Box mt={5}>
+      {/* <Box mt={5}>
         <Copyright />
-      </Box>
+      </Box> */}
     </Container>
   );
 }

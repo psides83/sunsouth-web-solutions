@@ -25,10 +25,6 @@ import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import emailjs from 'emailjs-com'
-import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import Timeline from '@mui/lab/Timeline';
@@ -38,6 +34,9 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
+import AddRequestView from './AddRequestView';
+import { EquipmentTableHeaderView, RequestsTableHeaderView, } from './Components/TableHeaderViews';
+import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from './Services/EmailService'
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -69,56 +68,7 @@ function EquipmentRow({request, item}) {
   var [changeDetails, setChangeDetails] = useState([])
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
 
-  // Sends email when equipment is updated:
-  const sendEquipmentUpdateEmail = async () => {
-
-    // Creates the paramaters for the email template:
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`
-    const body = `<body>
-                    <section>
-                      <p>${timestamp}</p>
-                      <p><strong>Work Order:</strong> ${request.workOrder}</p>
-                      <p><strong>Updated by:</strong> ${fullName}</p>
-                    </section>
-                    <hr style="height:3px;border-width:0;color:gray;background-color:gray">
-                    <section>
-                      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
-                        <dl style="margin-right: 75px;">
-                          <dt><h4>Previous</h4></dt>
-                          <dt><strong>Model:</strong> ${currentValues.model}</dt>
-                          <dt><strong>Stock Number:</strong> ${currentValues.stock}</dt>
-                          <dt><strong>Serial Number:</strong> ${currentValues.serial}</dt>
-                          <dt><strong>Work:</strong> ${currentValues.work}</dt>
-                          <dt><strong>Notes:</strong> ${currentValues.notes}</dt>
-                        </dl>
-                        
-                        <dl>
-                          <dt><h4>Updated</h4></dt>
-                          <dt><strong>Model:</strong> ${model}</dt>
-                          <dt><strong>Stock Number:</strong> ${stock}</dt>
-                          <dt><strong>Serial Number:</strong> ${serial}</dt>
-                          <dt><strong>Work:</strong> ${work}</dt>
-                          <dt><strong>Notes:</strong> ${notes}</dt>
-                        </dl>
-                      </div>
-                    </section>
-                  <body>`
-
-    // Sets paramaters for the email template:
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email,
-      from: "PDI/Setup Requests",
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    // Sends the email:
-    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-  }
+  
   
   // Handles editing of the equipment values.
   // Either opens the edit textfields or sets new edits to firestore
@@ -178,7 +128,7 @@ function EquipmentRow({request, item}) {
           changeLog: item.changeLog
         }, { merge: true })
 
-        sendEquipmentUpdateEmail()
+        sendEquipmentUpdateEmail(currentValues, request, fullName, model, stock, serial, work, notes, userProfile)
         setIsEditingEquipment(false)
 
       // if equipmentHasChanges check is false, 
@@ -381,11 +331,12 @@ function Row({request}) {
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
   var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
-  const [openChangeLog, setOpenChangeLog] = React.useState(false);
-  const handleClose = () => {
+  const [openChangeLog, setOpenChangeLog] = useState(false);
+
+  const handleCloseChangeLog = () => {
     setOpenChangeLog(false);
   };
-  const handleToggle = () => {
+  const handleToggleChangeLog = () => {
     setOpenChangeLog(!openChangeLog);
   };
 
@@ -422,40 +373,13 @@ function Row({request}) {
     fetchEquipment()
   }, [fetchEquipment, currentWorkOrder, workOrder, isShowingAddEquipment, setWorkOrderHasChanges])
 
-  // Sends email when work order number is added or updated:
-  const sendWorkOrderEmail = (workOrder) => {
-
-    // creates the paramaters for the email template:
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = `<body>
-                    <p>${timestamp}</p>
-                    <p>Request ID: ${request.id}</p><br>
-                    <p>Work order # ${workOrder} has been added or updated by ${fullName} to the request on ${model} ${equipment[0]?.model}, ST# ${equipment[0]?.stock}.</p>
-                  <body>`
-
-    // Sets paramaters for the email template:
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    // sends thw email:
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-  }
-
   // Handles adding or editing the work order number for the request:
   const editWorkOrder = async () => {
     if (isEditingWorkOrder) { 
 
       if (workOrderHasChanges) {
         
-        const workOrderStatus = request.workOrder === '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
+        const workOrderStatus = request.workOrder === '' ? `Added WO # ${workOrder}` : `WO # updated from ${request.workOrder} to ${workOrder}`
 
         const changeLogEntry = {
           user: fullName,
@@ -469,7 +393,7 @@ function Row({request}) {
         }
 
         await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-        sendWorkOrderEmail(workOrder)
+        sendWorkOrderEmail(equipment, request, workOrder, fullName, model, userProfile)
         setIsEditingWorkOrder(false)
       } else {
 
@@ -526,7 +450,8 @@ function Row({request}) {
         await setDoc(requestRef, { changeLog: request.changeLog }, { merge: true });
 
         // Send email about addition of equipment
-        sendNewEquipmentEmail(timestamp)
+        sendNewEquipmentEmail(request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile)
+        // Hides add equipment TextFields
         setIsShowingAddEquipment(false)
         setEquipment([])
         setModel('')
@@ -542,65 +467,6 @@ function Row({request}) {
 
       setIsShowingAddEquipment(true)
     }
-  }
-
-  const sendNewEquipmentEmail = (timestamp) => {
-
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = request.workOrder !== '' ? `Equipment Added to request with WO# ${request.workOrder}` : `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`
-
-    var body = `<body>
-                  <section>
-                    <p>${timestamp}</p>
-                    <p>Request ID: ${request.id}</p>
-                    <p>Work Order: ${request.workOrder}</p>
-                    <p>${fullName} added the following equipment to a previous request.</p>
-                  </section>
-                  <hr style="height:3px;border-width:0;color:gray;background-color:gray">
-                  <section>
-                    <h3>Equipment</h3>
-                    <p>Model: ${model}</p>
-                    <p>Stock Number: ${stock}</p>
-                    <p>Serial Number: ${serial}</p>
-                    <p>Work Required: ${work}</p>
-                    <p>Additional Notes: ${notes}</p>
-                  </section>
-                <body>`;
-
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-  }
-
-  // Send email when request status is updated:
-  const sendStatusEmail = async (status) => {
-
-    const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = `<body>
-                    <p>${timestamp}</p>
-                    <p>Request ID: ${request.id}</p><br> 
-                    <p>The status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
-                  <body>`
-
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
   // Handles updating the request status:
@@ -642,7 +508,7 @@ function Row({request}) {
       merge: true 
     });
 
-    sendStatusEmail(status)
+    sendStatusEmail(status, equipment, request, fullName, userProfile)
   }
 
   // Request row UI:
@@ -717,38 +583,28 @@ function Row({request}) {
         </TableCell>
 
         <TableCell align="left">
-        <IconButton aria-label="show" onClick={handleToggle}>
-                  <HistoryOutlinedIcon />
-            </IconButton>
-            <Dialog onClose={handleClose} open={openChangeLog}>
-              <DialogTitle>Request Change History</DialogTitle>
-              <Timeline position="alternate"> { 
-                request.changeLog.map((change) => (
-                  <TimelineItem>
-                    <TimelineSeparator >
-                      <TimelineDot variant="outlined" color="success"/>
-                      {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
-                    </TimelineSeparator>
-                    <TimelineContent>
-                      <p>
-                        <small>
-                          {change.user}
-                        </small>
-                      </p>
-                      <small>
-                        {change.timestamp}
-                      </small>
-                      <p>
-                        <small>
-                          {change.change}
-                        </small>
-                      </p>
-                    </TimelineContent>
-                  </TimelineItem>
-                ))
-              }
-              </Timeline>
-            </Dialog>
+          <IconButton aria-label="show" onClick={handleToggleChangeLog}>
+            <HistoryOutlinedIcon />
+          </IconButton>
+          <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
+            <DialogTitle>Request Change History</DialogTitle>
+            <Timeline position="alternate"> { 
+              request.changeLog.map((change) => (
+                <TimelineItem>
+                  <TimelineSeparator >
+                    <TimelineDot variant="outlined" color="success"/>
+                    {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
+                  </TimelineSeparator>
+                  <TimelineContent>
+                    <p><small>{change.user}</small></p>
+                    <small>{change.timestamp}</small>
+                    <p><small>{change.change}</small></p>
+                  </TimelineContent>
+                </TimelineItem>
+              ))
+            }
+            </Timeline>
+          </Dialog>
         </TableCell>
         
         <TableCell align="center">
@@ -794,34 +650,7 @@ function Row({request}) {
                 {`Request ID: ${request.id}`}
               </Typography>
               <Table size="small" aria-label="equipment">
-                <TableHead>
-                  <TableRow key="subHeader">
-
-                    <TableCell>
-                      <strong>
-                        Model
-                      </strong>
-                    </TableCell>
-
-                    <TableCell>
-                      <strong>
-                        ID #'s
-                      </strong>
-                    </TableCell>
-
-                    <TableCell>
-                      <strong>
-                        Work Require
-                      </strong>
-                    </TableCell>
-
-                    <TableCell>
-                      <strong>
-                        Notes
-                      </strong>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
+              <EquipmentTableHeaderView />
                 <TableBody> { 
                   equipment.map((item) => (
                     <EquipmentRow key={item?.stock} request={request} item={item} />
@@ -951,10 +780,18 @@ function Row({request}) {
 }
 
 // Whole table view:
-export default function CollapsibleTable() {
+export default function ActiveRequestsTable() {
   const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openAddRequestView, setOpenAddRequestView] = useState(false);
+
+  const handleCloseAddRequestView = () => {
+    setOpenAddRequestView(false);
+  };
+  const handleToggleAddRequestView = () => {
+    setOpenAddRequestView(!openAddRequestView);
+  };
 
   // Fetch requests from firestore:
   const fetch = useCallback( async ()=> {
@@ -998,17 +835,19 @@ export default function CollapsibleTable() {
             Active Setup Requests
           </Typography>
           
-          <Link className="link" to={"/add-request"}>
             <Button 
               color="success" 
               size="small" 
               variant="outlined" 
               startIcon={<AddIcon />} 
+              onClick={handleToggleAddRequestView}
               sx={{ mx: 4, mb: 1, mt: 1 }}
             >
               Submit Request
             </Button>
-          </Link>
+          <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
+            <AddRequestView className="addRequestView" />
+          </Dialog>
         </div>
       }
 
@@ -1016,17 +855,7 @@ export default function CollapsibleTable() {
       style={{ borderRadius: 10 }}
       >
         <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
-          <TableHead>
-            <TableRow key="header">
-              <TableCell />
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>History</strong></TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
+          <RequestsTableHeaderView />
           <TableBody>
             {requests.map(request => (
               <Row request={request} />

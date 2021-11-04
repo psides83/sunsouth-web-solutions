@@ -1,8 +1,6 @@
 // Import the functions you need from the SDKs you need
-// import React, { useEffect, useState } from 'react';
-// import { useStateValue } from './StateProvider';
+import React, { useCallback, useEffect, useState } from 'react';
 import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from 'firebase/firestore';
 

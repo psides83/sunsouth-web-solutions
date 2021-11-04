@@ -12,7 +12,7 @@ import Paper from '@material-ui/core/Paper';
 import { collection, query, where, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from './firebase';
 import Button from '@mui/material/Button';
-import { Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
+import { Dialog, Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from './HomeSkeleton'
@@ -22,6 +22,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import emailjs from 'emailjs-com'
+import AddLoanerView from './AddLoanerView'
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -244,6 +245,14 @@ function Row({loaner}) {
   const [{ userProfile }] = useStateValue();
   const [loaners, setLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [openAddLoanerView, setOpenAddLoanerView] = useState(false);
+
+  const handleCloseAddLoanerView = () => {
+    setOpenAddLoanerView(false);
+  };
+  const handleToggleAddLoanerView = () => {
+    setOpenAddLoanerView(!openAddLoanerView);
+  };
 
   // Fetch loanerss from firestore:
   const fetch = useCallback( async ()=> {
@@ -289,11 +298,14 @@ function Row({loaner}) {
             : 
             <div className="tableHead">
               <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment Manager"}</Typography>
-              <Link className="link" to={"/add-loaner"}>
-              <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
+              {/* <Link className="link" to={"/add-loaner"}> */}
+              <Button onClick={handleToggleAddLoanerView} color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
                 Add Loaner
               </Button>
-              </Link>
+              {/* </Link> */}
+              <Dialog onClose={handleCloseAddLoanerView} open={openAddLoanerView}>
+                <AddLoanerView />
+              </Dialog>
             </div>
           }
             <TableContainer component={Paper} style={{ borderRadius: 10, paddingRight: 20 }}>

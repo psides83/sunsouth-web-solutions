@@ -241,11 +241,11 @@ export default function AddLoanerView() {
       <CssBaseline />
       <Box className={classes.paper}>
         {/* <Avatar className={classes.avatar}> */}
-          <img src="/ss-logo.png" alt="" className={classes.img} id="logo" style={{ marginBottom: "15px" }}/>
+          {/* <img src="/ss-logo.png" alt="" className={classes.img} id="logo" style={{ marginBottom: "15px" }}/> */}
           {/* <SendRoundedIcon className={classes.icon} /> */}
         {/* </Avatar> */}
-        <Typography component="h1" variant="h4">
-          Add Loaner
+        <Typography component="h1" variant="h">
+          Logout Loaned Equipment
         </Typography>
         <form className={classes.form} noValidate>
         {/* <Stack mb={1}>
@@ -416,9 +416,9 @@ export default function AddLoanerView() {
           
         </form>
       </Box>
-      <Box mt={5}>
+      {/* <Box mt={5}>
         <Copyright />
-      </Box>
+      </Box> */}
     </Container>
   );
 }
