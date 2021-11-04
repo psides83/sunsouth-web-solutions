@@ -32,5 +32,9 @@ input {
 .changeLogButton {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
+}
+
+.statusButton {
+    margin-right: 50px;
 }

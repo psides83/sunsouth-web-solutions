@@ -37,6 +37,7 @@ import TimelineSeparator from '@mui/lab/TimelineSeparator';
 import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
+import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -694,8 +695,6 @@ function Row({request}) {
         </TableCell>
         
         <TableCell align="left">
-          <div className="changeLogButton">
-            <div>
               <Tooltip title="Update Status">
                 <Button 
                   color="success" 
@@ -713,10 +712,13 @@ function Row({request}) {
                   {request.statusTimestamp}
                 </small>
               </p>
-            </div>
 
-            <IconButton aria-label="show" onClick={handleToggle}>
-                  <InfoOutlinedIcon />
+            
+        </TableCell>
+
+        <TableCell align="left">
+        <IconButton aria-label="show" onClick={handleToggle}>
+                  <HistoryOutlinedIcon />
             </IconButton>
             <Dialog onClose={handleClose} open={openChangeLog}>
               <DialogTitle>Request Change History</DialogTitle>
@@ -747,7 +749,6 @@ function Row({request}) {
               }
               </Timeline>
             </Dialog>
-          </div>
         </TableCell>
         
         <TableCell align="center">
@@ -783,7 +784,6 @@ function Row({request}) {
             }
           </IconButton>
         </TableCell>
-
       </TableRow>
 
       <TableRow>
@@ -1023,6 +1023,7 @@ export default function CollapsibleTable() {
               <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
               <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
               <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
+              <TableCell style={{ fontSize: 18 }} align="left"><strong>History</strong></TableCell>
               <TableCell />
             </TableRow>
           </TableHead>
