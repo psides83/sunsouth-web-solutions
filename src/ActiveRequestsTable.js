@@ -8,7 +8,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
@@ -234,14 +233,8 @@ function EquipmentRow({request, item}) {
           </TableCell>
           :
           <TableCell align="left">
-            
               { `Stock: ${item.stock}` }
-
-              <p>
-                <small>
-                  { `Serial: ${item.serial}` }
-                </small>
-              </p>
+              <p><small>{ `Serial: ${item.serial}` }</small></p>
           </TableCell>
         }
 
@@ -495,9 +488,7 @@ function Row({request}) {
     }
 
     request.changeLog.push(changeLogEntry)
-
     const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
-
     await setDoc(requestRef, { 
 
       status: status, 
@@ -528,20 +519,12 @@ function Row({request}) {
         </TableCell>
 
         <TableCell align="left">
-          <strong className="model">
-            {equipment[0]?.model}
-          </strong>
-          <p>
-            <small>
-              {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
-            </small>
-          </p>
+          <strong className="model">{equipment[0]?.model}</strong>
+          <p><small>{equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}</small></p>
         </TableCell>
 
         <TableCell component="th" scope="row" >
-          <p>
-            {request.salesman}
-          </p>
+          <p>{request.salesman}</p>
         </TableCell>        
         
         <TableCell align="left"> {
@@ -568,18 +551,11 @@ function Row({request}) {
                   sx={{ width: '115px', pt: '5px' }}
                   variant={request.status === 'In Progress' ? "contained" : "outlined"} 
                   onClick={updateStatus}
-                > {
-                  request.status
-                }
+                >
+                  { request.status }
                 </Button>
               </Tooltip>
-              <p>
-                <small>
-                  {request.statusTimestamp}
-                </small>
-              </p>
-
-            
+              <p><small>{request.statusTimestamp}</small></p>
         </TableCell>
 
         <TableCell align="left">
@@ -617,9 +593,7 @@ function Row({request}) {
               workOrderHasChanges
               ?
               <Tooltip title="Save">
-                <CheckIcon 
-                color="success" 
-                style={{ fontSize: 18 }}/> 
+                <CheckIcon color="success" style={{ fontSize: 18 }}/> 
               </Tooltip>
               :
               <Tooltip title="Cancel">
@@ -631,10 +605,7 @@ function Row({request}) {
               : 
               <div className="edit-button-bg">  
                 <Tooltip title="Edit">
-                  <EditRoundedIcon 
-                    color="success" 
-                    style={{ fontSize: 16 }}
-                  />
+                  <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
                 </Tooltip>
               </div>
             }
@@ -736,17 +707,11 @@ function Row({request}) {
                             model !== '' && stock !== '' && serial !== '' && work !== '' 
                             ?
                             <Tooltip title="Save">
-                              <CheckIcon 
-                                color="success" 
-                                style={{ fontSize: 18 }}
-                              />
+                              <CheckIcon color="success" style={{ fontSize: 18 }} />
                             </Tooltip>
                             :
                             <Tooltip title="Cancel">
-                              <CloseIcon 
-                                color="success" 
-                                style={{ fontSize: 18 }}
-                              />
+                              <CloseIcon color="success" style={{ fontSize: 18 }} />
                             </Tooltip>
                           }   
                         </IconButton>
@@ -789,6 +754,7 @@ export default function ActiveRequestsTable() {
   const handleCloseAddRequestView = () => {
     setOpenAddRequestView(false);
   };
+  
   const handleToggleAddRequestView = () => {
     setOpenAddRequestView(!openAddRequestView);
   };
