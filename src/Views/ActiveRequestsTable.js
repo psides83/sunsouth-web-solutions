@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from './StateProvider';
+import { useStateValue } from '../StateManagement/StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Collapse from '@material-ui/core/Collapse';
@@ -13,12 +13,12 @@ import Paper from '@material-ui/core/Paper';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { collection, query, where, orderBy, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../Services/firebase';
 import Button from '@mui/material/Button';
 import { TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import HomeSkeleton from './HomeSkeleton'
+import HomeSkeleton from '../Components/HomeSkeleton'
 import './Table.css'
 import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
@@ -34,8 +34,8 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import AddRequestView from './AddRequestView';
-import { EquipmentTableHeaderView, RequestsTableHeaderView, } from './Components/TableHeaderViews';
-import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from './Services/EmailService'
+import { EquipmentTableHeaderView, RequestsTableHeaderView, } from '../Components/TableHeaderViews';
+import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../Services/EmailService'
 
 // Styles:
 const useRowStyles = makeStyles({

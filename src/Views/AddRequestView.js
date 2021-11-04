@@ -10,7 +10,7 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { db } from './firebase';
+import { db } from '../Services/firebase';
 import './SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
@@ -18,7 +18,7 @@ import { FormGroup } from '@material-ui/core';
 import { Alert, Stack } from '@mui/material';
 import './AddRequest.css'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { useStateValue } from './StateProvider';
+import { useStateValue } from '../StateManagement/StateProvider';
 import moment from 'moment';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { styled } from '@mui/material/styles';
