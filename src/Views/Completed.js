@@ -1,5 +1,5 @@
 import React from 'react';
-import "./Home.css";
+import "../Styles/Home.css";
 import { Box } from '@mui/system';
 import CompletedTable from './CompletedTable';
 

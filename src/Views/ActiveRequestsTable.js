@@ -19,7 +19,7 @@ import { TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from '../Components/HomeSkeleton'
-import './Table.css'
+import '../Styles/Table.css'
 import { Link } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
@@ -33,7 +33,7 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
-import AddRequestView from './AddRequestView';
+import AddRequestView from '../Views/AddRequestView';
 import { EquipmentTableHeaderView, RequestsTableHeaderView, } from '../Components/TableHeaderViews';
 import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../Services/EmailService'
 

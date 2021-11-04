@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import './App.css';
-import Header from './Header';
-import Home from './Home';
+import './Styles/App.css';
+import Header from './Views/Header';
+import Home from './Views/Home';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 // import { useHistory } from 'react-router-dom';
 // import Login from './Login';
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from './firebase';
-import { useStateValue } from './StateProvider';
-import SignIn from './SignIn';
-import SignUp from './SignUp';
+import { auth } from './Services/firebase';
+import { useStateValue } from './StateManagement/StateProvider';
+import SignIn from './Views/SignIn';
+import SignUp from './Views/SignUp';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import SpinnerProgress from './SpinnerProgress';
-import AddRequestView from './AddRequestView';
-import Completed from './Completed';
-import AddLoanerView from './AddLoanerView';
-import LoanerManager from './LoanerManager';
-import SalesmenList from './SalesmenList';
+import SpinnerProgress from './Components/SpinnerProgress';
+import AddRequestView from './Views/AddRequestView';
+import Completed from './Views/Completed';
+import AddLoanerView from './Views/AddLoanerView';
+import LoanerManager from './Views/LoanerManager';
+import SalesmenList from './Views/SalesmenList';
 
 const theme = createTheme({
   palette: {

@@ -1,5 +1,5 @@
 import React from 'react';
-import "./Home.css";
+import "../Styles/Home.css";
 import ActiveRequestsTable from './ActiveRequestsTable';
 import { Box } from '@mui/system';
 

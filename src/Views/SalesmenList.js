@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from './StateProvider';
+import { useStateValue } from '../StateManagement/StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Table from '@material-ui/core/Table';
@@ -10,13 +10,13 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, where, getDocs, orderBy, setDoc, doc } from 'firebase/firestore';
-import { db } from './firebase';
+import { db } from '../Services/firebase';
 import Button from '@mui/material/Button';
 import { Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import HomeSkeleton from './HomeSkeleton'
-import './SalesmenList.css'
+import HomeSkeleton from '../Components/HomeSkeleton'
+import '../Styles/SalesmenList.css'
 import { Link, useHistory } from 'react-router-dom';
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';

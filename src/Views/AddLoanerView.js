@@ -9,12 +9,12 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { db } from '../Services/firebase';
-import './SignUp.css'
+import '../Styles/SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { Alert } from '@mui/material';
-import './AddRequest.css'
-import { useStateValue } from '../StateProvider';
+import '../Styles/AddRequest.css'
+import { useStateValue } from '../StateManagement/StateProvider';
 import moment from 'moment';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
