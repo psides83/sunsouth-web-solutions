@@ -17,6 +17,7 @@ import AddRequestView from './AddRequestView';
 import Completed from './Completed';
 import AddLoanerView from './AddLoanerView';
 import LoanerManager from './LoanerManager';
+import SalesmenList from './SalesmenList';
 
 const theme = createTheme({
   palette: {
@@ -66,6 +67,11 @@ function App() {
       <div className="app">
         <Router>
             <Switch>
+
+            <Route path="/salesmen-list">
+                <Header />
+                <SalesmenList />
+              </Route>
 
               <Route path="/loaner-manager">
                 <Header />
