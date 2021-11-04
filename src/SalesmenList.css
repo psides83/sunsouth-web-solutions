@@ -1,0 +1,31 @@
+.edit-button-bg {
+    padding: 0px 5px 0 5px;
+    border: 1px solid #367c2b8f;
+    border-radius: 6px;
+}
+
+input {
+    border: none;
+}
+
+/* .model {
+    padding: 2px;
+    border: 1px solid #367c2b8f;
+    border-radius: 6px;
+} */
+
+.completed-link {
+    margin: 20px;
+}
+
+.tableHead {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.link {
+    text-decoration: none;
+  }
+  
