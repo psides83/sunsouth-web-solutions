@@ -139,4 +139,74 @@ const sendStatusEmail = async (status, equipment, request, fullName, userProfile
     await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
-  export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } 
+// Sends email when new request is submitted
+const sendNewRequestEmail = (timestamp, equipmentList, fullName, userProfile) => {
+
+const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`
+
+var body = `<body>`;
+
+body +=  `<section>
+            <p>${timestamp}</p>
+            <p>${fullName} is requesting work to be done on the following equipment.</p>
+            </section>`;
+        
+for (var i = 0; i < equipmentList.length; i++) {
+
+    body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray">
+            <section>
+                <h3>Equipment ${i + 1}</h3>
+                <p>Model: ${equipmentList[i].model}</p>
+                <p>Stock Number: ${equipmentList[i].stock}</p>
+                <p>Serial Number: ${equipmentList[i].serial}</p>
+                <p>Work Required: ${equipmentList[i].work}</p>
+                <p>Additional Notes: ${equipmentList[i].notes}</p>
+            </section>`
+}
+
+body += '<body>';
+
+const templateParams = {
+    to: "psides83@hotmail.com",
+    replyTo: userProfile.email, 
+    from: "PDI/Setup Requests", 
+    copy: userProfile.email,
+    subject: subject,
+    message: body
+}
+
+emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+}
+
+// Send email when loaner is logged.
+const sendNewLoanerEmail = (model, stock, dateOut, customer, employee, userProfile) => {
+
+const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
+const subject = `${model}, ${stock} has been loaned out`
+
+const body = `<body>
+                <h2>Equipment Loaned Out</h2>
+                <dl>
+                    <dt>Date Loaned: ${dateOut}</dt>
+                    <dt>model: ${model}</dt>
+                    <dt>Stock Number: ${stock}</dt>
+                    <dt>Customer: ${customer}</dt>
+                    <dt>Loaning Employee: ${employee}</dt>
+                </dl>
+                </body>`
+
+
+const templateParams = {
+    to: userProfile.email,
+    replyTo: userProfile.email, 
+    from: "Loaned Equipment Manager", 
+    copy: userProfile.email,
+    subject: subject,
+    message: body
+}
+
+emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+}
+
+export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendNewRequestEmail, sendNewLoanerEmail } 

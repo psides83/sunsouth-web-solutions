@@ -21,6 +21,7 @@ import Snackbar from '@material-ui/core/Snackbar';
 import emailjs from 'emailjs-com';
 import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
+import { sendNewLoanerEmail } from '../Services/EmailService';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';
@@ -84,23 +85,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // copyright view at the footer of the page.
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
-        TheWayMedia Web Solutions
-      </a>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-};
+// function Copyright() {
+//   return (
+//     <Typography variant="body2" color="textSecondary" align="center">
+//       {'Copyright © '}
+//       <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
+//         TheWayMedia Web Solutions
+//       </a>{' '}
+//       {new Date().getFullYear()}
+//       {'.'}
+//     </Typography>
+//   );
+// };
 
 // const ListItem = styled('li')(({ theme }) => ({
 //   margin: theme.spacing(0.5),
 // }));
-
 
 export default function AddLoanerView() {  
   //#region State Properties
@@ -111,7 +111,7 @@ export default function AddLoanerView() {
   var [model, setModel] = useState('');
   var [stock, setStock] = useState('');
   var [serial, setSerial] = useState('');
-  var [hours, setHours] = useState([]);
+  var [hours, setHours] = useState('');
   var [dateOut, setDateOut] = useState('');
   var [customer, setCustomer] = useState('');
   var [validationMessage, setValidationMessage] = useState('');
@@ -157,7 +157,7 @@ export default function AddLoanerView() {
 
     await setDoc(loanerRef, firestoreLoaner, { merge: true });
 
-    sendEmail()
+    sendNewLoanerEmail()
     resetForm()
   } 
 
@@ -208,36 +208,6 @@ export default function AddLoanerView() {
       setValidationMessage("Loaner successfully added")
       setOpenSuccess(true)
     }
-  }
-
-  // Send email when loaner is logged.
-  const sendEmail = () => {
-
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `${model}, ${stock} has been loaned out`
-
-    const body = `<body>
-                    <h2>Equipment Loaned Out</h2>
-                    <dl>
-                      <dt>Date Loaned: ${dateOut}</dt>
-                      <dt>model: ${model}</dt>
-                      <dt>Stock Number: ${stock}</dt>
-                      <dt>Customer: ${customer}</dt>
-                      <dt>Loaning Employee: ${employee}</dt>
-                    </dl>
-                  </body>`
-
-
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "Loaned Equipment Manager", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
   // UI view of the submission form
