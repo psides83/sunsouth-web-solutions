@@ -10,7 +10,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
 import { useStateValue } from '../StateManagement/StateProvider';
@@ -71,6 +71,9 @@ export default function SignIn() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
   const [userProfile, setProfile] = useState({});
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  var [validationMessage, setValidationMessage] = useState('');
 
   const fetchProfile = async () => {
     try {
@@ -176,8 +179,14 @@ export default function SignIn() {
             onChange={e=> setPassword(e.target.value)}
           />
           <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
-            <Alert  onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+            <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
               The email and password do not match
+            </Alert>
+          </Snackbar>
+
+          <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
+            <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+              {validationMessage}
             </Alert>
           </Snackbar>
           <Button 
