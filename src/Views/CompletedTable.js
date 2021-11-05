@@ -18,12 +18,21 @@ import { db } from '../Services/firebase';
 import Button from '@mui/material/Button';
 import { MenuItem, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
+// import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from '../Components/HomeSkeleton'
 import '../Styles/Table.css'
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import emailjs from 'emailjs-com'
+import { RequestsTableHeaderView } from '../Components/TableHeaderViews';
+import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from '@mui/material/Dialog';
+import Timeline from '@mui/lab/Timeline';
+import TimelineItem from '@mui/lab/TimelineItem';
+import TimelineSeparator from '@mui/lab/TimelineSeparator';
+import TimelineConnector from '@mui/lab/TimelineConnector';
+import TimelineContent from '@mui/lab/TimelineContent';
+import TimelineDot from '@mui/lab/TimelineDot';
+import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 
 const useRowStyles = makeStyles({
   root: {
@@ -54,7 +63,7 @@ const useStyles = makeStyles((theme) => ({
 
 // Equipment row view:
 function EquipmentRow({item}) {
-  const [{ userProfile }] = useStateValue();
+  // const [{ userProfile }] = useStateValue();
   const classes = useRowStyles();
   var [model, setModel] = useState('')
   var [stock, setStock] = useState('');
@@ -64,28 +73,28 @@ function EquipmentRow({item}) {
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
   
   // Handles editing of the equipment values. either opens the edit textfields or sets new edits to firestore:
-  const editEquipment = async () => {
-    if (isEditingEquipment) { 
+  // const editEquipment = async () => {
+  //   if (isEditingEquipment) { 
 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
-        model: model,
-        stock: stock,
-        serial: serial,
-        work: work,
-        notes: notes
-      }, { merge: true })
+  //     await setDoc(doc(db, 'branches', userProfile.branch, "requests", item.requestID, "equipment", item.stock), { 
+  //       model: model,
+  //       stock: stock,
+  //       serial: serial,
+  //       work: work,
+  //       notes: notes
+  //     }, { merge: true })
 
-      setIsEditingEquipment(false)
-    } else { 
+  //     setIsEditingEquipment(false)
+  //   } else { 
 
-      setModel(item.model)
-      setStock(item.stock)
-      setSerial(item.serial)
-      setWork(item.work)
-      setNotes(item.notes)
-      setIsEditingEquipment(true)
-    }
-  }
+  //     setModel(item.model)
+  //     setStock(item.stock)
+  //     setSerial(item.serial)
+  //     setWork(item.work)
+  //     setNotes(item.notes)
+  //     setIsEditingEquipment(true)
+  //   }
+  // }
 
   // Equipment row UI:
   return (
@@ -145,7 +154,7 @@ function EquipmentRow({item}) {
         }
         </TableCell>
         
-        <TableCell align="center">
+        {/* <TableCell align="center">
           <IconButton 
             color="success" 
             style={{ fontSize: 20 }}
@@ -165,7 +174,7 @@ function EquipmentRow({item}) {
               </Tooltip>
             }
           </IconButton>
-        </TableCell>
+        </TableCell> */}
       </TableRow>
     </React.Fragment>
   )
@@ -187,7 +196,16 @@ function Row({request}) {
   var [notes, setNotes] = useState('');
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
-  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+  // var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
+  const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
+  const [openChangeLog, setOpenChangeLog] = useState(false);
+
+  const handleCloseChangeLog = () => {
+    setOpenChangeLog(false);
+  };
+  const handleToggleChangeLog = () => {
+    setOpenChangeLog(!openChangeLog);
+  };
 
   // Fetches equipment from firestore:
   const fetchEquipment = useCallback( ()=> {
@@ -213,56 +231,29 @@ function Row({request}) {
     fetchEquipment()
   }, [fetchEquipment])
 
-  // Sends email when work order number is added or updated:
-  const sendWorkOrderEmail = (workOrder) => {
-
-    // creates the paramaters for the email template:
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = `<body>
-                    <p>${timestamp}</p><br>
-                    <p>Work order # ${workOrder} has been added or updated by ${fullName} to the request on ${model} ${equipment[0]?.model}, ST# ${equipment[0]?.stock}.</p>
-                  <body>`
-
-    // Sets paramaters for the email template:
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    // sends thw email:
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-  }
-
   // Handles adding or editing the work order number for the request:
-  const editWorkOrder = async () => {
-    if (isEditingWorkOrder) { 
+  // const editWorkOrder = async () => {
+  //   if (isEditingWorkOrder) { 
 
-      const workOrderStatus = request.workOrder === '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
+  //     const workOrderStatus = request.workOrder === '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
 
-      const changeLogEntry = {
-        user: fullName,
-        change: workOrderStatus, 
-        timestamp: moment().format("DD-MMM-yyyy hh:mmA")
-      }
+  //     const changeLogEntry = {
+  //       user: fullName,
+  //       change: workOrderStatus, 
+  //       timestamp: moment().format("DD-MMM-yyyy hh:mmA")
+  //     }
       
-      if (request.workOrder !== workOrder) {
-      request.changeLog.push(changeLogEntry)
-    }
+  //     if (request.workOrder !== workOrder) {
+  //     request.changeLog.push(changeLogEntry)
+  //   }
 
-      await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-      sendWorkOrderEmail(workOrder)
-      setIsEditingWorkOrder(false)
-    } else { 
-      setWorkOrder(request.workOrder)
-      setIsEditingWorkOrder(true)
-    }
-  }
+  //     await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
+  //     setIsEditingWorkOrder(false)
+  //   } else { 
+  //     setWorkOrder(request.workOrder)
+  //     setIsEditingWorkOrder(true)
+  //   }
+  // }
 
   // Handles adding equipment to the request:
   const addEquipment = async () => {
@@ -297,29 +288,6 @@ function Row({request}) {
 
       setIsShowingAddEquipment(true)
     }
-  }
-
-  // Send email when request status is updated:
-  const sendStatusEmail = async (status) => {
-
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    const body = `<body>
-                    <p>${timestamp}</p><br> 
-                    <p>Status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
-                  <body>`
-
-    const templateParams = {
-      to: userProfile.email,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
-    }
-
-    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
   }
 
   // Handles updating the request status:
@@ -357,101 +325,125 @@ function Row({request}) {
       
       merge: true 
     });
-
-    sendStatusEmail(status)
   }
 
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.id} className={classes.root}  >
+      <TableRow key={request.id} className={classes.root}>
 
-        <TableCell>
-          <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
-            <IconButton 
-              aria-label="expand row" 
-              size="small" 
-              onClick={() => setOpen(!open)}>
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </Tooltip>
-        </TableCell>
-
-        <TableCell align="left">
-          <strong className="model">
-            {equipment[0]?.model}
-          </strong>
-          <p>
-            <small>
-              {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
-            </small>
-          </p>
-        </TableCell>
-
-        <TableCell component="th" scope="row" >
-          <p>
-            {request.salesman}
-          </p>
-          <small>
-            {request.timestamp}
-          </small>
-        </TableCell>        
-        
-        <TableCell align="left">
-          {isEditingWorkOrder 
-          ? 
-          <TextField 
-            variant="outlined" 
-            label="Work Order"
-            inputProps={{style: {fontSize: 14}}} 
-            size="small" 
-            onChange={e=> setWorkOrder(e.target.value)} 
-            value={workOrder}> 
-          </TextField> 
-          : 
-          request.workOrder}
-        </TableCell>
-        
-        <TableCell align="left">
-          <Tooltip title="Update Status">
-            <Button 
-              color="success" 
-              size="small" 
-              variant={request.status === 'In Progress' ? "contained" : "outlined"} 
-              onClick={updateStatus}
-            >
-              {request.status}
-            </Button>
-          </Tooltip>
-          <p>
-            <small>
-              {request.statusTimestamp}
-            </small>
-          </p>
-        </TableCell>
-        
-        <TableCell align="center">
+      <TableCell>
+        <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
           <IconButton 
-            color="success" 
-            className={classes.icon}
-            onClick={editWorkOrder}>
-               {isEditingWorkOrder 
-                  ? 
-                  <CheckIcon 
-                    color="success" 
-                    style={{ fontSize: 16 }}/> 
-                  : 
-                  <div className="edit-button-bg">  
-                    <Tooltip title="Edit">
-                      <EditRoundedIcon 
-                        color="success" 
-                        style={{ fontSize: 16 }}/>
-                    </Tooltip>
-                  </div>
-                }
+            aria-label="expand row" 
+            size="small" 
+            onClick={() => setOpen(!open)}>
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
-        </TableCell>
+        </Tooltip>
+      </TableCell>
 
+      <TableCell align="left">
+        <strong className="model">{equipment[0]?.model}</strong>
+        <p><small>{equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}</small></p>
+      </TableCell>
+
+      <TableCell component="th" scope="row" >
+        <p>{request.salesman}</p>
+        <small>{request.timestamp}</small>
+      </TableCell>        
+
+      <TableCell align="left"> {
+        isEditingWorkOrder 
+        ? 
+        <TextField 
+          variant="outlined" 
+          label="Work Order"
+          inputProps={{style: {fontSize: 14}}} 
+          size="small" 
+          onChange={e=> setWorkOrder(e.target.value)} 
+          value={workOrder}> 
+        </TextField> 
+        : 
+        request.workOrder
+      }
+      </TableCell>
+
+      <TableCell align="left">
+            <Tooltip title="Update Status">
+              <Button 
+                color="success" 
+                size="small" 
+                sx={{ width: '115px', pt: '5px' }}
+                variant={request.status === 'In Progress' ? "contained" : "outlined"} 
+                onClick={updateStatus}
+              >
+                { request.status }
+              </Button>
+            </Tooltip>
+            <p><small>{request.statusTimestamp}</small></p>
+      </TableCell>
+
+      <TableCell align="right">
+        <div className="cellButtons">
+          <div>
+
+            <IconButton aria-label="show" onClick={handleToggleChangeLog}>
+              <Tooltip title="Show Changes">
+                <HistoryOutlinedIcon />
+              </Tooltip>
+            </IconButton>
+            <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
+              <DialogTitle>Request Change History</DialogTitle>
+              <Timeline position="alternate"> { 
+                request.changeLog.map((change) => (
+                  <TimelineItem>
+                    <TimelineSeparator >
+                      <TimelineDot variant="outlined" color="success"/>
+                      {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
+                    </TimelineSeparator>
+                    <TimelineContent>
+                      <p><small>{change.timestamp}</small></p>
+                      <small>{change.user}</small>
+                      <p><small>{change.change}</small></p>
+                    </TimelineContent>
+                  </TimelineItem>
+                ))
+              }
+              </Timeline>
+            </Dialog>
+          </div>
+
+          {/* <div className="editIcon">
+            <IconButton 
+              color="success" 
+              className={classes.icon}
+              onClick={editWorkOrder}> {
+                isEditingWorkOrder 
+                ? 
+                workOrderHasChanges
+                ?
+                <Tooltip title="Save">
+                  <CheckIcon color="success" style={{ fontSize: 18 }}/> 
+                </Tooltip>
+                :
+                <Tooltip title="Cancel">
+                  <CloseIcon 
+                    color="success" 
+                    style={{ fontSize: 18 }}
+                  />
+                </Tooltip> 
+                : 
+                <div className="edit-button-bg">  
+                  <Tooltip title="Edit Work Order">
+                    <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
+                  </Tooltip>
+                </div>
+              }
+            </IconButton>
+          </div> */}
+        </div>
+      </TableCell>
       </TableRow>
 
       <TableRow>
@@ -613,16 +605,7 @@ export default function CompletedTable() {
       }
       <TableContainer component={Paper} style={{ borderRadius: 10 }}>
         <Table  size="small"aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
-          <TableHead>
-            <TableRow key="header">
-              <TableCell />
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
-              <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
+          <RequestsTableHeaderView/>
           <TableBody>
             {requests.map(request => (
               <Row request={request} />

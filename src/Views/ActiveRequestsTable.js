@@ -37,6 +37,7 @@ import AddRequestView from '../Views/AddRequestView';
 import { EquipmentTableHeaderView, RequestsTableHeaderView, } from '../Components/TableHeaderViews';
 import { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../Services/EmailService'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import AgricultureIcon from '@mui/icons-material/Agriculture';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -295,7 +296,7 @@ function EquipmentRow({request, item}) {
                 />
               </Tooltip>
               : 
-              <Tooltip title="Edit">
+              <Tooltip title="Edit Equipment">
                 <EditRoundedIcon 
                 color="success" 
                 style={{ fontSize: 18 }}/> 
@@ -526,6 +527,7 @@ function Row({request}) {
 
         <TableCell component="th" scope="row" >
           <p>{request.salesman}</p>
+          <small>{request.timestamp}</small>
         </TableCell>        
         
         <TableCell align="left"> {
@@ -558,59 +560,66 @@ function Row({request}) {
               </Tooltip>
               <p><small>{request.statusTimestamp}</small></p>
         </TableCell>
-
-        <TableCell align="left">
-          <IconButton aria-label="show" onClick={handleToggleChangeLog}>
-            <HistoryOutlinedIcon />
-          </IconButton>
-          <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
-            <DialogTitle>Request Change History</DialogTitle>
-            <Timeline position="alternate"> { 
-              request.changeLog.map((change) => (
-                <TimelineItem>
-                  <TimelineSeparator >
-                    <TimelineDot variant="outlined" color="success"/>
-                    {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
-                  </TimelineSeparator>
-                  <TimelineContent>
-                    <p><small>{change.timestamp}</small></p>
-                    <small>{change.user}</small>
-                    <p><small>{change.change}</small></p>
-                  </TimelineContent>
-                </TimelineItem>
-              ))
-            }
-            </Timeline>
-          </Dialog>
-        </TableCell>
         
-        <TableCell align="center">
-          <IconButton 
-            color="success" 
-            className={classes.icon}
-            onClick={editWorkOrder}> {
-              isEditingWorkOrder 
-              ? 
-              workOrderHasChanges
-              ?
-              <Tooltip title="Save">
-                <CheckIcon color="success" style={{ fontSize: 18 }}/> 
-              </Tooltip>
-              :
-              <Tooltip title="Cancel">
-                <CloseIcon 
-                  color="success" 
-                  style={{ fontSize: 18 }}
-                />
-              </Tooltip> 
-              : 
-              <div className="edit-button-bg">  
-                <Tooltip title="Edit">
-                  <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
+        <TableCell align="right">
+          <div className="cellButtons">
+            <div>
+
+              <IconButton aria-label="show" onClick={handleToggleChangeLog}>
+                <Tooltip title="Show Changes">
+                  <HistoryOutlinedIcon />
                 </Tooltip>
-              </div>
-            }
-          </IconButton>
+              </IconButton>
+              <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
+                <DialogTitle>Request Change History</DialogTitle>
+                <Timeline position="alternate"> { 
+                  request.changeLog.map((change) => (
+                    <TimelineItem>
+                      <TimelineSeparator >
+                        <TimelineDot variant="outlined" color="success"/>
+                        {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
+                      </TimelineSeparator>
+                      <TimelineContent>
+                        <p><small>{change.timestamp}</small></p>
+                        <small>{change.user}</small>
+                        <p><small>{change.change}</small></p>
+                      </TimelineContent>
+                    </TimelineItem>
+                  ))
+                }
+                </Timeline>
+              </Dialog>
+            </div>
+
+            <div className="editIcon">
+              <IconButton 
+                color="success" 
+                className={classes.icon}
+                onClick={editWorkOrder}> {
+                  isEditingWorkOrder 
+                  ? 
+                  workOrderHasChanges
+                  ?
+                  <Tooltip title="Save">
+                    <CheckIcon color="success" style={{ fontSize: 18 }}/> 
+                  </Tooltip>
+                  :
+                  <Tooltip title="Cancel">
+                    <CloseIcon 
+                      color="success" 
+                      style={{ fontSize: 18 }}
+                    />
+                  </Tooltip> 
+                  : 
+                  <div className="edit-button-bg">  
+                    <Tooltip title="Edit Work Order">
+                      <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
+                    </Tooltip>
+                  </div>
+                }
+              </IconButton>
+            </div>
+          </div>
         </TableCell>
       </TableRow>
 
@@ -727,9 +736,9 @@ function Row({request}) {
                   <TableFooter>
                     <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
                       <TableCell>
-                        <Button startIcon={<AddIcon />} color="success" onClick={addEquipment}>
-                          Add Equipment
-                        </Button>
+                        <Tooltip title="Add Equipment">
+                          <Button startIcon={[<AddIcon />, <AgricultureIcon/>]} color="success" onClick={addEquipment}></Button>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
                   </TableFooter>

@@ -18,7 +18,6 @@ import { useStateValue } from '../StateManagement/StateProvider';
 import moment from 'moment';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
-import emailjs from 'emailjs-com';
 import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { sendNewLoanerEmail } from '../Services/EmailService';
@@ -157,7 +156,7 @@ export default function AddLoanerView() {
 
     await setDoc(loanerRef, firestoreLoaner, { merge: true });
 
-    sendNewLoanerEmail()
+    sendNewLoanerEmail(model, stock, dateOut, customer, employee, userProfile)
     resetForm()
   } 
 

@@ -76,18 +76,18 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 // copyright view at the footer of the page.
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
-        TheWayMedia Web Solutions
-      </a>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-};
+// function Copyright() {
+//   return (
+//     <Typography variant="body2" color="textSecondary" align="center">
+//       {'Copyright © '}
+//       <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
+//         TheWayMedia Web Solutions
+//       </a>{' '}
+//       {new Date().getFullYear()}
+//       {'.'}
+//     </Typography>
+//   );
+// };
 
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5),
@@ -116,7 +116,6 @@ export default function AddRequestView() {
   var [checked8, setChecked8] = useState(false);
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherState] = useState(true);
-  var [eqString] = useState([]);
   var [validationMessage, setValidationMessage] = useState('');
   const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
   //#endregion

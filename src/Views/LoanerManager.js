@@ -12,18 +12,18 @@ import Paper from '@material-ui/core/Paper';
 import { collection, query, where, onSnapshot, setDoc, doc } from 'firebase/firestore';
 import { db } from '../Services/firebase';
 import Button from '@mui/material/Button';
-import { Dialog, Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
+import { Dialog, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
+// import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from '../Components/HomeSkeleton'
 import '../Styles/LoanerManager.css'
-import { Link, useHistory } from 'react-router-dom';
-import CheckIcon from '@mui/icons-material/Check';
+// import { Link, useHistory } from 'react-router-dom';
+// import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import emailjs from 'emailjs-com'
+// import CloseIcon from '@mui/icons-material/Close';
 import AddLoanerView from '../Views/AddLoanerView'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { sendLoanerStatusEmail } from '../Services/EmailService';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -97,35 +97,6 @@ function Row({loaner}) {
     //   }
     // }
   
-    // Send email when request status is updated:
-    const sendStatusEmail = async () => {
-  
-      const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-      const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-      const subject = `${loaner?.model}, ${loaner?.stock} has been returned`
-      const body = `<body>
-                      <h2>Loaned Equipment Returned</h2>
-                      <dl>
-                        <dt>Date Returned: ${timestamp}</dt>
-                        <dt>Model: ${loaner.model}</dt>
-                        <dt>Stock Number: ${loaner?.stock}</dt>
-                        <dt>Customer: ${loaner.customer}</dt>
-                        <dt>Loaning Employee: ${fullName}</dt>
-                      </dl>
-                    </body>`;
-  
-      const templateParams = {
-        to: userProfile.email,
-        replyTo: userProfile.email, 
-        from: "Loaned Equipment Manager", 
-        copy: userProfile.email,
-        subject: subject,
-        message: body
-      }
-  
-      await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-    }
-  
     // Handles updating the request status:
     const updateStatus = async () => {
       var status = loaner.status
@@ -159,7 +130,7 @@ function Row({loaner}) {
         merge: true 
       });
   
-      sendStatusEmail(status)
+      sendLoanerStatusEmail(loaner, fullName, userProfile)
     }
   
     // Request row UI:

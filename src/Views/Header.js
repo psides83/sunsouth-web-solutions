@@ -55,30 +55,8 @@ function Header() {
             </Link>
                 <h1 className="title">{`SunSouth ${userProfile?.branch}`}</h1>
             </div>
-            
-
-            {/* <div className="header-search"> */}
-                {/* <input
-                    className="header-searchInput" 
-                    type="text"/> */}
-                {/* <SearchIcon className="header-searchIcon"/> */}
-                {/* Logo */}
-            {/* </div> */}
-
-            {/* <div className="title">
-                <h1>
-                    SunSouth Auburn
-                </h1>
-            </div> */}
 
             <div className="header-nav">
-                {/* <Link className="link" to={user && "/add-request"}>
-                    <div className="header-option">
-                        <span className="header-optionLineOne">Submit</span>
-                        <span className="header-optionLineTwo">New Request</span>
-                    </div>
-                </Link> */}
-
                 <Link className="link" to={user && "/"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">Active</span>
@@ -86,17 +64,17 @@ function Header() {
                     </div>
                 </Link>
 
-                {/* <Link className="link" to={user && "/completed"}>
-                    <div className="header-option">
-                        <span className="header-optionLineOne">View</span>
-                        <span className="header-optionLineTwo">Completed</span>
-                    </div>
-                </Link> */}
-
                 <Link className="link" to={user && "/loaner-manager"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">Loaned Equipment</span>
                         <span className="header-optionLineTwo">Manager</span>
+                    </div>
+                </Link>
+
+                <Link className="link" to={user && "/salesmen-list"}>
+                    <div className="header-option">
+                        <span className="header-optionLineOne">Salesmen</span>
+                        <span className="header-optionLineTwo">List</span>
                     </div>
                 </Link>
 

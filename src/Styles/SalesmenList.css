@@ -29,3 +29,29 @@ input {
     text-decoration: none;
   }
   
+#search {
+    background-image: url('/src/Styles/search-icon.png');
+    background-size: 32px;
+    background-position: 02px 2px;
+    background-repeat: no-repeat;
+    /* min-width: 15%; */
+    font-size: 18px;
+    padding: 8px 20px 8px 40px;
+    border: 0px solid #ddd;
+    border-radius: 8px;
+    margin-right: 25px;
+}
+
+.searchAndFilter {
+    display: flex;
+    flex-direction: row;
+}
+
+#search:focus {
+    outline: none !important;
+}
+  
+.filter {
+    margin-right: 25px;
+}
+ 

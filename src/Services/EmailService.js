@@ -1,13 +1,17 @@
-import emailjs from 'emailjs-com'
+import emailjs from 'emailjs-com';
 import moment from 'moment';
+
+const serviceID = 'service_5guvozs';
+const templateID = 'template_5dg1ys6';
+const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
+const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com";
 
 // Sends email when equipment is updated:
 const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model, stock, serial, work, notes, userProfile) => {
 
     // Creates the paramaters for the email template:
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`
+    const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`;
     const body = `<body>
                     <section>
                         <p>${timestamp}</p>
@@ -36,54 +40,55 @@ const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model,
                         </dl>
                         </div>
                     </section>
-                    <body>`
+                    <body>`;
 
-    // Sets paramaters for the email template:
+    // Sets paramaters for the email template
     const templateParams = {
-        to: userProfile.email,
+        to: recipients,
         replyTo: userProfile.email,
         from: "PDI/Setup Requests",
         copy: userProfile.email,
         subject: subject,
         message: body
-    }
+    };
 
-    // Sends the email:
-    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    // Sends the email
+    await emailjs.send(serviceID, templateID, templateParams, userID);
 }
 
-// Sends email when work order number is added or updated:
-const sendWorkOrderEmail = (equipment, request, workOrder, fullName, model, userProfile) => {
+// Sends email when work order number is added or updated
+const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model, userProfile) => {
 
-    // creates the paramaters for the email template:
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
+    // creates the paramaters for the email template
+    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p><br>
                     <p>Work order # ${workOrder} has been added or updated by ${fullName} to the request on ${model} ${equipment[0]?.model}, ST# ${equipment[0]?.stock}.</p>
-                    <body>`
+                    <body>`;
 
-    // Sets paramaters for the email template:
+    // Sets paramaters for the email template
     const templateParams = {
-        to: userProfile.email,
+        to: recipients,
         replyTo: userProfile.email, 
         from: "PDI/Setup Requests", 
         copy: userProfile.email,
         subject: subject,
         message: body
-    }
+    };
 
-    // sends thw email:
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    // sends thw email
+    await emailjs.send(serviceID, templateID, templateParams, userID);
 }
 
 // Sends email when equipment is added to a request from the Active Requests Table
-const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile) => {
+const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile) => {
 
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = request.workOrder !== '' ? `Equipment Added to request with WO# ${request.workOrder}` : `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`
+    const subject = request.workOrder !== ''
+                    ? 
+                    `Equipment Added to request with WO# ${request.workOrder}`
+                    :
+                    `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`;
 
     var body = `<body>
                 <section>
@@ -104,109 +109,131 @@ const sendNewEquipmentEmail = (request, equipment, timestamp, fullName, model, s
                 <body>`;
 
     const templateParams = {
-    to: userProfile.email,
-    replyTo: userProfile.email, 
-    from: "PDI/Setup Requests", 
-    copy: userProfile.email,
-    subject: subject,
-    message: body
-    }
+        to: recipients,
+        replyTo: userProfile.email, 
+        from: "PDI/Setup Requests", 
+        copy: userProfile.email,
+        subject: subject,
+        message: body
+    };
 
-    emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    await emailjs.send(serviceID, templateID, templateParams, userID);
 }
 
 // Send email when request status is updated:
 const sendStatusEmail = async (status, equipment, request, fullName, userProfile) => {
 
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
-    const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`
+    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p><br> 
                     <p>The status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
-                  <body>`
+                  <body>`;
 
     const templateParams = {
-      to: userProfile.email,
+      to: recipients,
       replyTo: userProfile.email, 
       from: "PDI/Setup Requests", 
       copy: userProfile.email,
       subject: subject,
       message: body
-    }
+    };
 
-    await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
+    await emailjs.send(serviceID, templateID, templateParams, userID);
   }
 
 // Sends email when new request is submitted
-const sendNewRequestEmail = (timestamp, equipmentList, fullName, userProfile) => {
+const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfile) => {
 
-const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`
+    const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
 
-var body = `<body>`;
+    var body = `<body>
+                    <section>
+                        <p>${timestamp}</p>
+                        <p>${fullName} is requesting work to be done on the following equipment.</p>
+                    </section>`;
+            
+    for (var i = 0; i < equipmentList.length; i++) {
 
-body +=  `<section>
-            <p>${timestamp}</p>
-            <p>${fullName} is requesting work to be done on the following equipment.</p>
-            </section>`;
-        
-for (var i = 0; i < equipmentList.length; i++) {
+        body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray">
+                <section>
+                    <h3>Equipment ${i + 1}</h3>
+                    <p>Model: ${equipmentList[i].model}</p>
+                    <p>Stock Number: ${equipmentList[i].stock}</p>
+                    <p>Serial Number: ${equipmentList[i].serial}</p>
+                    <p>Work Required: ${equipmentList[i].work}</p>
+                    <p>Additional Notes: ${equipmentList[i].notes}</p>
+                </section>`
+    };
 
-    body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray">
-            <section>
-                <h3>Equipment ${i + 1}</h3>
-                <p>Model: ${equipmentList[i].model}</p>
-                <p>Stock Number: ${equipmentList[i].stock}</p>
-                <p>Serial Number: ${equipmentList[i].serial}</p>
-                <p>Work Required: ${equipmentList[i].work}</p>
-                <p>Additional Notes: ${equipmentList[i].notes}</p>
-            </section>`
-}
+    body += '<body>';
 
-body += '<body>';
+    const templateParams = {
+        to: recipients,
+        replyTo: userProfile.email, 
+        from: "PDI/Setup Requests", 
+        copy: userProfile.email,
+        subject: subject,
+        message: body
+    };
 
-const templateParams = {
-    to: "psides83@hotmail.com",
-    replyTo: userProfile.email, 
-    from: "PDI/Setup Requests", 
-    copy: userProfile.email,
-    subject: subject,
-    message: body
-}
-
-emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-}
+    await emailjs.send(serviceID, templateID, templateParams, userID);
+};
 
 // Send email when loaner is logged.
-const sendNewLoanerEmail = (model, stock, dateOut, customer, employee, userProfile) => {
+const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, userProfile) => {
 
-const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-const subject = `${model}, ${stock} has been loaned out`
+    const subject = `${model}, ${stock} has been loaned out`;
 
-const body = `<body>
-                <h2>Equipment Loaned Out</h2>
-                <dl>
-                    <dt>Date Loaned: ${dateOut}</dt>
-                    <dt>model: ${model}</dt>
-                    <dt>Stock Number: ${stock}</dt>
-                    <dt>Customer: ${customer}</dt>
-                    <dt>Loaning Employee: ${employee}</dt>
-                </dl>
-                </body>`
+    const body = `<body>
+                    <h2>Equipment Loaned Out</h2>
+                    <dl>
+                        <dt>Date Loaned: ${dateOut}</dt>
+                        <dt>model: ${model}</dt>
+                        <dt>Stock Number: ${stock}</dt>
+                        <dt>Customer: ${customer}</dt>
+                        <dt>Loaning Employee: ${employee}</dt>
+                    </dl>
+                </body>`;
 
 
-const templateParams = {
-    to: userProfile.email,
-    replyTo: userProfile.email, 
-    from: "Loaned Equipment Manager", 
-    copy: userProfile.email,
-    subject: subject,
-    message: body
-}
+    const templateParams = {
+        to: recipients,
+        replyTo: userProfile.email, 
+        from: "Loaned Equipment Manager", 
+        copy: userProfile.email,
+        subject: subject,
+        message: body
+    };
 
-emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-}
+    await emailjs.send(serviceID, templateID, templateParams, userID)
+};
 
-export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendNewRequestEmail, sendNewLoanerEmail } 
+// Send email when request status is updated:
+const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
+  
+    const subject = `${loaner?.model}, ${loaner?.stock} has been returned`;
+    const body = `<body>
+                    <h2>Loaned Equipment Returned</h2>
+                    <dl>
+                      <dt>Date Returned: ${timestamp}</dt>
+                      <dt>Model: ${loaner.model}</dt>
+                      <dt>Stock Number: ${loaner?.stock}</dt>
+                      <dt>Customer: ${loaner.customer}</dt>
+                      <dt>Loaning Employee: ${fullName}</dt>
+                    </dl>
+                  </body>`;
+
+    const templateParams = {
+      to: recipients,
+      replyTo: userProfile.email, 
+      from: "Loaned Equipment Manager", 
+      copy: userProfile.email,
+      subject: subject,
+      message: body
+    };
+
+    await emailjs.send(serviceID, templateID, templateParams, userID)
+};
+
+export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendNewRequestEmail, sendNewLoanerEmail, sendLoanerStatusEmail };

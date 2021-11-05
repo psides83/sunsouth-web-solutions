@@ -3,17 +3,15 @@ import { TableHead, TableRow, TableCell } from '@material-ui/core';
 
 // Header for the Requests Table
 function RequestsTableHeaderView() {
+    const headers = ['', 'Model', 'Submitted', 'Work Order', 'Status', '']
+
     return (
         <React.Fragment>
             <TableHead>
                 <TableRow key="header">
-                    <TableCell />
-                    <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
-                    <TableCell style={{ fontSize: 18 }} align="left"><strong>Submitted</strong></TableCell>
-                    <TableCell style={{ fontSize: 18 }} align="left"><strong>WO#</strong></TableCell>
-                    <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-                    <TableCell style={{ fontSize: 18 }} align="left"><strong>History</strong></TableCell>
-                    <TableCell />
+                    {headers.map((header) => (
+                        <TableCell style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
+                    ))}
                 </TableRow>
             </TableHead>
         </React.Fragment>
@@ -22,14 +20,15 @@ function RequestsTableHeaderView() {
 
 // Header for the sub-table of equipment
 function EquipmentTableHeaderView() {
+    const headers = ['Model', 'ID #\'s', 'Work Require', 'Notes']
+
     return (
         <React.Fragment>
             <TableHead>
                 <TableRow key="subHeader">
-                    <TableCell><strong>Model</strong></TableCell>
-                    <TableCell><strong>ID #'s</strong></TableCell>
-                    <TableCell><strong>Work Require</strong></TableCell>
-                    <TableCell><strong>Notes</strong></TableCell>
+                    {headers.map((header) => (
+                        <TableCell><strong>{header}</strong></TableCell>
+                    ))}
                 </TableRow>
             </TableHead>
         </React.Fragment>

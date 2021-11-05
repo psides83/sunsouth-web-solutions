@@ -8,3 +8,14 @@
 a {
     accent-color: #367c2ba0;
 }
+
+.cellButtons {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.editIcon {
+    margin-left: 20px;
+}
