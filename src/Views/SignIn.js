@@ -106,6 +106,22 @@ export default function SignIn() {
       });
   };
 
+  // Forgot password.
+  const forgotPassword = async () => {
+
+    await sendPasswordResetEmail(auth, email)
+            .then(() => {
+              // Password reset email sent!
+              setValidationMessage("An email has been sent to reset your password")
+              setOpenSuccess(true)
+            })
+            .catch((error) => {
+              
+              setValidationMessage("An email has been sent to reset your password")
+              setOpenSuccess(true)
+            });
+    }
+
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
@@ -176,7 +192,7 @@ export default function SignIn() {
           </Button>
           <Grid container>
             <Grid item xs>
-              <Link href="#" variant="body2">
+              <Link onClick={forgotPassword} variant="body2">
                 Forgot password?
               </Link>
             </Grid>
