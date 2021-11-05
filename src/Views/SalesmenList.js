@@ -9,22 +9,14 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
-import { collection, query, where, getDocs, orderBy, setDoc, doc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../Services/firebase';
-import Button from '@mui/material/Button';
-import { Input, TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
-import moment from 'moment';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import { MenuItem, TextField, Typography } from '@material-ui/core';
 import HomeSkeleton from '../Components/HomeSkeleton'
 import '../Styles/SalesmenList.css'
-import { Link, useHistory } from 'react-router-dom';
-import CheckIcon from '@mui/icons-material/Check';
-import AddIcon from '@mui/icons-material/Add';
-import CloseIcon from '@mui/icons-material/Close';
-import emailjs from 'emailjs-com'
 
-// Styles:
-const useRowStyles = makeStyles({
+  // Styles:
+  const useRowStyles = makeStyles({
     root: {
       '& > *': {
         // borderBottom: 'unset',
@@ -32,164 +24,54 @@ const useRowStyles = makeStyles({
     },
   });
 
+  // SunSouth branches
+  const branches = [
+    "Abbeville",
+    "Andalusia",
+    "Auburn",
+    "Barnesville",
+    "Blakely",
+    "Brundidge",
+    "Carrollton",
+    "Carthage",
+    "Clanton",
+    "Columbus",
+    "Demopolis",
+    "Donalsonville",
+    "Dothan",
+    "Foley",
+    "Gulfport",
+    "Lucedale",
+    "Meridian",
+    "Mobile",
+    "Montgomery",
+    "Samson",
+    "Tuscaloosa"
+  ]
+
+  const headers = ["Branch", "Name", "Email"]
+
 // Loaner row view:
 function Row({salesman}) {
     const [{ userProfile }] = useStateValue();
     const classes = useRowStyles();
     const fullName = `${salesman.firstName} ${salesman.lastName}`
-  
-    // Sends email when work order number is added or updated:
-    // const sendWorkOrderEmail = (workOrder) => {
-  
-    //   // creates the paramaters for the email template:
-    //   const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    //   const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    //   const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    //   const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated by " + fullName + " to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
-  
-    //   // Sets paramaters for the email template:
-    //   const templateParams = {
-    //     to: userProfile.email,
-    //     replyTo: userProfile.email, 
-    //     from: "PDI/Setup Requests", 
-    //     copy: userProfile.email,
-    //     subject: subject,
-    //     message: body
-    //   }
-  
-    //   // sends the email:
-    //   emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-    // }
-  
-    // Handles adding or editing the work order number for the request:
-    // const editWorkOrder = async () => {
-    //   if (isEditingWorkOrder) { 
-  
-    //     const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
-  
-    //     const changeLogEntry = {
-    //       user: fullName,
-    //       change: workOrderStatus, 
-    //       timestamp: moment().format("MMM-DD-yyyy hh:mmA")
-    //     }
-        
-    //     if (request.workOrder != workOrder) {
-    //     request.changeLog.push(changeLogEntry)
-    //   }
-  
-    //     await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-    //     // sendWorkOrderEmail(workOrder)
-    //     setIsEditingWorkOrder(false)
-    //   } else { 
-    //     setWorkOrder(request.workOrder)
-    //     setIsEditingWorkOrder(true)
-    //   }
-    // }
-  
-    // Send email when request status is updated:
-    // const sendStatusEmail = async () => {
-  
-    //   const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    //   const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    //   const subject = `${loaner?.model}, ${loaner?.stock} has been returned`
-    //   const body = `<body>
-    //                   <h2>Loaned Equipment Returned</h2>
-    //                   <dl>
-    //                     <dt>Date Returned: ${timestamp}</dt>
-    //                     <dt>Model: ${loaner.model}</dt>
-    //                     <dt>Stock Number: ${loaner?.stock}</dt>
-    //                     <dt>Customer: ${loaner.customer}</dt>
-    //                     <dt>Loaning Employee: ${fullName}</dt>
-    //                   </dl>
-    //                 </body>`;
-  
-    //   const templateParams = {
-    //     to: userProfile.email,
-    //     replyTo: userProfile.email, 
-    //     from: "Loaned Equipment Manager", 
-    //     copy: userProfile.email,
-    //     subject: subject,
-    //     message: body
-    //   }
-  
-    //   await emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-    // }
-  
-    // Handles updating the request status:
-    // const updateStatus = async () => {
-    //   var status = loaner.status
-  
-    //   switch (status) {
-    //     case "Out":
-    //       status = "Returned";
-    //       break;
-    //     default:
-    //       status = "Returned";
-    //   }
-  
-    //   const changeLogEntry = {
-  
-    //     user: fullName,
-    //     change: `Status updated to ${status}`, 
-    //     timestamp: moment().format("MMM-DD-yyyy hh:mmA")
-    //   }
-  
-    //   loaner.changeLog.push(changeLogEntry)
-  
-    //   const loanerRef = doc(db, 'branches',  userProfile.branch, 'loaners', loaner.id);
-  
-    //   await setDoc(loanerRef, { 
-  
-    //     status: status, 
-    //     statusTimestamp: moment().format("MMM-DD-yyyy"), 
-    //     changeLog: loaner.changeLog 
-    //   }, { 
-        
-    //     merge: true 
-    //   });
-  
-    //   sendStatusEmail(status)
-    // }
-  
+
     // Request row UI:
     return (
       <React.Fragment>
         <TableRow key={salesman.id} className={classes.root}  >
-  
-            <TableCell component="th" scope="row" >
-                {salesman.branch}
-            </TableCell>  
-          
-            <TableCell align="left">
-              {fullName}
-            </TableCell>
+          <TableCell component="th" scope="row" >
+              {salesman.branch}
+          </TableCell>  
+        
+          <TableCell align="left">
+            {fullName}
+          </TableCell>
 
-            <TableCell component="th" scope="row" >
-                {salesman.email}
-            </TableCell>  
-          
-          {/* <TableCell align="center">
-            <IconButton 
-              color="success" 
-              className={classes.icon}
-              onClick={editWorkOrder}>
-                 {isEditingWorkOrder 
-                    ? 
-                    <CheckIcon 
-                      color="success" 
-                      style={{ fontSize: 16 }}/> 
-                    : 
-                    <div className="edit-button-bg">  
-                      <Tooltip title="Edit">
-                        <EditRoundedIcon 
-                          color="success" 
-                          style={{ fontSize: 16 }}/>
-                      </Tooltip>
-                    </div>
-                  }
-            </IconButton>
-          </TableCell> */}
-  
+          <TableCell component="th" scope="row" >
+              {salesman.email}
+          </TableCell>  
         </TableRow>
       </React.Fragment>
     );
@@ -197,36 +79,70 @@ function Row({salesman}) {
 
   // Whole table view:
   export default function SalesmenList() {
-  const [{ userProfile }] = useStateValue();
-  const [salesmen, setSalesmen] = useState([]);
-  const [loading, setLoading] = useState(true);
+    const [{ userProfile }] = useStateValue();
+    const [salesmen, setSalesmen] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchText, setSearchText] = useState('');
+    const [searchParam] = useState(["branch", "firstName", "lastName"]);
+    const [filterParam, setFilterParam] = useState(["All"]);
 
-  // Fetch loanerss from firestore:
-  const fetch = useCallback( async ()=> {
-    if(userProfile) {
-      const salesmenQuery = query(
-        collection(db, 'salesmen'),
-        //   where('status', '!=', 'Returned')
-        orderBy("branch", "asc")
-      );
-      
-      const docSnapshot = await getDocs(salesmenQuery)
+    // Fetch loanerss from firestore:
+    const fetch = useCallback( async ()=> {
+      if(userProfile) {
+        const salesmenQuery = query(
+          collection(db, 'salesmen'),
+          //   where('status', '!=', 'Returned')
+          orderBy("branch", "asc")
+        );
+        
+        const docSnapshot = await getDocs(salesmenQuery)
 
-        setSalesmen(docSnapshot.docs.map((doc) => ({
-            id: doc.data().id,
-            branch: doc.data().branch,
-            email: doc.data().email,
-            firstName: doc.data().firstName,
-            lastName: doc.data().lastName,
-            position: doc.data().position,
-          })))
-    }
-  }, [userProfile])
+          setSalesmen(docSnapshot.docs.map((doc) => ({
+              id: doc.data().id,
+              branch: doc.data().branch,
+              email: doc.data().email,
+              firstName: doc.data().firstName,
+              lastName: doc.data().lastName,
+              position: doc.data().position,
+            })))
+      }
+    }, [userProfile])
 
-  useEffect(() => {
-    fetch()
-    setTimeout( function() { setLoading(false) }, 1000)
-  }, [fetch])
+    useEffect(() => {
+      fetch()
+      setTimeout( function() { setLoading(false) }, 1000)
+    }, [fetch])
+
+  const search = (salesmen) => {
+    return salesmen.filter((item) => {
+      /*
+      // in here we check if our region is equal to our c state
+      // if it's equal to then only return the items that match
+      // if not return All the countries
+      */
+      if (item.branch == filterParam) {
+        return searchParam.some((newItem) => {
+          return (
+            item[newItem]
+                .toString()
+                .toLowerCase()
+                .indexOf(searchText.toLowerCase()) > -1
+          );
+        });
+      } else if (filterParam == "All") {
+        return searchParam.some((newItem) => {
+          return (
+              item[newItem]
+                  .toString()
+                  .toLowerCase()
+                  .indexOf(searchText.toLowerCase()) > -1
+          );
+        });
+      }
+    });
+  };
+
+  
 
   // Table UI:
   return (
@@ -239,29 +155,42 @@ function Row({salesman}) {
             : 
             <div className="tableHead">
               <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Salesmen"}</Typography>
-              {/* <Link className="link" to={"/add-loaner"}>
-              <Button color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
-                Add Loaner
-              </Button>
-              </Link> */}
+              <div className="searchAndFilter">
+                <div>
+                  <input type="text" id="search" onChange={e=> setSearchText(e.target.value)}placeholder="Search"></input>
+                </div>
+                <div className="filter">
+                  <TextField
+                    size="small"
+                    variant="outlined"
+                    labelId="demo-simple-select-label"
+                    id="filter"
+                    // className={classes.select}
+                    value={filterParam}
+                    label="Filter"
+                    onChange={e=> setFilterParam(e.target.value)}
+                    select
+                  >
+                    <MenuItem value="All">All</MenuItem>
+                      {branches.map(branch => (
+                        <MenuItem value={branch}>{branch}</MenuItem>
+                      ))}
+                  </TextField>
+                </div>
+              </div>
             </div>
           }
             <TableContainer component={Paper} style={{ borderRadius: 10 }}>
               <Table  size="small" aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
                 <TableHead>
                   <TableRow key="header">
-                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                 */}
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Branch</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Name</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Email</strong></TableCell>
-                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell> */}
-                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell> */}
-                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell> */}
-                      {/* <TableCell /> */}
+                    {headers.map((header) => (
+                        <TableCell style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
+                      ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {salesmen.map(salesman => (
+                  {search(salesmen).map(salesman => (
                     <Row salesman={salesman} />
                   ))}
                 </TableBody>
