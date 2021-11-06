@@ -162,6 +162,7 @@ function Row({salesman}) {
                 <div className="filter">
                   <TextField
                     size="small"
+                    fullWidth
                     variant="outlined"
                     labelId="demo-simple-select-label"
                     id="filter"

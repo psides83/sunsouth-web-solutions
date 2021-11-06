@@ -156,10 +156,10 @@ function Row({loaner}) {
 
           <TableCell component="th" scope="row" >
             <p>
-              {loaner.stock}
+              {`Stock: ${loaner.stock}`}
             </p>
             <small>
-              {loaner.serial}
+              {`Serial: ${loaner.serial}`}
             </small>
           </TableCell>  
           
