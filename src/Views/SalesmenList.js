@@ -14,6 +14,7 @@ import { db } from '../Services/firebase';
 import { MenuItem, TextField, Typography } from '@material-ui/core';
 import HomeSkeleton from '../Components/HomeSkeleton'
 import '../Styles/SalesmenList.css'
+import { SalesmenTableHeaderView } from '../Components/TableHeaderViews'
 
   // Styles:
   const useRowStyles = makeStyles({
@@ -48,8 +49,6 @@ import '../Styles/SalesmenList.css'
     "Samson",
     "Tuscaloosa"
   ]
-
-  const headers = ["Branch", "Name", "Email"]
 
 // Loaner row view:
 function Row({salesman}) {
@@ -142,8 +141,6 @@ function Row({salesman}) {
     });
   };
 
-  
-
   // Table UI:
   return (
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
@@ -177,19 +174,14 @@ function Row({salesman}) {
                         <MenuItem value={branch}>{branch}</MenuItem>
                       ))}
                   </TextField>
+                  {/* <a href="mailto:psides@sunsouth.com?&subject=Transfer?&body=would this be available to transfer" target="_blank">Send Transfer Request</a> */}
                 </div>
               </div>
             </div>
           }
             <TableContainer component={Paper} style={{ borderRadius: 10 }}>
               <Table  size="small" aria-label="collapsible table" style={{ margin: 15 }} sx={{ paddingTop: 2 }}>
-                <TableHead>
-                  <TableRow key="header">
-                    {headers.map((header) => (
-                        <TableCell style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
-                      ))}
-                  </TableRow>
-                </TableHead>
+                <SalesmenTableHeaderView/>
                 <TableBody>
                   {search(salesmen).map(salesman => (
                     <Row salesman={salesman} />

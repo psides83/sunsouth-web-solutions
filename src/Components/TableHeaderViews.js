@@ -35,6 +35,21 @@ function EquipmentTableHeaderView() {
     )
 }
 
+// Header for the sub-table of equipment
+function SalesmenTableHeaderView() {
+    const headers = ['Branch', 'Name', 'Email' ]
 
+    return (
+        <React.Fragment>
+            <TableHead>
+                <TableRow key="subHeader">
+                    {headers.map((header) => (
+                        <TableCell><strong>{header}</strong></TableCell>
+                    ))}
+                </TableRow>
+            </TableHead>
+        </React.Fragment>
+    )
+}
 
-export { RequestsTableHeaderView, EquipmentTableHeaderView }
+export { RequestsTableHeaderView, EquipmentTableHeaderView, SalesmenTableHeaderView }
