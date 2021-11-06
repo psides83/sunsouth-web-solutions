@@ -71,6 +71,7 @@ export default function SignUp() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [branch, setBranch] = useState('');
+  const [role, setRole] = useState('');
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [validationMessage, setValidationMessage] = useState('');
@@ -99,6 +100,8 @@ export default function SignUp() {
     "Tuscaloosa"
   ]
 
+  const roles = ['admin', 'sales', 'service', 'parts']
+
   const register = (e) => {
 
       createUserWithEmailAndPassword(auth, email, password)
@@ -113,6 +116,7 @@ export default function SignUp() {
               firstName: firstName,
               lastName: lastName,
               email: email,
+              role: role,
               branch: branch
             }
             setValidationMessage("Registration successful.")
@@ -229,27 +233,46 @@ export default function SignUp() {
                 onChange={e=> setLastName(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <TextField
+            <Grid item xs={12} sm={5}>
+              <TextField
                   size="small"
                   variant="outlined"
                   required
+                  fullWidth
                   labelId="demo-simple-select-label"
-                  id="branch"
+                  id="role"
                   className={classes.select}
-                  value={branch}
-                  label="Branch"
-                  onChange={e=> setBranch(e.target.value)}
+                  value={role}
+                  label="Role"
+                  onChange={e=> setRole(e.target.value)}
                   select
                 >
-                  <MenuItem value={""}><em>None</em></MenuItem>
-                  {branches.map(branch => (
-                    <MenuItem value={branch}>{branch}</MenuItem>
+                  {roles.map(role => (
+                    <MenuItem value={role}>{role}</MenuItem>
                   ))}
-                </TextField>
-              </FormControl>
+              </TextField>
             </Grid>
+
+            <Grid item xs={12} sm={7}>
+              <TextField
+                size="small"
+                variant="outlined"
+                required
+                fullWidth
+                labelId="demo-simple-select-label"
+                id="branch"
+                className={classes.select}
+                value={branch}
+                label="Branch"
+                onChange={e=> setBranch(e.target.value)}
+                select
+              >
+                {branches.map(branch => (
+                  <MenuItem value={branch}>{branch}</MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
@@ -318,9 +341,9 @@ export default function SignUp() {
           </Grid>
         </form>
       </div>
-      <Box mt={5}>
+      {/* <Box mt={5}>
         <Copyright />
-      </Box>
+      </Box> */}
     </Container>
   );
 }

@@ -1,16 +1,63 @@
 import emailjs from 'emailjs-com';
 import moment from 'moment';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../Services/firebase';
 
 const serviceID = 'service_5guvozs';
 const templateID = 'template_5dg1ys6';
 const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
 const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com";
+
+const roles = {
+    request: ['admin', 'service', 'parts'],
+    loaner: ['admin', 'service', 'sales']
+}
+
+// Sets recipients based on type of send email called
+const setRecipients = async (recipientRoles, userProfile, salesman) => {
+
+    if(userProfile) {
+
+        var recipients = []
+    
+        const usersQuery = query(collection(db, 'users'), where('branch', '==', userProfile?.branch));
+        const docSnapshot = await getDocs(usersQuery)      
+
+        docSnapshot.docs.map((doc) => (
+
+            recipients.push({
+                salesman: `${doc.data().firstName} ${doc.data().lastName}`,
+                email: doc.data().email,
+                role: doc.data().role
+            })
+        ))
+
+        var recipientEmails = []
+        
+        if (recipientRoles === roles.request) {
+            recipients.filter((recipient) => recipient.salesman === salesman).map((recipient) => (
+
+                recipientEmails.push(recipient.email)
+            ))
+        }
+
+        recipients.filter((recipient) => recipientRoles.includes(recipient.role)).map((recipient) => (
+
+            recipientEmails.push(recipient.email)
+        ))
+
+        return recipientEmails.toString().replace(/,[s]*/g, ", ")
+
+    } else {
+        console.log("no user profile")
+    }
+}
 
 // Sends email when equipment is updated:
-const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model, stock, serial, work, notes, userProfile) => {
+const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userProfile, fullName, model, stock, serial, work, notes) => {
 
-    // Creates the paramaters for the email template:
+    // Creates the paramaters for the email template
+    const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`;
     const body = `<body>
                     <section>
@@ -54,12 +101,14 @@ const sendEquipmentUpdateEmail = async (currentValues, request, fullName, model,
 
     // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID);
+    // console.log(recipients)
 }
 
 // Sends email when work order number is added or updated
-const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model, userProfile) => {
+const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model, userProfile, salesman) => {
 
     // creates the paramaters for the email template
+    const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
                     <p>${timestamp}</p>
@@ -77,13 +126,15 @@ const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model
         message: body
     };
 
-    // sends thw email
+    // sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID);
+    // console.log(recipients)
 }
 
 // Sends email when equipment is added to a request from the Active Requests Table
-const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile) => {
+const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile, salesman) => {
 
+    const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = request.workOrder !== ''
                     ? 
                     `Equipment Added to request with WO# ${request.workOrder}`
@@ -117,12 +168,15 @@ const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, mo
         message: body
     };
 
+    // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID);
+    // console.log(recipients)
 }
 
 // Send email when request status is updated:
-const sendStatusEmail = async (status, equipment, request, fullName, userProfile) => {
+const sendStatusEmail = async (status, equipment, request, fullName, userProfile, salesman) => {
 
+    const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
                     <p>${timestamp}</p>
@@ -139,14 +193,16 @@ const sendStatusEmail = async (status, equipment, request, fullName, userProfile
       message: body
     };
 
+    // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID);
+    // console.log(recipients)
   }
 
 // Sends email when new request is submitted
-const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfile) => {
+const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfile, salesman) => {
 
+    const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
-
     var body = `<body>
                     <section>
                         <p>${timestamp}</p>
@@ -177,14 +233,16 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
         message: body
     };
 
+    // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID);
+    // console.log(recipients)
 };
 
 // Send email when loaner is logged.
 const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, userProfile) => {
 
+    const recipients = await setRecipients(roles.loaner, userProfile, 'none')
     const subject = `${model}, ${stock} has been loaned out`;
-
     const body = `<body>
                     <h2>Equipment Loaned Out</h2>
                     <dl>
@@ -206,12 +264,15 @@ const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, use
         message: body
     };
 
+    // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID)
+    // console.log(recipients)
 };
 
 // Send email when request status is updated:
 const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   
+    const recipients = await setRecipients(roles.loaner, userProfile, 'none')
     const subject = `${loaner?.model}, ${loaner?.stock} has been returned`;
     const body = `<body>
                     <h2>Loaned Equipment Returned</h2>
@@ -233,7 +294,9 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
       message: body
     };
 
+    // Sends the email
     await emailjs.send(serviceID, templateID, templateParams, userID)
+    // console.log(recipients)
 };
 
 export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendNewRequestEmail, sendNewLoanerEmail, sendLoanerStatusEmail };

@@ -125,10 +125,7 @@ function Row({loaner}) {
         status: status, 
         statusTimestamp: moment().format("DD-MMM-yyyy"), 
         changeLog: loaner.changeLog 
-      }, { 
-        
-        merge: true 
-      });
+      }, { merge: true });
   
       sendLoanerStatusEmail(loaner, fullName, userProfile)
     }

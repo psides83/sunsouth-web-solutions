@@ -129,7 +129,7 @@ function EquipmentRow({request, item}) {
           changeLog: item.changeLog
         }, { merge: true })
 
-        sendEquipmentUpdateEmail(currentValues, request, fullName, model, stock, serial, work, notes, userProfile)
+        sendEquipmentUpdateEmail(currentValues, request, request.salesman, userProfile, fullName, model, stock, serial, work, notes)
         setIsEditingEquipment(false)
 
       // if equipmentHasChanges check is false, 
@@ -388,7 +388,7 @@ function Row({request}) {
         }
 
         await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-        sendWorkOrderEmail(equipment, request, workOrder, fullName, model, userProfile)
+        sendWorkOrderEmail(equipment, request, workOrder, fullName, model, userProfile, request.salesman)
         setIsEditingWorkOrder(false)
       } else {
 
@@ -405,6 +405,7 @@ function Row({request}) {
 
   // Handles adding equipment to the request:
   const addEquipment = async () => {
+
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA") 
 
     if(isShowingAddEquipment) {
@@ -445,7 +446,7 @@ function Row({request}) {
         await setDoc(requestRef, { changeLog: request.changeLog }, { merge: true });
 
         // Send email about addition of equipment
-        sendNewEquipmentEmail(request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile)
+        sendNewEquipmentEmail(request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile, request.salesman)
         // Hides add equipment TextFields
         setIsShowingAddEquipment(false)
         setEquipment([])
@@ -501,7 +502,7 @@ function Row({request}) {
       merge: true 
     });
 
-    sendStatusEmail(status, equipment, request, fullName, userProfile)
+    sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
   }
 
   // Request row UI:
@@ -593,7 +594,6 @@ function Row({request}) {
 
             <div className="editIcon">
               <IconButton 
-                color="success" 
                 className={classes.icon}
                 onClick={editWorkOrder}> {
                   isEditingWorkOrder 
@@ -711,7 +711,6 @@ function Row({request}) {
 
                       <TableCell align="center">
                         <IconButton 
-                          color="success" 
                           style={{ fontSize: 20 }}
                           onClick={addEquipment}> { 
                             model !== '' && stock !== '' && serial !== '' && work !== '' 
@@ -731,7 +730,7 @@ function Row({request}) {
                     null
                   }
                 </TableBody> { 
-                  !isShowingAddEquipment 
+                  !isShowingAddEquipment
                   ?
                   <TableFooter>
                     <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
@@ -742,7 +741,7 @@ function Row({request}) {
                       </TableCell>
                     </TableRow>
                   </TableFooter>
-                  : 
+                  :
                   null
                 }
               </Table>
@@ -810,7 +809,7 @@ export default function ActiveRequestsTable() {
           >
             Active Setup Requests
           </Typography>
-          
+        
           <Button 
             color="success" 
             size="small" 

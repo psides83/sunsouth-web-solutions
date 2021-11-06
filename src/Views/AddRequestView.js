@@ -188,7 +188,7 @@ export default function AddRequestView() {
         case "1":
           if (!checked1) {
             setChecked1(true)
-            work[0] =event.target.value
+            work[0] = event.target.value
             setWork(work)
           } else {
             setChecked1(false)
@@ -289,7 +289,7 @@ export default function AddRequestView() {
     
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA")
     const id = moment().format("yyyyMMDDHHmmss")
-    const salesman = userProfile?.firstName + ' ' + userProfile?.lastName
+    const salesman = `${userProfile?.firstName} ${userProfile?.lastName}`
     const changeLog = [{
       user: fullName,
       change: `request created`,
@@ -326,7 +326,7 @@ export default function AddRequestView() {
       await setDoc(equipmentRef, equipment, { merge: true });
     }
 
-    sendNewRequestEmail(timestamp)
+    sendNewRequestEmail(timestamp, equipmentList, fullName, userProfile, salesman)
     resetForm()
     setEquepmentList([])
   } 

@@ -321,10 +321,7 @@ function Row({request}) {
       status: status, 
       statusTimestamp: moment().format("DD-MMM-yyyy"), 
       changeLog: request.changeLog 
-    }, { 
-      
-      merge: true 
-    });
+    }, { merge: true });
   }
 
   // Request row UI:
