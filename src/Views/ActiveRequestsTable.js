@@ -475,11 +475,11 @@ function Row({request}) {
         break;
 
       case "In Progress":
-        status = "Complete";
+        status = "Completed";
         break;
 
       default:
-        status = "Complete";
+        status = "Completed";
     }
 
     const changeLogEntry = {
