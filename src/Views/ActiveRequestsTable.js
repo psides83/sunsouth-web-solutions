@@ -66,11 +66,8 @@ function EquipmentRow({request, item}) {
   });
   var [isEditingEquipment, setIsEditingEquipment] = useState(false);
   var [equipmentHasChanges, setEquipmentHasChanges] = useState(false);
-  var [changeDetails, setChangeDetails] = useState([])
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
 
-  
-  
   // Handles editing of the equipment values.
   // Either opens the edit textfields or sets new edits to firestore
   const editEquipment = async () => {
@@ -357,6 +354,7 @@ function Row({request}) {
 
   useEffect(() => {
 
+    // Checks for changes in workOrder value and updates state
     if (currentWorkOrder !== workOrder) {
 
       setWorkOrderHasChanges(true)
@@ -365,6 +363,7 @@ function Row({request}) {
       setWorkOrderHasChanges(false)
     }
     
+    // Fetch equipment data from firestore
     fetchEquipment()
   }, [fetchEquipment, currentWorkOrder, workOrder, isShowingAddEquipment, setWorkOrderHasChanges])
 
