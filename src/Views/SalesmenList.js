@@ -12,9 +12,15 @@ import Paper from '@material-ui/core/Paper';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { db } from '../Services/firebase';
 import { MenuItem, TextField, Typography } from '@material-ui/core';
+import Button from '@mui/material/Button';
 import HomeSkeleton from '../Components/HomeSkeleton'
 import '../Styles/SalesmenList.css'
 import { SalesmenTableHeaderView } from '../Components/TableHeaderViews'
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import TransferRequestView from './TransferRequest';
+import Dialog from '@mui/material/Dialog';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
+import { branches } from '../Components/branches';
 
   // Styles:
   const useRowStyles = makeStyles({
@@ -24,31 +30,6 @@ import { SalesmenTableHeaderView } from '../Components/TableHeaderViews'
       },
     },
   });
-
-  // SunSouth branches
-  const branches = [
-    "Abbeville",
-    "Andalusia",
-    "Auburn",
-    "Barnesville",
-    "Blakely",
-    "Brundidge",
-    "Carrollton",
-    "Carthage",
-    "Clanton",
-    "Columbus",
-    "Demopolis",
-    "Donalsonville",
-    "Dothan",
-    "Foley",
-    "Gulfport",
-    "Lucedale",
-    "Meridian",
-    "Mobile",
-    "Montgomery",
-    "Samson",
-    "Tuscaloosa"
-  ]
 
 // Loaner row view:
 function Row({salesman}) {
@@ -83,7 +64,27 @@ function Row({salesman}) {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchParam] = useState(["branch", "firstName", "lastName"]);
-    const [filterParam, setFilterParam] = useState(["All"]);
+    const [filterParam, setFilterParam] = useState("All");
+    const [emails, setEmails] = useState('')
+    const [isShowingTransferRequest, setisShowingTransferRequest] = useState(false)
+    
+    const handleCloseTransferRequest = () => {
+      setisShowingTransferRequest(false);
+    };
+    
+    const handleToggleTransferRequest = () => {
+      setEmails(() => {
+        var branchEmails = []
+        search(salesmen).map((salesman) => (
+            branchEmails.push(salesman.email)
+        )) 
+        return branchEmails.toString().replace(/,[s]*/g, ", ")
+      })
+      setisShowingTransferRequest(!isShowingTransferRequest);
+    };
+
+    
+
 
     // Fetch loanerss from firestore:
     const fetch = useCallback( async ()=> {
@@ -152,10 +153,34 @@ function Row({salesman}) {
             : 
             <div className="tableHead">
               <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Salesmen"}</Typography>
-              <div className="searchAndFilter">
-                <div>
-                  <input type="text" id="search" onChange={e=> setSearchText(e.target.value)}placeholder="Search"></input>
+              <div className="searchAndFilter"> 
+
+                { filterParam !== 'All'
+                ?
+                <div className="transferButton">
+                  <Button
+                    color="success" 
+                    variant="outlined" 
+                    endIcon={<LocalShippingIcon />} 
+                    onClick={handleToggleTransferRequest}
+                  >
+                    Requst Transfer
+                  </Button>
+                  <Dialog onClose={handleCloseTransferRequest} open={isShowingTransferRequest}>
+                    <div className="closeButtonContainer">
+                      <Button onClick={handleCloseTransferRequest} color="success">
+                        <CancelOutlinedIcon/>
+                      </Button>
+                    </div>
+                    <div className="transferRequestView">
+                      <TransferRequestView emails={emails}/>
+                    </div>
+                  </Dialog>
                 </div>
+                :
+                null
+                }
+
                 <div className="filter">
                   <TextField
                     size="small"
@@ -174,8 +199,12 @@ function Row({salesman}) {
                         <MenuItem value={branch}>{branch}</MenuItem>
                       ))}
                   </TextField>
-                  {/* <a href="mailto:psides@sunsouth.com?&subject=Transfer?&body=would this be available to transfer" target="_blank">Send Transfer Request</a> */}
                 </div>
+
+                <div className="search">
+                  <input type="text" id="search" onChange={e=> setSearchText(e.target.value)}placeholder="Search"></input>
+                </div>
+
               </div>
             </div>
           }
