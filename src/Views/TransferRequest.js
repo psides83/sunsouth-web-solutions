@@ -125,9 +125,7 @@ export default function TransferRequestView({emails}) {
         setOpenError(true)
         return false
     } else {
-        window.open(`mailto:${emails}?&subject=Transfer?&body=Would ${model}, ST# ${stock} be available to transfer?`, "-blank")
-        // setValidationMessage("Loaner successfully added")
-        // setOpenSuccess(true)
+        window.open(`mailto:${emails}?subject=Transfer?&body=Would ${model}, ST# ${stock} be available to transfer?`, "-blank")
         resetForm()
     }
   }
