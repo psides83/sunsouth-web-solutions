@@ -18,6 +18,7 @@ import FormControl from '@mui/material/FormControl';
 import { setDoc, doc } from '@firebase/firestore';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
+import { branches } from '../Components/branches';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -75,30 +76,6 @@ export default function SignUp() {
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [validationMessage, setValidationMessage] = useState('');
-
-  const branches = [
-    "Abbeville",
-    "Andalusia",
-    "Auburn",
-    "Barnesville",
-    "Blakely",
-    "Brundidge",
-    "Carrollton",
-    "Carthage",
-    "Clanton",
-    "Columbus",
-    "Demopolis",
-    "Donalsonville",
-    "Dothan",
-    "Foley",
-    "Gulfport",
-    "Lucedale",
-    "Meridian",
-    "Mobile",
-    "Montgomery",
-    "Samson",
-    "Tuscaloosa"
-  ]
 
   const roles = ['admin', 'sales', 'service', 'parts']
 
