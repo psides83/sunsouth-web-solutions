@@ -32,10 +32,9 @@ import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import { EquipmentTableHeaderView } from '../../components/TableHeaderViews';
 import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../../services/EmailService'
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { PDFDownloadLink } from '@react-pdf/renderer';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import { RequestDetails } from '../../components/RequestDetails';
 import EquipmentRow from './EquipmentRows';
+import { Link } from 'react-router-dom';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -48,7 +47,7 @@ const useRowStyles = makeStyles({
 
 // Request row view:
 export default function RequestRow({request}) {
-    const [{ userProfile }] = useStateValue();
+    const [{ userProfile }, dispatch] = useStateValue();
     const [open, setOpen] = useState(false);
     const classes = useRowStyles();
     var [workOrder, setWorkOrder] = useState('');
@@ -243,6 +242,24 @@ export default function RequestRow({request}) {
   
       sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
     }
+
+    const setPDFData = () => {
+      // e.preventDefault()
+      // const data = {
+      //   request: request,
+      //   equipment: equipment
+      // }
+
+      const requestRef = doc(db, 'pdf', 'pdfData');
+      setDoc(requestRef, { 
+  
+        request: request,
+        equipment: equipment
+      }, { 
+        
+        merge: true 
+      });
+    }
   
     // Request row UI:
     return (
@@ -332,16 +349,13 @@ export default function RequestRow({request}) {
               </div>
   
               <div>
-                <PDFDownloadLink document={<RequestDetails request={request} equipment={equipment} />} fileName="request-details.pdf">
-                  {({ blob, url, loading, error }) =>
-                    loading ? 'Loading document...' : 
-                    <IconButton aria-label="show">
-                      <Tooltip title="Print">
-                        <PrintOutlinedIcon />
-                      </Tooltip>
-                    </IconButton>
-                  }
-                </PDFDownloadLink>
+                <Link  target='_blank' rel="noopener noreferrer" to={'pdf'} onClick={setPDFData}>
+                  <IconButton aria-label="show">
+                    <Tooltip title="Print">
+                      <PrintOutlinedIcon />
+                    </Tooltip>
+                  </IconButton>
+                </Link>
                 
               </div>
   

@@ -16,7 +16,7 @@ const reducer = (state, action) => {
             return {
                 ...state,
                 activeRequest: action.activeRequest,
-        };
+            };
 
         case "SET_USER_PROFILE":
             return {

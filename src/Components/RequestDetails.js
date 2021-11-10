@@ -1,5 +1,6 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Svg, Line } from '@react-pdf/renderer';
+import { useStateValue } from '../state-management/StateProvider';
 
 // Create styles
 const styles = StyleSheet.create({
@@ -29,35 +30,35 @@ const styles = StyleSheet.create({
 
 // Create Document Component
 export const RequestDetails = ({request, equipment}) => (
-    <Document>
-    <Page size="A4" style={styles.body}>
-      <View style={styles.section}>
-        <Text style={styles.text}>{request.timestamp}</Text>
-        <Text style={styles.text}>{`Work Order: ${request.workOrder}`}</Text>
-        <Text style={styles.text}>{`Salesman:    ${request.salesman}`}</Text>
-      </View>
-      {
-          equipment.map((item) => (
-            <View style={styles.section}>
-              <Svg height="5" width="500">
-              <Line
-                x1="0"
-                y1="0"
-                x2="500"
-                y2="0"
-                strokeWidth={3}
-                stroke="rgb(150,150,150)"
-              />
-            </Svg>
-              	
-                <Text style={styles.title}>{`Equipment ${equipment.indexOf(item) + 1}`}</Text>
-                <Text style={styles.text}>{`Model:  ${item.model}`}</Text>
-                <Text style={styles.text}>{`Stock:  ${item.stock}`}</Text>
-                <Text style={styles.text}>{`Serial:  ${item.serial}`}</Text>
-                <Text style={styles.text}>{`Work:  ${item.work}`}</Text>
-              	<Text style={styles.text}>{`Notes:  ${item.notes}`}</Text>
-            </View>
-          ))
+  <Document>
+  <Page size="A4" style={styles.body}>
+    <View style={styles.section}>
+      <Text style={styles.text}>{request.timestamp}</Text>
+      <Text style={styles.text}>{`Work Order: ${request.workOrder}`}</Text>
+      <Text style={styles.text}>{`Salesman:    ${request.salesman}`}</Text>
+    </View>
+    {
+        equipment.map((item) => (
+          <View style={styles.section}>
+            <Svg height="5" width="500">
+            <Line
+              x1="0"
+              y1="0"
+              x2="500"
+              y2="0"
+              strokeWidth={3}
+              stroke="rgb(150,150,150)"
+            />
+          </Svg>
+              
+              <Text style={styles.title}>{`Equipment ${equipment.indexOf(item) + 1}`}</Text>
+              <Text style={styles.text}>{`Model:  ${item.model}`}</Text>
+              <Text style={styles.text}>{`Stock:  ${item.stock}`}</Text>
+              <Text style={styles.text}>{`Serial:  ${item.serial}`}</Text>
+              <Text style={styles.text}>{`Work:  ${item.work}`}</Text>
+              <Text style={styles.text}>{`Notes:  ${item.notes}`}</Text>
+          </View>
+        ))
       }
     </Page>
   </Document>

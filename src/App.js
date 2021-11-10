@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './styles/App.css';
 import Header from './views/Header';
 import Home from './views/Home';
@@ -6,7 +6,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 // import { useHistory } from 'react-router-dom';
 // import Login from './Login';
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from './services/firebase';
+import { auth, db } from './services/firebase';
 import { useStateValue } from './state-management/StateProvider';
 import SignIn from './views/SignIn';
 import SignUp from './views/SignUp';
@@ -18,6 +18,9 @@ import Completed from './views/Completed';
 import AddLoanerView from './views/AddLoanerView';
 import LoanerManager from './views/table-views/LoanerManager';
 import SalesmenList from './views/table-views/SalesmenList';
+import { RequestDetails } from './components/RequestDetails';
+import { PDFViewer } from '@react-pdf/renderer';
+import { doc, getDoc } from '@firebase/firestore';
 
 const theme = createTheme({
   palette: {
@@ -36,8 +39,24 @@ const theme = createTheme({
 
 function App() {
   // const history = useHistory();
+  // const [{ pdfData }] = useStateValue();
   const [{ user }, dispatch] = useStateValue();
   const [loading, setLoading] = useState(true);
+  var [data, setData] = useState()
+
+  const fetchdata = async ()=> {
+    
+    const docSnapshot = await getDoc(doc(db, 'pdf', 'pdfData'))
+
+    if (docSnapshot.exists()) {
+      console.log("Document data:", docSnapshot.data());
+      setData(docSnapshot.data())
+      setLoading(false)
+    } else {
+      // doc.data() will be undefined in this case
+      console.log("No such document!");
+    }
+  }
 
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
@@ -59,6 +78,8 @@ function App() {
         })
       }  
     });
+
+    fetchdata()
   }, [dispatch])
 
   return (
@@ -67,6 +88,20 @@ function App() {
       <div className="app">
         <Router>
             <Switch>
+
+              <Route path="/pdf">
+                {loading 
+                ? 
+                <SpinnerProgress/>
+                :
+                  <PDFViewer width="100%" height='1080'>
+                    <RequestDetails className="pdf"
+                      request={data.request} 
+                      equipment={data.equipment}
+                    />
+                  </PDFViewer>
+                }
+              </Route>
 
               <Route path="/salesmen-list">
                 <Header />
