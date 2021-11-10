@@ -441,7 +441,7 @@ export default function AddRequestView() {
       return false
     } else {
       console.log('eq added directly from submit')
-      if (model !== '' && (stock.length == 6 || stock.match(lowerCaseLetters) === false || stock.match(upperCaseLetters) === false) && serial !== '' && work.length !== 0) {
+      if (model !== '' && (stock.length === 6 || stock.match(lowerCaseLetters) === false || stock.match(upperCaseLetters) === false) && serial !== '' && work.length !== 0) {
         console.log("another eq added first")
         await pushEquipmentToRequest()
       }
@@ -532,7 +532,6 @@ export default function AddRequestView() {
             <Grid item xs={12}>
                 <TextField
                   variant="outlined"
-                  labelId="serial"
                   fullWidth
                   size="small"
                   required
@@ -553,7 +552,6 @@ export default function AddRequestView() {
                             <Stack direction="row">
                                 <FormControlLabel control={<Checkbox id="8" checked={checked8} onChange={handleChange} disabled={otherDisabled} color="primary" value={other}/>} label="Other:" />
                                 <TextField
-                                labelId="serial"
                                 fullWidth
                                 size="small"
                                 id="other"

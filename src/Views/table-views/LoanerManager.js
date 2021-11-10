@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from '../state-management/StateProvider';
+import { useStateValue } from '../../state-management/StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Table from '@material-ui/core/Table';
@@ -10,20 +10,20 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, where, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
 import { Dialog, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 // import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import HomeSkeleton from '../components/HomeSkeleton'
-import '../styles/LoanerManager.css'
+import HomeSkeleton from '../../components/HomeSkeleton'
+import '../../styles/LoanerManager.css'
 // import { Link, useHistory } from 'react-router-dom';
 // import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 // import CloseIcon from '@mui/icons-material/Close';
-import AddLoanerView from '../views/AddLoanerView'
+import AddLoanerView from '../AddLoanerView'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { sendLoanerStatusEmail } from '../services/EmailService';
+import { sendLoanerStatusEmail } from '../../services/EmailService';
 
 // Styles:
 const useRowStyles = makeStyles({

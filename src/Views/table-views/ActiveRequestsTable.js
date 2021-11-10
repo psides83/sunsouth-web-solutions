@@ -15,7 +15,7 @@ import Dialog from '@mui/material/Dialog';
 import AddRequestView from '../AddRequestView';
 import { RequestsTableHeaderView } from '../../components/TableHeaderViews';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import MainRow from './TableMainRow';
+import RequestRow from './ActiveRequestRow';
 import { Typography } from '@material-ui/core';
 
 // Whole table view:
@@ -106,7 +106,7 @@ export default function ActiveRequestsTable() {
           <RequestsTableHeaderView />
           <TableBody>
             {requests.map(request => (
-              <MainRow request={request} />
+              <RequestRow request={request} />
             ))}
           </TableBody>
         </Table>

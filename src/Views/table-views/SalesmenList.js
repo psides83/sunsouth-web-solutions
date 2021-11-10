@@ -6,7 +6,6 @@ import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
@@ -20,7 +19,7 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import TransferRequestView from '../TransferRequest';
 import Dialog from '@mui/material/Dialog';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { branches } from '../../components/branches';
+import { branches } from '../../models/branches';
 
   // Styles:
   const useRowStyles = makeStyles({
@@ -33,7 +32,6 @@ import { branches } from '../../components/branches';
 
 // Loaner row view:
 function Row({salesman}) {
-    const [{ userProfile }] = useStateValue();
     const classes = useRowStyles();
     const fullName = `${salesman.firstName} ${salesman.lastName}`
 
@@ -41,15 +39,15 @@ function Row({salesman}) {
     return (
       <React.Fragment>
         <TableRow key={salesman.id} className={classes.root}  >
-          <TableCell component="th" scope="row" >
+          <TableCell key='branch' component="th" scope="row" >
               {salesman.branch}
           </TableCell>  
         
-          <TableCell align="left">
+          <TableCell key='name' align="left">
             {fullName}
           </TableCell>
 
-          <TableCell component="th" scope="row" >
+          <TableCell key='email' component="th" scope="row" >
               {salesman.email}
           </TableCell>  
         </TableRow>
@@ -120,7 +118,7 @@ function Row({salesman}) {
       // if it's equal to then only return the items that match
       // if not return All the countries
       */
-      if (item.branch == filterParam) {
+      if (item.branch === filterParam) {
         return searchParam.some((newItem) => {
           return (
             item[newItem]
@@ -129,7 +127,7 @@ function Row({salesman}) {
                 .indexOf(searchText.toLowerCase()) > -1
           );
         });
-      } else if (filterParam == "All") {
+      } else if (filterParam === "All") {
         return searchParam.some((newItem) => {
           return (
               item[newItem]
@@ -139,6 +137,7 @@ function Row({salesman}) {
           );
         });
       }
+      return null
     });
   };
 

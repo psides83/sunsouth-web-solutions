@@ -66,7 +66,6 @@ export default function SignIn() {
   const classes = useStyles();
   const history = useHistory();
   const [{ user }, dispatch] = useStateValue();
-  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(true);
@@ -103,7 +102,8 @@ export default function SignIn() {
       history.push("/");
       })
       .catch((error) => {
-        setOpen(true);
+        setValidationMessage('The email and/or password do not match')
+        setOpenError(true);
         // const errorCode = error.code;
         // const errorMessage = error.message;
       });
@@ -130,7 +130,7 @@ export default function SignIn() {
       return;
     }
 
-    setOpen(false);
+    setOpenError(false);
   };
 
   useEffect(() => {
@@ -178,9 +178,9 @@ export default function SignIn() {
             value={password} 
             onChange={e=> setPassword(e.target.value)}
           />
-          <Snackbar open={open} autoHideDuration={3000} onClose={handleClose}>
+          <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
             <Alert onClose={handleClose} severity="error" sx={{ width: '100%' }}>
-              The email and password do not match
+              {validationMessage}
             </Alert>
           </Snackbar>
 

@@ -12,12 +12,10 @@ import '../styles/SignUp.css'
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { Alert } from '@mui/material';
 import '../styles/AddRequest.css'
-import { useStateValue } from '../state-management/StateProvider';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
-import { Avatar, MenuItem } from '@material-ui/core';
+import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { branches } from '../components/branches';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';
@@ -83,10 +81,8 @@ const useStyles = makeStyles((theme) => ({
 export default function TransferRequestView({emails}) {  
   //#region State Properties
   const classes = useStyles();
-  const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
-//   var [branch, setBranch] = useState('');
   var [model, setModel] = useState('');
   var [stock, setStock] = useState('');
   var [validationMessage, setValidationMessage] = useState('');

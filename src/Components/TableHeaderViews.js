@@ -44,7 +44,7 @@ function SalesmenTableHeaderView() {
             <TableHead>
                 <TableRow key="subHeader">
                     {headers.map((header) => (
-                        <TableCell><strong>{header}</strong></TableCell>
+                        <TableCell key={header}><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>

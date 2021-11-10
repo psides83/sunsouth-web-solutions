@@ -269,7 +269,6 @@ export default function AddLoanerView() {
                   size="small"
                   id="dateOut"
                   label="Date"
-                  labelId="dateOut"
                   autoFocus
                   onChange={e=> setDateOut(e.target.value)}
                   value={dateOut}
@@ -290,7 +289,6 @@ export default function AddLoanerView() {
                 size="small"
                 id="model"
                 label="Model"
-                labelId="model"
                 onChange={e=> setModel(e.target.value.toUpperCase())}
                 value={model}
               />
@@ -303,7 +301,6 @@ export default function AddLoanerView() {
                 size="small"
                 id="stock"
                 label="Stock"
-                labelId="stock"
                 name="stock"
                 onChange={e=> setStock(e.target.value)}
                 value={stock}
@@ -312,7 +309,6 @@ export default function AddLoanerView() {
             <Grid item xs={12}>
                 <TextField
                   variant="outlined"
-                  labelId="serial"
                   fullWidth
                   size="small"
                   required
@@ -326,7 +322,6 @@ export default function AddLoanerView() {
                 <Grid item xs={12} sm={4}>
                 <TextField
                   variant="outlined"
-                  labelId="hours"
                   fullWidth
                   size="small"
                   required
@@ -345,7 +340,6 @@ export default function AddLoanerView() {
                 size="small"
                 id="customer"
                 label="Customer"
-                labelId="customer"
                 name="customer"
                 type="text"
                 value={customer} 

@@ -16,9 +16,8 @@ import SpinnerProgress from './components/SpinnerProgress';
 import AddRequestView from './views/AddRequestView';
 import Completed from './views/Completed';
 import AddLoanerView from './views/AddLoanerView';
-import LoanerManager from './views/LoanerManager';
+import LoanerManager from './views/table-views/LoanerManager';
 import SalesmenList from './views/table-views/SalesmenList';
-import { RequestsTableHeaderView } from './components/TableHeaderViews';
 
 const theme = createTheme({
   palette: {

@@ -5,7 +5,6 @@ import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
@@ -14,11 +13,11 @@ import { createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase
 import { auth, db } from '../services/firebase';
 import '../styles/SignUp.css'
 import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
+// import FormControl from '@mui/material/FormControl';
 import { setDoc, doc } from '@firebase/firestore';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
-import { branches } from '../components/branches';
+import { branches } from '../models/branches';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -50,19 +49,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-
-function Copyright() {
-  return (
-    <Typography variant="body2" color="textSecondary" align="center">
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-};
 
 export default function SignUp() {
   const classes = useStyles();
@@ -318,9 +304,6 @@ export default function SignUp() {
           </Grid>
         </form>
       </div>
-      {/* <Box mt={5}>
-        <Copyright />
-      </Box> */}
     </Container>
   );
 }

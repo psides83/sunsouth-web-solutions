@@ -35,7 +35,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import { RequestDetails } from '../../components/RequestDetails';
-import EquipmentRow from './EquipmentSubTable';
+import EquipmentRow from './EquipmentRows';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -47,7 +47,7 @@ const useRowStyles = makeStyles({
   });
 
 // Request row view:
-export default function MainRow({request}) {
+export default function RequestRow({request}) {
     const [{ userProfile }] = useStateValue();
     const [open, setOpen] = useState(false);
     const classes = useRowStyles();
@@ -247,9 +247,9 @@ export default function MainRow({request}) {
     // Request row UI:
     return (
       <React.Fragment>
-        <TableRow key={request.id} className={classes.root}>
+        <TableRow key={equipment.requestID} className={classes.root}>
   
-          <TableCell>
+          <TableCell key="expand">
             <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
               <IconButton 
                 aria-label="expand row" 
@@ -260,17 +260,17 @@ export default function MainRow({request}) {
             </Tooltip>
           </TableCell>
   
-          <TableCell align="left">
+          <TableCell key="model" align="left">
             <strong className="model">{equipment[0]?.model}</strong>
             <p><small>{equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}</small></p>
           </TableCell>
   
-          <TableCell component="th" scope="row" >
+          <TableCell key='salesman' component="th" scope="row" >
             <p>{request.salesman}</p>
             <small>{request.timestamp}</small>
           </TableCell>        
           
-          <TableCell align="left"> {
+          <TableCell key='workOrder' align="left"> {
             isEditingWorkOrder 
             ? 
             <TextField 
@@ -286,7 +286,7 @@ export default function MainRow({request}) {
           }
           </TableCell>
           
-          <TableCell align="left">
+          <TableCell key='status' align="left">
                 <Tooltip title="Update Status">
                   <Button 
                     color="success" 
@@ -301,7 +301,7 @@ export default function MainRow({request}) {
                 <p><small>{request.statusTimestamp}</small></p>
           </TableCell>
           
-          <TableCell align="right">
+          <TableCell key='buttons' align="right">
             <div className="cellButtons">
   
               <div>
@@ -376,7 +376,7 @@ export default function MainRow({request}) {
           </TableCell>
         </TableRow>
   
-        <TableRow>
+        <TableRow key='addEquipment'>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box margin={1}>
@@ -390,16 +390,18 @@ export default function MainRow({request}) {
                       <EquipmentRow key={item?.stock} classes={classes} request={request} item={item} />
                     ))
                   }
+                  </TableBody>
+                  <TableFooter>
                     { isShowingAddEquipment 
                       ?  
                       <TableRow 
-                        key={request.id} 
+                        key='addEquipmentCells' 
                         style={{ fontSize: 18 }} 
                         className={classes.root} 
                         sx={{ '& > *': { borderBottom: 'unset' } }}
                       >
   
-                        <TableCell  component="th" scope="row">
+                        <TableCell key='model'  component="th" scope="row">
                           <TextField 
                             variant="outlined" 
                             label="Model" 
@@ -410,7 +412,7 @@ export default function MainRow({request}) {
                           </TextField>
                         </TableCell>
   
-                        <TableCell>
+                        <TableCell key='ids'>
                           <br/>
                           <p>
                             <TextField 
@@ -437,7 +439,7 @@ export default function MainRow({request}) {
                           </p> 
                         </TableCell>
   
-                        <TableCell> 
+                        <TableCell key='work'> 
                           <TextField 
                             variant="outlined" 
                             label="Work" 
@@ -449,7 +451,7 @@ export default function MainRow({request}) {
                           </TextField> 
                         </TableCell>
   
-                        <TableCell>
+                        <TableCell key='notes'>
                           <TextField 
                             variant="outlined" 
                             label="Notes" 
@@ -462,7 +464,7 @@ export default function MainRow({request}) {
                           </TextField> 
                         </TableCell>
   
-                        <TableCell align="center">
+                        <TableCell key='button' align="center">
                           <IconButton 
                             style={{ fontSize: 20 }}
                             onClick={addEquipment}> { 
@@ -482,10 +484,9 @@ export default function MainRow({request}) {
                       :
                       null
                     }
-                  </TableBody> { 
+                   { 
                     !isShowingAddEquipment
                     ?
-                    <TableFooter>
                       <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
                         <TableCell>
                           <Tooltip title="Add Equipment">
@@ -493,10 +494,10 @@ export default function MainRow({request}) {
                           </Tooltip>
                         </TableCell>
                       </TableRow>
-                    </TableFooter>
                     :
                     null
                   }
+                  </TableFooter>
                 </Table>
               </Box>
             </Collapse>
