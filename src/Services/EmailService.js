@@ -211,7 +211,7 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
             
     for (var i = 0; i < equipmentList.length; i++) {
 
-        body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray">
+        body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray"/>
                 <section>
                     <h3>Equipment ${i + 1}</h3>
                     <p>Model: ${equipmentList[i].model}</p>
@@ -222,7 +222,7 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
                 </section>`
     };
 
-    body += '<body>';
+    body += '</body>';
 
     const templateParams = {
         to: recipients,

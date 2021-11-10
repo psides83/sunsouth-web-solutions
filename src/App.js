@@ -18,6 +18,7 @@ import Completed from './Views/Completed';
 import AddLoanerView from './Views/AddLoanerView';
 import LoanerManager from './Views/LoanerManager';
 import SalesmenList from './Views/SalesmenList';
+import { RequestsTableHeaderView } from './Components/TableHeaderViews';
 
 const theme = createTheme({
   palette: {
@@ -68,7 +69,7 @@ function App() {
         <Router>
             <Switch>
 
-            <Route path="/salesmen-list">
+              <Route path="/salesmen-list">
                 <Header />
                 <SalesmenList />
               </Route>

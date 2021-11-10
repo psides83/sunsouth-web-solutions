@@ -10,17 +10,17 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '../Services/firebase';
+import { db } from '../../Services/firebase';
 import { MenuItem, TextField, Typography } from '@material-ui/core';
 import Button from '@mui/material/Button';
-import HomeSkeleton from '../Components/HomeSkeleton'
+import HomeSkeleton from '../../Components/HomeSkeleton'
 import '../Styles/SalesmenList.css'
-import { SalesmenTableHeaderView } from '../Components/TableHeaderViews'
+import { SalesmenTableHeaderView } from '../../Components/TableHeaderViews'
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import TransferRequestView from './TransferRequest';
+import TransferRequestView from '../TransferRequest';
 import Dialog from '@mui/material/Dialog';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { branches } from '../Components/branches';
+import { branches } from '../../Components/branches';
 
   // Styles:
   const useRowStyles = makeStyles({
