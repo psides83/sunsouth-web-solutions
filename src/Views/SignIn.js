@@ -13,8 +13,8 @@ import Container from '@material-ui/core/Container';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
-import { useStateValue } from '../StateManagement/StateProvider';
-import { auth, db } from '../Services/firebase';
+import { useStateValue } from '../state-management/StateProvider';
+import { auth, db } from '../services/firebase';
 import { onSnapshot, doc } from 'firebase/firestore';
 
 // #region Unused imports

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import '../Styles/Header.css'
+import '../styles/Header.css'
 import { Link, useHistory } from 'react-router-dom';
-import { useStateValue } from '../StateManagement/StateProvider';
-import { auth, db } from '../Services/firebase';
+import { useStateValue } from '../state-management/StateProvider';
+import { auth, db } from '../services/firebase'
 import { onSnapshot, doc } from 'firebase/firestore';
 import { Skeleton } from '@mui/material';
 

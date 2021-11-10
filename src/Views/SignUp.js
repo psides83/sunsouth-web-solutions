@@ -11,14 +11,14 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { auth, db } from '../Services/firebase';
-import '../Styles/SignUp.css'
+import { auth, db } from '../services/firebase';
+import '../styles/SignUp.css'
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import { setDoc, doc } from '@firebase/firestore';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
-import { branches } from '../Components/branches';
+import { branches } from '../components/branches';
 
 const useStyles = makeStyles((theme) => ({
   paper: {

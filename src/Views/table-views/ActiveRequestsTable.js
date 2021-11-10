@@ -1,19 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from '../StateManagement/StateProvider';
+import { useStateValue } from '../../state-management/StateProvider';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableContainer from '@material-ui/core/TableContainer';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { db } from '../Services/firebase';
+import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
-import HomeSkeleton from '../Components/HomeSkeleton'
-import '../Styles/Table.css'
+import HomeSkeleton from '../../components/HomeSkeleton';
+import '../../styles/Table.css'
 import { Link } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import Dialog from '@mui/material/Dialog';
-import AddRequestView from './AddRequestView';
-import { RequestsTableHeaderView, } from '../Components/TableHeaderViews';
+import AddRequestView from '../AddRequestView';
+import { RequestsTableHeaderView } from '../../components/TableHeaderViews';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import MainRow from './TableMainRow';
 import { Typography } from '@material-ui/core';

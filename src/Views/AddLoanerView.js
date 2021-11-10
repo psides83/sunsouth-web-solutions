@@ -8,19 +8,19 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { db } from '../Services/firebase';
-import '../Styles/SignUp.css'
+import { db } from '../services/firebase';
+import '../styles/SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { Alert } from '@mui/material';
-import '../Styles/AddRequest.css'
-import { useStateValue } from '../StateManagement/StateProvider';
+import '../styles/AddRequest.css'
+import { useStateValue } from '../state-management/StateProvider';
 import moment from 'moment';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { sendNewLoanerEmail } from '../Services/EmailService';
+import { sendNewLoanerEmail } from '../services/EmailService';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';

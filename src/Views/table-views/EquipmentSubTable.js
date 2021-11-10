@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useStateValue } from '../StateManagement/StateProvider';
+import { useStateValue } from '../../state-management/StateProvider';
 import IconButton from '@material-ui/core/IconButton';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import { setDoc, doc } from 'firebase/firestore';
-import { db } from '../Services/firebase';
+import { db } from '../../services/firebase';
 import { TextField, Tooltip } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import '../Styles/Table.css'
+import '../../styles/Table.css'
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { sendEquipmentUpdateEmail } from '../Services/EmailService'
+import { sendEquipmentUpdateEmail } from '../../services/EmailService'
 
 // Equipment row view:
 export default function EquipmentRow({classes, request, item}) {

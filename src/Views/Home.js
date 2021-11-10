@@ -1,6 +1,6 @@
 import React from 'react';
-import "../Styles/Home.css";
-import ActiveRequestsTable from './ActiveRequestsTable';
+import "../styles/Home.css";
+import ActiveRequestsTable from '../views/table-views/ActiveRequestsTable'
 import { Box } from '@mui/system';
 
 function Home() {

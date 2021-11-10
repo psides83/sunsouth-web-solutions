@@ -1,7 +1,7 @@
 import React from 'react';
-import "../Styles/Home.css";
+import "../styles/Home.css";
 import { Box } from '@mui/system';
-import CompletedTable from './CompletedTable';
+import CompletedTable from './table-views/CompletedTable';
 
 function Completed() {
     

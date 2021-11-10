@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from '../StateManagement/StateProvider';
+import { useStateValue } from '../../state-management/StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Collapse from '@material-ui/core/Collapse';
@@ -11,12 +11,12 @@ import TableRow from '@material-ui/core/TableRow';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import { collection, query, orderBy, onSnapshot, setDoc, doc } from 'firebase/firestore';
-import { db } from '../Services/firebase';
+import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
 import { TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import '../Styles/Table.css'
+import '../../styles/Table.css'
 import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -29,12 +29,12 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
-import { EquipmentTableHeaderView } from '../Components/TableHeaderViews';
-import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../Services/EmailService'
+import { EquipmentTableHeaderView } from '../../components/TableHeaderViews';
+import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../../services/EmailService'
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
-import { RequestDetails } from './RequestDetails';
+import { RequestDetails } from '../../components/RequestDetails';
 import EquipmentRow from './EquipmentSubTable';
 
 // Styles:

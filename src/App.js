@@ -1,24 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import './Styles/App.css';
-import Header from './Views/Header';
-import Home from './Views/Home';
+import './styles/App.css';
+import Header from './views/Header';
+import Home from './views/Home';
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 // import { useHistory } from 'react-router-dom';
 // import Login from './Login';
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from './Services/firebase';
-import { useStateValue } from './StateManagement/StateProvider';
-import SignIn from './Views/SignIn';
-import SignUp from './Views/SignUp';
+import { auth } from './services/firebase';
+import { useStateValue } from './state-management/StateProvider';
+import SignIn from './views/SignIn';
+import SignUp from './views/SignUp';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import SpinnerProgress from './Components/SpinnerProgress';
-import AddRequestView from './Views/AddRequestView';
-import Completed from './Views/Completed';
-import AddLoanerView from './Views/AddLoanerView';
-import LoanerManager from './Views/LoanerManager';
-import SalesmenList from './Views/SalesmenList';
-import { RequestsTableHeaderView } from './Components/TableHeaderViews';
+import SpinnerProgress from './components/SpinnerProgress';
+import AddRequestView from './views/AddRequestView';
+import Completed from './views/Completed';
+import AddLoanerView from './views/AddLoanerView';
+import LoanerManager from './views/LoanerManager';
+import SalesmenList from './views/table-views/SalesmenList';
+import { RequestsTableHeaderView } from './components/TableHeaderViews';
 
 const theme = createTheme({
   palette: {

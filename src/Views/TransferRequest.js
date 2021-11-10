@@ -8,16 +8,16 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import '../Styles/SignUp.css'
+import '../styles/SignUp.css'
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { Alert } from '@mui/material';
-import '../Styles/AddRequest.css'
-import { useStateValue } from '../StateManagement/StateProvider';
+import '../styles/AddRequest.css'
+import { useStateValue } from '../state-management/StateProvider';
 // import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Avatar, MenuItem } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { branches } from '../Components/branches';
+import { branches } from '../components/branches';
 
 //#region Unused imports
 // import Paper from '@mui/material/Paper';

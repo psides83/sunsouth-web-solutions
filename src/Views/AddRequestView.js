@@ -10,21 +10,21 @@ import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { db } from '../Services/firebase';
-import '../Styles/SignUp.css'
+import { db } from '../services/firebase';
+import '../styles/SignUp.css'
 import { setDoc, doc } from '@firebase/firestore';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import { Avatar, FormGroup } from '@material-ui/core';
 import { Alert, Stack } from '@mui/material';
-import '../Styles/AddRequest.css'
+import '../styles/AddRequest.css'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { useStateValue } from '../StateManagement/StateProvider';
+import { useStateValue } from '../state-management/StateProvider';
 import moment from 'moment';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import Snackbar from '@material-ui/core/Snackbar';
-import { sendNewRequestEmail } from '../Services/EmailService';
+import { sendNewRequestEmail } from '../services/EmailService';
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({

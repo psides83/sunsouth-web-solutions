@@ -19,7 +19,7 @@ function Media() {
   );
 }
 
-export default function YouTube() {
+export default function HomeSkeleton() {
   return (
     <Box sx={{ overflow: 'hidden' }}>
       <Media />

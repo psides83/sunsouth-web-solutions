@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { useStateValue } from '../StateManagement/StateProvider';
+import { useStateValue } from '../../state-management/StateProvider';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import Table from '@material-ui/core/Table';
@@ -10,17 +10,17 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '../../Services/firebase';
+import { db } from '../../services/firebase';
 import { MenuItem, TextField, Typography } from '@material-ui/core';
 import Button from '@mui/material/Button';
-import HomeSkeleton from '../../Components/HomeSkeleton'
-import '../Styles/SalesmenList.css'
-import { SalesmenTableHeaderView } from '../../Components/TableHeaderViews'
+import HomeSkeleton from '../../components/HomeSkeleton'
+import '../../styles/SalesmenList.css'
+import { SalesmenTableHeaderView } from '../../components/TableHeaderViews'
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import TransferRequestView from '../TransferRequest';
 import Dialog from '@mui/material/Dialog';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { branches } from '../../Components/branches';
+import { branches } from '../../components/branches';
 
   // Styles:
   const useRowStyles = makeStyles({
