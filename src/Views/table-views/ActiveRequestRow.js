@@ -47,7 +47,7 @@ const useRowStyles = makeStyles({
 
 // Request row view:
 export default function RequestRow({request}) {
-    const [{ userProfile }, dispatch] = useStateValue();
+    const [{ user, userProfile }, dispatch] = useStateValue();
     const [open, setOpen] = useState(false);
     const classes = useRowStyles();
     var [workOrder, setWorkOrder] = useState('');
@@ -250,7 +250,7 @@ export default function RequestRow({request}) {
       //   equipment: equipment
       // }
 
-      const requestRef = doc(db, 'pdf', 'pdfData');
+      const requestRef = doc(db, 'users', userProfile?.id, 'pdf', 'pdfData');
       setDoc(requestRef, { 
   
         request: request,

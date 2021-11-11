@@ -35,6 +35,7 @@ export default function ActiveRequestsTable() {
 
   // Fetch requests from firestore:
   const fetch = useCallback( async ()=> {
+    if (userProfile) {
     const requestsQuery = query(
         collection(db, 'branches', userProfile?.branch, 'requests'),
         where('status', '!=', 'Completed')
@@ -51,7 +52,10 @@ export default function ActiveRequestsTable() {
           changeLog: doc.data().changeLog
         })))
     });
-  }, [userProfile?.branch])
+  } else {
+    console.log("userProfile not loaded")
+  }
+  }, [userProfile])
 
   useEffect(() => {
     fetch()

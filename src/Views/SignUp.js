@@ -9,7 +9,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from "firebase/auth";
 import { auth, db } from '../services/firebase';
 import '../styles/SignUp.css'
 import MenuItem from '@mui/material/MenuItem';
@@ -18,6 +18,7 @@ import { setDoc, doc } from '@firebase/firestore';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
 import { branches } from '../models/branches';
+import { LastPage } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -67,32 +68,34 @@ export default function SignUp() {
 
   const register = (e) => {
 
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in 
-          const user = userCredential.user;
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        // Signed in 
+        const user = userCredential.user;
 
-          if(user) {
-            const newUser = doc(db, "users", user.uid);
-            const userData = {
-              id: user.uid,
-              firstName: firstName,
-              lastName: lastName,
-              email: email,
-              role: role,
-              branch: branch
-            }
-            setValidationMessage("Registration successful.")
-            setOpenSuccess(true)
-            setDoc(newUser, userData, { merge: true });
-            history.push("/");
+        updateProfile(user, {displayName: `${firstName} ${lastName}`})
+
+        if(user) {
+          const newUser = doc(db, "users", user.uid);
+          const userData = {
+            id: user.uid,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            role: role,
+            branch: branch
           }
-        })
-        .catch((error) => {
+          setValidationMessage("Registration successful.")
+          setOpenSuccess(true)
+          setDoc(newUser, userData, { merge: true });
+          history.push("/");
+        }
+      })
+      .catch((error) => {
 
-          setValidationMessage("User already registered with this email address.")
-          setOpenError(true)
-        });
+        setValidationMessage("User already registered with this email address.")
+        setOpenError(true)
+      });
   };
 
     // Squipment submission validation.

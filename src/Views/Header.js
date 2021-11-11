@@ -16,16 +16,17 @@ function Header() {
     
 
     useEffect(() => {
+        
         const fetchProfile = async () => {
             try {
-              onSnapshot(doc(db, "users", user?.uid), (doc) => {
-                console.log("Current data: ", doc.data());
-                setProfile(doc.data())
-                dispatch({
-                    type: 'SET_USER_PROFILE',
-                    userProfile: doc.data(),
-                })
-            });
+                onSnapshot(doc(db, "users", user?.uid), (doc) => {
+                    console.log("Current User: ", doc.data());
+                    setProfile(doc.data())
+                    dispatch({
+                        type: 'SET_USER_PROFILE',
+                        userProfile: doc.data(),
+                    })
+                });
             } catch (error) {
               console.log('error', error)
             }

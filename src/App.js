@@ -44,9 +44,9 @@ function App() {
   const [loading, setLoading] = useState(true);
   var [data, setData] = useState()
 
-  const fetchdata = async ()=> {
-    
-    const docSnapshot = await getDoc(doc(db, 'pdf', 'pdfData'))
+  const fetchdata = async (user)=> {
+  
+    const docSnapshot = await getDoc(doc(db, 'users', user?.uid, 'pdf', 'pdfData'))
 
     if (docSnapshot.exists()) {
       console.log("Document data:", docSnapshot.data());
@@ -64,22 +64,22 @@ function App() {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/firebase.User
         // setTimeout( function() { setLoading(false); }, 2000);
-        setTimeout( function() { setLoading(false); }, 1000);
+
         dispatch({
           type: 'SET_USER',
           user: user,
         })
+        fetchdata(user)
+        setTimeout( function() { setLoading(false); }, 1000);
       } else {
         // User is signed out
-        setTimeout( function() { setLoading(false); }, 500);
         dispatch({
           type: 'SET_USER',
           user: null
         })
+        setTimeout( function() { setLoading(false); }, 500);
       }  
     });
-
-    fetchdata()
   }, [dispatch])
 
   return (
@@ -90,14 +90,14 @@ function App() {
             <Switch>
 
               <Route path="/pdf">
-                {loading 
+                {loading
                 ? 
                 <SpinnerProgress/>
                 :
                   <PDFViewer width="100%" height='1080'>
                     <RequestDetails className="pdf"
-                      request={data.request} 
-                      equipment={data.equipment}
+                      request={data?.request} 
+                      equipment={data?.equipment}
                     />
                   </PDFViewer>
                 }

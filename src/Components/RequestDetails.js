@@ -15,15 +15,23 @@ const styles = StyleSheet.create({
       // flexGrow: 1
     },
     title: {
-      fontSize: 22,
+      fontSize: 28,
       fontWeight: 'bold',
       margin: 12,
-      color: 'rgb(150,150,150)',
+      color: 'rgb(125,125,125)',
+      textAlign: 'center',
+    },
+    heading: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      margin: 12,
+      color: 'rgb(125,125,125)',
       // textAlign: 'center',
     },
     text: {
       margin: 6,
-      fontSize: 16,
+      fontSize: 12,
+      color: 'rgb(75,75,75)',
       // textAlign: 'justify',
     }
   });
@@ -33,9 +41,10 @@ export const RequestDetails = ({request, equipment}) => (
   <Document>
   <Page size="A4" style={styles.body}>
     <View style={styles.section}>
+      <Text style={styles.title}>PDI/Setup Request</Text>
       <Text style={styles.text}>{request.timestamp}</Text>
-      <Text style={styles.text}>{`Work Order: ${request.workOrder}`}</Text>
-      <Text style={styles.text}>{`Salesman:    ${request.salesman}`}</Text>
+      <Text style={styles.text}>{`Work Order:   ${request.workOrder}`}</Text>
+      <Text style={styles.text}>{`Salesman:      ${request.salesman}`}</Text>
     </View>
     {
         equipment.map((item) => (
@@ -47,16 +56,16 @@ export const RequestDetails = ({request, equipment}) => (
               x2="500"
               y2="0"
               strokeWidth={3}
-              stroke="rgb(150,150,150)"
+              stroke="rgb(175,175,175)"
             />
           </Svg>
               
-              <Text style={styles.title}>{`Equipment ${equipment.indexOf(item) + 1}`}</Text>
-              <Text style={styles.text}>{`Model:  ${item.model}`}</Text>
-              <Text style={styles.text}>{`Stock:  ${item.stock}`}</Text>
-              <Text style={styles.text}>{`Serial:  ${item.serial}`}</Text>
-              <Text style={styles.text}>{`Work:  ${item.work}`}</Text>
-              <Text style={styles.text}>{`Notes:  ${item.notes}`}</Text>
+              <Text style={styles.heading}>{`Equipment  ${equipment.indexOf(item) + 1}`}</Text>
+              <Text style={styles.text}>{`Model:   ${item.model}`}</Text>
+              <Text style={styles.text}>{`Stock:   ${item.stock}`}</Text>
+              <Text style={styles.text}>{`Serial:   ${item.serial}`}</Text>
+              <Text style={styles.text}>{`Work:    ${item.work}`}</Text>
+              <Text style={styles.text}>{`Notes:   ${item.notes}`}</Text>
           </View>
         ))
       }
