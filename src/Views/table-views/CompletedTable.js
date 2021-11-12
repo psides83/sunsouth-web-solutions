@@ -17,7 +17,6 @@ import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
 import { MenuItem, TextField, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
-// import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from '../../components/HomeSkeleton'
 import '../../styles/Table.css'
 import { EquipmentTableHeaderView, RequestsTableHeaderView } from '../../components/TableHeaderViews';
@@ -95,8 +94,7 @@ function Row({request}) {
   // Fetches equipment from firestore:
   const fetchEquipment = useCallback( ()=> {
     const equipmentQuery = query(
-        collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
-        // where('requestID', '==', request.id)
+      collection(db, 'branches', userProfile?.branch, "requests", request.id, 'equipment'),
     );
     
     onSnapshot(equipmentQuery, (querySnapshot) => {
@@ -115,32 +113,6 @@ function Row({request}) {
   useEffect(() => {
     fetchEquipment()
   }, [fetchEquipment])
-
-  // Handles adding or editing the work order number for the request:
-  // const editWorkOrder = async () => {
-  //   if (isEditingWorkOrder) { 
-
-  //     const workOrderStatus = request.workOrder === '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
-
-  //     const changeLogEntry = {
-  //       user: fullName,
-  //       change: workOrderStatus, 
-  //       timestamp: moment().format("DD-MMM-yyyy hh:mmA")
-  //     }
-      
-  //     if (request.workOrder !== workOrder) {
-  //     request.changeLog.push(changeLogEntry)
-  //   }
-
-  //     await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-  //     setIsEditingWorkOrder(false)
-  //   } else { 
-  //     setWorkOrder(request.workOrder)
-  //     setIsEditingWorkOrder(true)
-  //   }
-  // }
-
-  
 
   // Handles updating the request status:
   const updateStatus = async () => {
@@ -180,76 +152,77 @@ function Row({request}) {
   return (
     <React.Fragment>
       <TableRow key={request.id} className={classes.root}>
-
-      <TableCell>
-        <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
-          <IconButton 
-            aria-label="expand row" 
-            size="small" 
-            onClick={() => setOpen(!open)}>
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
-        </Tooltip>
-      </TableCell>
-
-      <TableCell align="left">
-        <strong className="model">{equipment[0]?.model}</strong>
-        <p><small>{equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}</small></p>
-      </TableCell>
-
-      <TableCell component="th" scope="row" >
-        <p>{request.salesman}</p>
-        <small>{request.timestamp}</small>
-      </TableCell>        
-
-      <TableCell align="left">{ request.workOrder }</TableCell>
-
-      <TableCell align="left">
-            <Tooltip title="Update Status">
-              <Button 
-                color="success" 
-                size="small" 
-                sx={{ width: '115px', pt: '5px' }}
-                variant={request.status === 'In Progress' ? "contained" : "outlined"} 
-                onClick={updateStatus}
-              >
-                { request.status }
-              </Button>
-            </Tooltip>
-            <p><small>{request.statusTimestamp}</small></p>
-      </TableCell>
-
-      <TableCell align="right">
-        <div className="cellButtons">
-          <div>
-
-            <IconButton aria-label="show" onClick={handleToggleChangeLog}>
-              <Tooltip title="Show Changes">
-                <HistoryOutlinedIcon />
-              </Tooltip>
+        <TableCell>
+          <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
+            <IconButton 
+              aria-label="expand row" 
+              size="small" 
+              onClick={() => setOpen(!open)}>
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
-            <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
-              <DialogTitle>Request Change History</DialogTitle>
-              <Timeline position="alternate"> { 
-                request.changeLog.map((change) => (
-                  <TimelineItem>
-                    <TimelineSeparator >
-                      <TimelineDot variant="outlined" color="success"/>
-                      {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
-                    </TimelineSeparator>
-                    <TimelineContent>
-                      <p><small>{change.timestamp}</small></p>
-                      <small>{change.user}</small>
-                      <p><small>{change.change}</small></p>
-                    </TimelineContent>
-                  </TimelineItem>
-                ))
-              }
-              </Timeline>
-            </Dialog>
+          </Tooltip>
+        </TableCell>
+
+        <TableCell align="left">
+          <strong className="model">{equipment[0]?.model}</strong>
+          <p><small>{equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}</small></p>
+        </TableCell>
+
+        <TableCell component="th" scope="row" >
+          <p>{request.salesman}</p>
+          <small>{request.timestamp}</small>
+        </TableCell>        
+
+        <TableCell align="left">{ request.workOrder }</TableCell>
+
+        <TableCell align="left">
+              <Tooltip title="Update Status">
+                <Button 
+                  color="success" 
+                  size="small" 
+                  sx={{ width: '115px', pt: '5px' }}
+                  variant={request.status === 'In Progress' ? "contained" : "outlined"} 
+                  onClick={updateStatus}
+                >
+                  { request.status }
+                </Button>
+              </Tooltip>
+              <p><small>{request.statusTimestamp}</small></p>
+        </TableCell>
+
+        <TableCell align="right">
+          <div className="cellButtons">
+            <div>
+              <IconButton aria-label="show" onClick={handleToggleChangeLog}>
+                <Tooltip title="Show Changes">
+                  <HistoryOutlinedIcon />
+                </Tooltip>
+              </IconButton>
+
+              <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
+                <DialogTitle>Request Change History</DialogTitle>
+                <Timeline position="alternate"> 
+                  { 
+                    request.changeLog.map((change) => (
+                      <TimelineItem>
+                        <TimelineSeparator >
+                          <TimelineDot variant="outlined" color="success"/>
+                          {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? <TimelineConnector /> : null}
+                        </TimelineSeparator>
+
+                        <TimelineContent>
+                          <p><small>{change.timestamp}</small></p>
+                          <small>{change.user}</small>
+                          <p><small>{change.change}</small></p>
+                        </TimelineContent>
+                      </TimelineItem>
+                    ))
+                  }
+                </Timeline>
+              </Dialog>
+            </div>
           </div>
-        </div>
-      </TableCell>
+        </TableCell>
       </TableRow>
 
       <TableRow>
@@ -258,6 +231,7 @@ function Row({request}) {
             <Box margin={1}>
               <Table size="small" aria-label="equipment">
                 <EquipmentTableHeaderView />
+
                 <TableBody>
                   {equipment.map((item) => (
                     <EquipmentRow key={item?.stock} item={item} />
@@ -359,6 +333,5 @@ export default function CompletedTable() {
         </Table>
       </TableContainer>
     </React.Fragment>
-
   );
 };

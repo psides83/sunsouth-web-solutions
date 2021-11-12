@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   });
 
 // Create Document Component
-export const RequestDetails = ({request, equipment}) => (
+export const RequestPDF = ({request, equipment}) => (
   <Document>
   <Page size="A4" style={styles.body}>
     <View style={styles.section}>

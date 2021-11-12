@@ -122,18 +122,18 @@ function Row({salesman}) {
         return searchParam.some((newItem) => {
           return (
             item[newItem]
-                .toString()
-                .toLowerCase()
-                .indexOf(searchText.toLowerCase()) > -1
+              .toString()
+              .toLowerCase()
+              .indexOf(searchText.toLowerCase()) > -1
           );
         });
       } else if (filterParam === "All") {
         return searchParam.some((newItem) => {
           return (
               item[newItem]
-                  .toString()
-                  .toLowerCase()
-                  .indexOf(searchText.toLowerCase()) > -1
+                .toString()
+                .toLowerCase()
+                .indexOf(searchText.toLowerCase()) > -1
           );
         });
       }
@@ -152,9 +152,10 @@ function Row({salesman}) {
             : 
             <div className="tableHead">
               <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Active Salesmen"}</Typography>
-              <div className="searchAndFilter"> 
 
-                { filterParam !== 'All'
+              <div className="searchAndFilter">
+                { 
+                filterParam !== 'All'
                 ?
                 <div className="transferButton">
                   <Button
@@ -165,12 +166,14 @@ function Row({salesman}) {
                   >
                     Requst Transfer
                   </Button>
+
                   <Dialog onClose={handleCloseTransferRequest} open={isShowingTransferRequest}>
                     <div className="closeButtonContainer">
                       <Button onClick={handleCloseTransferRequest} color="success">
                         <CancelOutlinedIcon/>
                       </Button>
                     </div>
+
                     <div className="transferRequestView">
                       <TransferRequestView emails={emails}/>
                     </div>
@@ -203,7 +206,6 @@ function Row({salesman}) {
                 <div className="search">
                   <input type="text" id="search" onChange={e=> setSearchText(e.target.value)}placeholder="Search"></input>
                 </div>
-
               </div>
             </div>
           }

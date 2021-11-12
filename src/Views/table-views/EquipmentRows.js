@@ -15,8 +15,8 @@ import { sendEquipmentUpdateEmail } from '../../services/EmailService'
 
 // Equipment row view:
 export default function EquipmentRow({classes, request, item}) {
+  //#region State Properties
     const [{ userProfile }] = useStateValue();
-    // const classes = useRowStyles();
     var [model, setModel] = useState('')
     var [stock, setStock] = useState('');
     var [serial, setSerial] = useState('');
@@ -32,6 +32,7 @@ export default function EquipmentRow({classes, request, item}) {
     var [isEditingEquipment, setIsEditingEquipment] = useState(false);
     var [equipmentHasChanges, setEquipmentHasChanges] = useState(false);
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
+    // #endregion
   
     // Handles editing of the equipment values.
     // Either opens the edit textfields or sets new edits to firestore
@@ -147,8 +148,7 @@ export default function EquipmentRow({classes, request, item}) {
           className={classes.root} 
           sx={{ '& > *': { borderBottom: 'unset' } }}
         >
-          
-          <TableCell align="left" component="th" scope="row"> {
+          <TableCell key={model} align="left" component="th" scope="row"> {
             isEditingEquipment 
             ? 
             <TextField 
@@ -167,7 +167,7 @@ export default function EquipmentRow({classes, request, item}) {
   
           { isEditingEquipment 
             ?
-            <TableCell align="left">
+            <TableCell key={stock} align="left">
                 <br/>
                 <p>
                   <TextField 
@@ -196,13 +196,13 @@ export default function EquipmentRow({classes, request, item}) {
                 </p>
             </TableCell>
             :
-            <TableCell align="left">
+            <TableCell key={serial} align="left">
                 { `Stock: ${item.stock}` }
                 <p><small>{ `Serial: ${item.serial}` }</small></p>
             </TableCell>
           }
   
-          <TableCell align="left">  {
+          <TableCell key={work} align="left">  {
             isEditingEquipment 
             ? 
             <TextField 
@@ -219,7 +219,7 @@ export default function EquipmentRow({classes, request, item}) {
           }
           </TableCell>
   
-          <TableCell align="left"> {
+          <TableCell key={notes} align="left"> {
             isEditingEquipment 
             ? 
             <TextField 
@@ -236,7 +236,7 @@ export default function EquipmentRow({classes, request, item}) {
           }
           </TableCell>
           
-          <TableCell align="center">
+          <TableCell key="editSaveCancelbutton" align="center">
             <IconButton 
               color="success" 
               style={{ fontSize: 20 }}

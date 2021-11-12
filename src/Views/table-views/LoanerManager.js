@@ -14,13 +14,9 @@ import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
 import { Dialog, Tooltip, Typography } from '@material-ui/core';
 import moment from 'moment';
-// import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import HomeSkeleton from '../../components/HomeSkeleton'
 import '../../styles/LoanerManager.css'
-// import { Link, useHistory } from 'react-router-dom';
-// import CheckIcon from '@mui/icons-material/Check';
 import AddIcon from '@mui/icons-material/Add';
-// import CloseIcon from '@mui/icons-material/Close';
 import AddLoanerView from '../AddLoanerView'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { sendLoanerStatusEmail } from '../../services/EmailService';
@@ -36,66 +32,11 @@ const useRowStyles = makeStyles({
 
 // Loaner row view:
 function Row({loaner}) {
+  // #region State Properties
     const [{ userProfile }] = useStateValue();
     const classes = useRowStyles();
-    // // const history = useHistory();
-    // var [dateOut, setDateOut] = useState('');
-    // var [model, setModel] = useState('')
-    // var [stock, setStock] = useState('');
-    // var [serial, setSerial] = useState('');
-    // var [hours, setWork] = useState('');
-    // var [customer, setNotes] = useState('');
-    // var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
-    // var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
-    const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
-  
-    // Sends email when work order number is added or updated:
-    // const sendWorkOrderEmail = (workOrder) => {
-  
-    //   // creates the paramaters for the email template:
-    //   const timestamp = moment().format("MMM-DD-yyyy hh:mmA")
-    //   const recipients = "mallen@sunsouth.com, svcwriter11@sunsouth.com, parts11@sunsouth.com"
-    //   const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`
-    //   const body = '<body>' + '<p>' + timestamp + '</p><br>' + '<p>Work order # ' + workOrder + " has been added or updated by " + fullName + " to the request on " + "model " + equipment[0]?.model + ', ' + "ST# " + equipment[0]?.stock + '.</p>' + '<body>';
-  
-    //   // Sets paramaters for the email template:
-    //   const templateParams = {
-    //     to: userProfile.email,
-    //     replyTo: userProfile.email, 
-    //     from: "PDI/Setup Requests", 
-    //     copy: userProfile.email,
-    //     subject: subject,
-    //     message: body
-    //   }
-  
-    //   // sends the email:
-    //   emailjs.send('service_5guvozs', 'template_5dg1ys6', templateParams, 'user_3ub5f4KJJHBND1Wzl1FQi')
-    // }
-  
-    // Handles adding or editing the work order number for the request:
-    // const editWorkOrder = async () => {
-    //   if (isEditingWorkOrder) { 
-  
-    //     const workOrderStatus = request.workOrder == '' ? `Added work order ${workOrder}` : `Work order updated from ${request.workOrder} to ${workOrder}`
-  
-    //     const changeLogEntry = {
-    //       user: fullName,
-    //       change: workOrderStatus, 
-    //       timestamp: moment().format("DD-MMM-yyyy hh:mmA")
-    //     }
-        
-    //     if (request.workOrder != workOrder) {
-    //     request.changeLog.push(changeLogEntry)
-    //   }
-  
-    //     await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-    //     // sendWorkOrderEmail(workOrder)
-    //     setIsEditingWorkOrder(false)
-    //   } else { 
-    //     setWorkOrder(request.workOrder)
-    //     setIsEditingWorkOrder(true)
-    //   }
-    // }
+    const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
+  // #endregion 
   
     // Handles updating the request status:
     const updateStatus = async () => {
@@ -134,14 +75,7 @@ function Row({loaner}) {
     return (
       <React.Fragment>
         <TableRow key={loaner.id} className={classes.root}  >
-
-        {/* <TableCell align="left">
-            <strong className="model">
-              {loaner?.dateOut}
-            </strong>
-          </TableCell> */}
-  
-          <TableCell component="th" scope="row" >
+          <TableCell key={loaner.employee} component="th" scope="row" >
             <p>
               {loaner.employee}
             </p>
@@ -150,11 +84,11 @@ function Row({loaner}) {
             </small>
           </TableCell>  
           
-          <TableCell align="left">
-              {loaner?.model}
+          <TableCell key={loaner.model} align="left">
+              {loaner.model}
           </TableCell>
 
-          <TableCell component="th" scope="row" >
+          <TableCell key={loaner.stock} component="th" scope="row" >
             <p>
               {`Stock: ${loaner.stock}`}
             </p>
@@ -163,15 +97,15 @@ function Row({loaner}) {
             </small>
           </TableCell>  
           
-          <TableCell align="left">
+          <TableCell key={loaner.hours} align="left">
             { loaner.hours }
           </TableCell>
 
-          <TableCell align="left">
+          <TableCell key={loaner.customer} align="left">
             { loaner.customer }
           </TableCell>
           
-          <TableCell align="left">
+          <TableCell  key={loaner.status} align="left">
             <Tooltip title="Update Status">
               <Button color="success" size="small" variant={loaner.status === 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
                 {loaner.status}
@@ -181,40 +115,19 @@ function Row({loaner}) {
             {loaner.statusTimestamp}
             </small></p>
           </TableCell>
-          
-          {/* <TableCell align="center">
-            <IconButton 
-              color="success" 
-              className={classes.icon}
-              onClick={editWorkOrder}>
-                 {isEditingWorkOrder 
-                    ? 
-                    <CheckIcon 
-                      color="success" 
-                      style={{ fontSize: 16 }}/> 
-                    : 
-                    <div className="edit-button-bg">  
-                      <Tooltip title="Edit">
-                        <EditRoundedIcon 
-                          color="success" 
-                          style={{ fontSize: 16 }}/>
-                      </Tooltip>
-                    </div>
-                  }
-            </IconButton>
-          </TableCell> */}
-  
         </TableRow>
       </React.Fragment>
     );
   }
 
   // Whole table view:
-  export default function LoanerManager() {
+export default function LoanerManager() {
+  // #region State Properties
   const [{ userProfile }] = useStateValue();
   const [loaners, setLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openAddLoanerView, setOpenAddLoanerView] = useState(false);
+  // #endregion
 
   const handleCloseAddLoanerView = () => {
     setOpenAddLoanerView(false);
@@ -261,18 +174,19 @@ function Row({loaner}) {
     <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
         <Box sx={{ width: '100%', mt: 5, mx: 5 }}>
           <Box sx={{ flexGrow: 1, my: 4 }}>
-          {loading 
-            ? 
-            <HomeSkeleton /> 
-            : 
-            <div className="tableHead">
-              <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment Manager"}</Typography>
-              <Button onClick={handleToggleAddLoanerView} color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
-                Add Loaner
-              </Button>
-            </div>
-          }
-            <Dialog onClose={handleCloseAddLoanerView} open={openAddLoanerView}>
+            {loading 
+              ? 
+              <HomeSkeleton /> 
+              : 
+              <div className="tableHead">
+                <Typography variant="h4" color='primary' style={{ marginLeft: 25, marginBottom: 10 }}>{"Loaned Equipment Manager"}</Typography>
+                <Button onClick={handleToggleAddLoanerView} color="success" size="small" variant="outlined" startIcon={<AddIcon />} sx={{ mx: 4, mb: 1, mt: 1 }}>
+                  Add Loaner
+                </Button>
+              </div>
+            }
+
+            <Dialog key="dialog" onClose={handleCloseAddLoanerView} open={openAddLoanerView}>
               <div className="closeButtonContainer">
                 <Button onClick={handleCloseAddLoanerView} color="success">
                   <CancelOutlinedIcon/>
@@ -282,20 +196,20 @@ function Row({loaner}) {
               <AddLoanerView/>
               </div>
             </Dialog>
-            <TableContainer component={Paper} style={{ borderRadius: 10, paddingRight: 20 }}>
+
+            <TableContainer key="headerContainer" component={Paper} style={{ borderRadius: 10, paddingRight: 20 }}>
               <Table  size="small" aria-label="collapsible table" style={{ margin: 15, paddingTop: 2 }}>
                 <TableHead>
                   <TableRow key="header">
-                      {/* <TableCell style={{ fontSize: 18 }} align="left"><strong>Date Out</strong></TableCell>                 */}
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Employee</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>ID's</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell>
-                      <TableCell style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
-                      {/* <TableCell /> */}
+                      <TableCell key="employee" style={{ fontSize: 18 }} align="left"><strong>Employee</strong></TableCell>
+                      <TableCell key="model" tyle={{ fontSize: 18 }} align="left"><strong>Model</strong></TableCell>
+                      <TableCell key="ids" style={{ fontSize: 18 }} align="left"><strong>ID's</strong></TableCell>
+                      <TableCell key="hours" style={{ fontSize: 18 }} align="left"><strong>Hours</strong></TableCell>
+                      <TableCell key="customer" style={{ fontSize: 18 }} align="left"><strong>Customer</strong></TableCell>
+                      <TableCell key="status" style={{ fontSize: 18 }} align="left"><strong>Status</strong></TableCell>
                   </TableRow>
                 </TableHead>
+
                 <TableBody>
                   {loaners.map(loaner => (
                     <Row loaner={loaner} />

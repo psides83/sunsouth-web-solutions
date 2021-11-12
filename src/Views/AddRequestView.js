@@ -103,7 +103,7 @@ export default function AddRequestView() {
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherState] = useState(true);
   var [validationMessage, setValidationMessage] = useState('');
-  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName
+  const fullName = userProfile?.firstName + ' ' + userProfile?.lastName;
   //#endregion
 
   // Handle closing of the alerts.
@@ -533,11 +533,40 @@ export default function AddRequestView() {
                     <div className="checkBoxes">
                         <FormGroup>
                             <Typography variant="h6" style={{fontSize: 18}}>Work Required*</Typography>      
-                            {workOptions.map(option => (
-                              <FormControlLabel control={<Checkbox id={option.id} checked={option.checkedState} size="small" onChange={handleChange} color="primary" value={option.work}/>} label={<Typography style={{fontSize: 14}}>{option.work}</Typography>}/>
-                            ))}
+                            {
+                              workOptions.map(
+                                option => (
+                                  <FormControlLabel
+                                    control={
+                                      <Checkbox
+                                        id={option.id}
+                                        checked={option.checkedState}
+                                        size="small" 
+                                        onChange={handleChange}
+                                        color="primary"
+                                        value={option.work}
+                                      />
+                                    }
+                                    label={<Typography style={{fontSize: 14}}>{option.work}</Typography>}
+                                  />
+                                )
+                              )
+                            }
                             <Stack direction="row">
-                                <FormControlLabel control={<Checkbox id="8" checked={checked8} size="small" onChange={handleChange} disabled={otherDisabled} color="primary" value={other}/>} label={<Typography style={{fontSize: 14}}>Other: </Typography>} />
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      id="8"
+                                      checked={checked8}
+                                      size="small"
+                                      onChange={handleChange}
+                                      disabled={otherDisabled}
+                                      color="primary" value={other}
+                                    />
+                                  } 
+                                  label={<Typography style={{fontSize: 14}}>Other: </Typography>}
+                                />
+
                                 <TextField
                                 fullWidth
                                 size="small"

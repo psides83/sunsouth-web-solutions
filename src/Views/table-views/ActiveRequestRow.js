@@ -47,6 +47,7 @@ const useRowStyles = makeStyles({
 
 // Request row view:
 export default function RequestRow({request}) {
+    //#region State Properties
     const [{ user, userProfile }, dispatch] = useStateValue();
     const [open, setOpen] = useState(false);
     const classes = useRowStyles();
@@ -63,6 +64,7 @@ export default function RequestRow({request}) {
     var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
     const [openChangeLog, setOpenChangeLog] = useState(false);
+    // #endregion
   
     const handleCloseChangeLog = () => {
       setOpenChangeLog(false);
@@ -386,8 +388,8 @@ export default function RequestRow({request}) {
           </TableCell>
         </TableRow>
   
-        <TableRow key='addEquipment'>
-          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+        <TableRow key='equipmentRow'>
+          <TableCell key="equipmentCell" style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={open} timeout="auto" unmountOnExit>
               <Box margin={1}>
                 <Typography variant="subtitle1" gutterBottom component="div">
@@ -405,13 +407,13 @@ export default function RequestRow({request}) {
                     { isShowingAddEquipment 
                       ?  
                       <TableRow 
-                        key='addEquipmentCells' 
+                        key='addEquipmentRow' 
                         style={{ fontSize: 18 }} 
                         className={classes.root} 
                         sx={{ '& > *': { borderBottom: 'unset' } }}
                       >
   
-                        <TableCell key='model'  component="th" scope="row">
+                        <TableCell key='addModel'  component="th" scope="row">
                           <TextField 
                             variant="outlined" 
                             label="Model" 
@@ -422,7 +424,7 @@ export default function RequestRow({request}) {
                           </TextField>
                         </TableCell>
   
-                        <TableCell key='ids'>
+                        <TableCell key='addIds'>
                           <br/>
                           <p>
                             <TextField 
@@ -449,7 +451,7 @@ export default function RequestRow({request}) {
                           </p> 
                         </TableCell>
   
-                        <TableCell key='work'> 
+                        <TableCell key='addWork'> 
                           <TextField 
                             variant="outlined" 
                             label="Work" 
@@ -461,7 +463,7 @@ export default function RequestRow({request}) {
                           </TextField> 
                         </TableCell>
   
-                        <TableCell key='notes'>
+                        <TableCell key='addNotes'>
                           <TextField 
                             variant="outlined" 
                             label="Notes" 
@@ -474,7 +476,7 @@ export default function RequestRow({request}) {
                           </TextField> 
                         </TableCell>
   
-                        <TableCell key='button' align="center">
+                        <TableCell key='saveAddButton' align="center">
                           <IconButton 
                             style={{ fontSize: 20 }}
                             onClick={addEquipment}> { 
@@ -497,8 +499,8 @@ export default function RequestRow({request}) {
                    { 
                     !isShowingAddEquipment
                     ?
-                      <TableRow key="addButton" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
-                        <TableCell>
+                      <TableRow key="addButtonRow" style={{ fontSize: 18 }} className={classes.root} sx={{ '& > *': { borderBottom: 'unset' } }}>
+                        <TableCell key="addButtonCell">
                           <Tooltip title="Add Equipment">
                             <Button startIcon={[<AddIcon />, <AgricultureIcon/>]} color="success" onClick={addEquipment}></Button>
                           </Tooltip>

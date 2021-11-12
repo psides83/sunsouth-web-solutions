@@ -18,7 +18,7 @@ import Completed from './views/Completed';
 import AddLoanerView from './views/AddLoanerView';
 import LoanerManager from './views/table-views/LoanerManager';
 import SalesmenList from './views/table-views/SalesmenList';
-import { RequestDetails } from './components/RequestDetails';
+import { RequestPDF } from './components/RequestPDF';
 import { PDFViewer } from '@react-pdf/renderer';
 import { doc, getDoc } from '@firebase/firestore';
 
@@ -95,7 +95,7 @@ function App() {
                 <SpinnerProgress/>
                 :
                   <PDFViewer width="100%" height='1080'>
-                    <RequestDetails className="pdf"
+                    <RequestPDF className="pdf"
                       request={data?.request} 
                       equipment={data?.equipment}
                     />

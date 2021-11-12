@@ -18,7 +18,6 @@ import { setDoc, doc } from '@firebase/firestore';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Alert } from '@mui/material';
 import { branches } from '../models/branches';
-import { LastPage } from '@material-ui/icons';
 
 const useStyles = makeStyles((theme) => ({
   paper: {
