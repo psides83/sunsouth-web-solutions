@@ -243,12 +243,8 @@ export default function RequestRow({request}) {
       sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
     }
 
+    // Sets data for the pdf into a fire store documetnt for the current
     const setPDFData = () => {
-      // e.preventDefault()
-      // const data = {
-      //   request: request,
-      //   equipment: equipment
-      // }
 
       const requestRef = doc(db, 'users', userProfile?.id, 'pdf', 'pdfData');
       setDoc(requestRef, { 

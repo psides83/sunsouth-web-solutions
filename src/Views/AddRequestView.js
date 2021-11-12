@@ -75,20 +75,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-// copyright view at the footer of the page.
-// function Copyright() {
-//   return (
-//     <Typography variant="body2" color="textSecondary" align="center">
-//       {'Copyright © '}
-//       <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
-//         TheWayMedia Web Solutions
-//       </a>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// };
-
 const ListItem = styled('li')(({ theme }) => ({
   margin: theme.spacing(0.5),
 }));
@@ -503,12 +489,11 @@ export default function AddRequestView() {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                autoComplete="fname"
-                name="model"
                 variant="outlined"
                 required
                 fullWidth
                 size="small"
+                inputProps={{style: {fontSize: 14}}} 
                 id="model"
                 label="Model"
                 autoFocus
@@ -522,6 +507,7 @@ export default function AddRequestView() {
                 required
                 fullWidth
                 size="small"
+                inputProps={{style: {fontSize: 14}}} 
                 id="stock"
                 label="Stock"
                 name="stock"
@@ -534,6 +520,7 @@ export default function AddRequestView() {
                   variant="outlined"
                   fullWidth
                   size="small"
+                  inputProps={{style: {fontSize: 14}}} 
                   required
                   id="serial"
                   label="Serial"
@@ -545,15 +532,16 @@ export default function AddRequestView() {
                 <Grid item xs={12}>
                     <div className="checkBoxes">
                         <FormGroup>
-                            <Typography variant="h6">Work Required*</Typography>      
+                            <Typography variant="h6" style={{fontSize: 18}}>Work Required*</Typography>      
                             {workOptions.map(option => (
-                              <FormControlLabel control={<Checkbox id={option.id} checked={option.checkedState} onChange={handleChange} color="primary" value={option.work}/>} label={option.work} />
+                              <FormControlLabel control={<Checkbox id={option.id} checked={option.checkedState} size="small" onChange={handleChange} color="primary" value={option.work}/>} label={<Typography style={{fontSize: 14}}>{option.work}</Typography>}/>
                             ))}
                             <Stack direction="row">
-                                <FormControlLabel control={<Checkbox id="8" checked={checked8} onChange={handleChange} disabled={otherDisabled} color="primary" value={other}/>} label="Other:" />
+                                <FormControlLabel control={<Checkbox id="8" checked={checked8} size="small" onChange={handleChange} disabled={otherDisabled} color="primary" value={other}/>} label={<Typography style={{fontSize: 14}}>Other: </Typography>} />
                                 <TextField
                                 fullWidth
                                 size="small"
+                                inputProps={{style: {fontSize: 14}}} 
                                 id="other"
                                 value={other}
                                 onChange={enableOther}
@@ -568,12 +556,13 @@ export default function AddRequestView() {
                 variant="outlined"
                 fullWidth
                 size="small"
+                inputProps={{style: {fontSize: 14}}} 
                 id="notes"
                 label="Addtional Notes"
                 name="notes"
                 type="text"
                 value={notes} 
-                onChange="{e=> setEmail(e.target.value)}"
+                onChange={e=> setNotes(e.target.value)}
               />
             </Grid>
           </Grid >
