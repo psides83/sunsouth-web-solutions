@@ -12,7 +12,7 @@ import SignIn from './views/SignIn';
 import SignUp from './views/SignUp';
 import { createTheme, ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import SpinnerProgress from './components/SpinnerProgress';
+import Spinner from './components/Spinner';
 import AddRequestView from './views/AddRequestView';
 import Completed from './views/Completed';
 import AddLoanerView from './views/AddLoanerView';
@@ -92,7 +92,7 @@ function App() {
               <Route path="/pdf">
                 {loading
                 ? 
-                <SpinnerProgress/>
+                <Spinner frame/>
                 :
                   <PDFViewer width="100%" height='1080'>
                     <RequestPDF className="pdf"
@@ -138,7 +138,7 @@ function App() {
 
               <Route path="/">
                 {user && <Header />}
-                { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <SpinnerProgress /> }
+                { !loading && !user ? <SignIn /> : !loading && user ? <Home /> : <Spinner frame/> }
               </Route>
             </Switch>
         </Router>

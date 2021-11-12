@@ -19,7 +19,7 @@ import '../../styles/LoanerManager.css'
 import AddIcon from '@mui/icons-material/Add';
 import AddLoanerView from '../AddLoanerView'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import { sendLoanerStatusEmail } from '../../services/EmailService';
+import { sendLoanerStatusEmail } from '../../services/email-service';
 
 // Styles:
 const useRowStyles = makeStyles({

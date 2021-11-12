@@ -19,7 +19,7 @@ import moment from 'moment';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
-import { sendNewLoanerEmail } from '../services/EmailService';
+import { sendNewLoanerEmail } from '../services/email-service';
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({

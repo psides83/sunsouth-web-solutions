@@ -11,7 +11,7 @@ import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import '../../styles/Table.css'
 import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
-import { sendEquipmentUpdateEmail } from '../../services/EmailService'
+import { sendEquipmentUpdateEmail } from '../../services/email-service'
 
 // Equipment row view:
 export default function EquipmentRow({classes, request, item}) {
