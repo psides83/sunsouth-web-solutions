@@ -24,7 +24,7 @@ import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { styled } from '@mui/material/styles';
 import Chip from '@mui/material/Chip';
 import Snackbar from '@material-ui/core/Snackbar';
-import { sendNewRequestEmail } from '../services/EmailService';
+import { sendNewRequestEmail } from '../services/email-service';
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({

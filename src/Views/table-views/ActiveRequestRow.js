@@ -30,11 +30,12 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import { EquipmentTableHeaderView } from '../../components/TableHeaderViews';
-import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../../services/EmailService'
+import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../../services/email-service'
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import EquipmentRow from './EquipmentRows';
 import { Link } from 'react-router-dom';
+import Spinner from '../../components/Spinner';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -64,13 +65,24 @@ export default function RequestRow({request}) {
     var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
     const [openChangeLog, setOpenChangeLog] = useState(false);
+    const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false)
+    const [isShowingSpinner, setIsShowingSpinner] = useState(false)
     // #endregion
   
     const handleCloseChangeLog = () => {
       setOpenChangeLog(false);
     };
+
     const handleToggleChangeLog = () => {
       setOpenChangeLog(!openChangeLog);
+    };
+
+    const handleCloseConfirmDialog = () => {
+      setIsShowingConfirmDialog(false);
+    };
+
+    const handleToggleConfirmDialog = () => {
+      setIsShowingConfirmDialog(!isShowingConfirmDialog);
     };
   
     // Fetches equipment from firestore:
@@ -207,6 +219,7 @@ export default function RequestRow({request}) {
   
     // Handles updating the request status:
     const updateStatus = async () => {
+      setIsShowingSpinner(true)
       var status = request.status
   
       switch (status) {
@@ -234,15 +247,17 @@ export default function RequestRow({request}) {
       const requestRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id);
       await setDoc(requestRef, { 
   
-        status: status, 
-        statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"), 
-        changeLog: request.changeLog 
-      }, { 
-        
-        merge: true 
-      });
+              status: status, 
+              statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"), 
+              changeLog: request.changeLog 
+            }, { 
+              
+              merge: true 
+            });
   
       sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
+      handleCloseConfirmDialog()
+      setIsShowingSpinner(false)
     }
 
     // Sets data for the pdf into a fire store documetnt for the current
@@ -257,6 +272,16 @@ export default function RequestRow({request}) {
         
         merge: true 
       });
+    }
+
+    const statusUpdateText = () => {
+      if(request.status === 'Requested') {
+        return 'In Progress'
+      } else if(request.status === 'In Progress') {
+        return 'Completed'
+      } else {
+        return 'Requested'
+      }
     }
   
     // Request row UI:
@@ -308,12 +333,35 @@ export default function RequestRow({request}) {
                     size="small" 
                     sx={{ width: '115px', pt: '5px' }}
                     variant={request.status === 'In Progress' ? "contained" : "outlined"} 
-                    onClick={updateStatus}
+                    onClick={handleToggleConfirmDialog}
                   >
                     { request.status }
                   </Button>
                 </Tooltip>
                 <p><small>{request.statusTimestamp}</small></p>
+
+                <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
+                <div style={{ display: 'flex', flexDirection: 'column', margin: '5px 25px 25px 25px' }}>
+                  <DialogTitle>Confirm Update</DialogTitle>
+                  {
+                    isShowingSpinner
+                    ?
+                    <div style={{ justifyContent: 'center', alignContent: 'center', justifySelf: 'center', alignSelf: 'center' }}>
+                      <Typography>Saving</Typography>
+                      <Spinner frame={false}/>
+                    </div>
+                    :
+                    <div>
+                      <Typography>{`Update the request's status from`}</Typography>
+                      <Typography>{`\"${request.status}" to "${statusUpdateText()}"?`}</Typography>
+                      <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '25px' }}>
+                        <Button variant="outlined" color="error" onClick={handleCloseConfirmDialog}>Cancel</Button>
+                        <Button variant="contained" color="success" onClick={updateStatus}>Update</Button>
+                      </div>
+                    </div>
+                  }
+                  </div>
+                </Dialog>
           </TableCell>
           
           <TableCell key='buttons' align="right">
@@ -325,6 +373,7 @@ export default function RequestRow({request}) {
                     <HistoryOutlinedIcon />
                   </Tooltip>
                 </IconButton>
+
                 <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
                   <DialogTitle>Request Change History</DialogTitle>
                   <Timeline position="alternate"> { 
