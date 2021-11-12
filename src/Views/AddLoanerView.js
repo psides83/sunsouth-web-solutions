@@ -16,23 +16,10 @@ import { Alert } from '@mui/material';
 import '../styles/AddRequest.css'
 import { useStateValue } from '../state-management/StateProvider';
 import moment from 'moment';
-// import { styled } from '@mui/material/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import { Avatar } from '@material-ui/core';
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import { sendNewLoanerEmail } from '../services/EmailService';
-
-//#region Unused imports
-// import Paper from '@mui/material/Paper';
-// import Avatar from '@material-ui/core/Avatar';
-// import Link from '@material-ui/core/Link';
-// import { createUserWithEmailAndPassword } from "firebase/auth";
-// import InputLabel from '@mui/material/InputLabel';
-// import MenuItem from '@mui/material/MenuItem';
-// import FormControl from '@mui/material/FormControl';
-// import Select from '@mui/material/Select';
-// import OutlinedInput from '@mui/material/OutlinedInput';
-//#endregion
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({
@@ -82,24 +69,6 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-
-// copyright view at the footer of the page.
-// function Copyright() {
-//   return (
-//     <Typography variant="body2" color="textSecondary" align="center">
-//       {'Copyright © '}
-//       <a href="https://www.instagram.com/thewaymediaco/?utm_medium=copy_link">
-//         TheWayMedia Web Solutions
-//       </a>{' '}
-//       {new Date().getFullYear()}
-//       {'.'}
-//     </Typography>
-//   );
-// };
-
-// const ListItem = styled('li')(({ theme }) => ({
-//   margin: theme.spacing(0.5),
-// }));
 
 export default function AddLoanerView() {  
   //#region State Properties
@@ -214,53 +183,17 @@ export default function AddLoanerView() {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <Box className={classes.paper}>
-        <Avatar className={classes.avatar}>
+        <Avatar key="avatar" className={classes.avatar}>
           <AgricultureIcon className={classes.icon} fontSize="large" />
         </Avatar>
-        <Typography component="h1" variant="h" className={classes.title}>
+        <Typography key="heading" component="h1" variant="h" className={classes.title}>
           Log Loaned Equipment
         </Typography>
         <form className={classes.form} noValidate>
-        {/* <Stack mb={1}>
-            <Typography component="h1" variant="h6">
-                {heading}
-            </Typography>
-
-            <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  alignContent: 'center',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  listStyle: 'none',
-                  p: 0.5,
-                  m: 0,
-                }}
-                component="ul"
-              >
-                {equipmentList.map((data) => {
-                  let icon = <AgricultureIcon />;
-
-                  return (
-                    <ListItem key={data.id}>
-                      <Chip
-                        icon={icon}
-                        label={data.model}
-                        variant="outlined"
-                        color="success"
-                        // size="small"
-                        onDelete={handleDelete(data)}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </Box>
-            
-            </Stack> */}
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
+                  key="dateOut"
                   name="dateOut"
                   variant="outlined"
                   type="date"
@@ -268,13 +201,14 @@ export default function AddLoanerView() {
                   fullWidth
                   size="small"
                   id="dateOut"
-                  label="Date"
+                  
                   autoFocus
                   onChange={e=> setDateOut(e.target.value)}
                   value={dateOut}
                   InputLabelProps={{
                     shrink: true,
                   }}
+                  label="Date"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -282,58 +216,61 @@ export default function AddLoanerView() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
+                key="model"
                 name="model"
                 variant="outlined"
                 required
                 fullWidth
                 size="small"
                 id="model"
-                label="Model"
                 onChange={e=> setModel(e.target.value.toUpperCase())}
                 value={model}
+                label="Model"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
+                key="stock"
                 variant="outlined"
                 required
                 fullWidth
                 size="small"
                 id="stock"
                 label="Stock"
-                name="stock"
                 onChange={e=> setStock(e.target.value)}
                 value={stock}
+                name="stock"
               />
             </Grid>
             <Grid item xs={12}>
                 <TextField
+                  key="serial"
                   variant="outlined"
                   fullWidth
                   size="small"
                   required
                   id="serial"
-                  label="Serial"
                   onChange={e=> setSerial(e.target.value.toUpperCase())}
                   value={serial}
-                >
-                </TextField>
+                  label="Serial"
+                />
             </Grid>
                 <Grid item xs={12} sm={4}>
                 <TextField
+                  key="hours"
                   variant="outlined"
                   fullWidth
                   size="small"
                   required
                   id="hours"
-                  label="Hours"
                   onChange={e=> setHours(e.target.value)}
                   value={hours}
-                >
-                </TextField>
+                  label="Hours"
+                />
                 </Grid>
             <Grid item xs={12} sm={8}>
               <TextField
+                key="customer"
                 variant="outlined"
                 fullWidth
                 required
@@ -341,35 +278,26 @@ export default function AddLoanerView() {
                 id="customer"
                 label="Customer"
                 name="customer"
-                type="text"
                 value={customer} 
                 onChange={e=> setCustomer(e.target.value)}
+                type="text"
               />
             </Grid>
           </Grid >
 
-          <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
+          <Snackbar key="success" open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
             <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
               {validationMessage}
             </Alert>
           </Snackbar>
 
-          <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
+          <Snackbar key="error" open={openError} autoHideDuration={3000} onClose={handleClose}>
             <Alert  onClose={handleClose} severity="error" sx={{ width: '100%' }}>
               {validationMessage}
             </Alert>
           </Snackbar>
 
           <Grid container justifyContent="flex-end">
-            {/* <Button
-                variant="outlined"
-                color="primary"
-                startIcon={<AddCircleOutlineIcon />}
-                className={classes.addEquipment}
-                onClick={equipmentSubmitValidation}
-            >
-                Add More Equipment
-            </Button> */}
             <Button
                 variant="contained"
                 color="primary"
@@ -380,12 +308,8 @@ export default function AddLoanerView() {
                 <p className={classes.submitIcon}>Submit Loaner</p>
             </Button>
           </Grid>
-          
         </form>
       </Box>
-      {/* <Box mt={5}>
-        <Copyright />
-      </Box> */}
     </Container>
   );
 }

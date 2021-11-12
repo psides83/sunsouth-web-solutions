@@ -57,6 +57,7 @@ function Row({salesman}) {
 
   // Whole table view:
   export default function SalesmenList() {
+    // #region State Properties
     const [{ userProfile }] = useStateValue();
     const [salesmen, setSalesmen] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -65,7 +66,8 @@ function Row({salesman}) {
     const [filterParam, setFilterParam] = useState("All");
     const [emails, setEmails] = useState('')
     const [isShowingTransferRequest, setisShowingTransferRequest] = useState(false)
-    
+    // #endregion
+
     const handleCloseTransferRequest = () => {
       setisShowingTransferRequest(false);
     };
@@ -80,9 +82,6 @@ function Row({salesman}) {
       })
       setisShowingTransferRequest(!isShowingTransferRequest);
     };
-
-    
-
 
     // Fetch loanerss from firestore:
     const fetch = useCallback( async ()=> {
@@ -159,6 +158,7 @@ function Row({salesman}) {
                 ?
                 <div className="transferButton">
                   <Button
+                    key="tansferButton"
                     color="success" 
                     variant="outlined" 
                     endIcon={<LocalShippingIcon />} 
@@ -167,7 +167,7 @@ function Row({salesman}) {
                     Requst Transfer
                   </Button>
 
-                  <Dialog onClose={handleCloseTransferRequest} open={isShowingTransferRequest}>
+                  <Dialog key="transferDialog" onClose={handleCloseTransferRequest} open={isShowingTransferRequest}>
                     <div className="closeButtonContainer">
                       <Button onClick={handleCloseTransferRequest} color="success">
                         <CancelOutlinedIcon/>
