@@ -1,7 +1,7 @@
 import emailjs from 'emailjs-com';
 import moment from 'moment';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db } from './firebase';
 
 const serviceID = 'service_5guvozs';
 const templateID = 'template_5dg1ys6';
