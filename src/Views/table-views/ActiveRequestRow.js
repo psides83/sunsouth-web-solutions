@@ -219,6 +219,7 @@ export default function RequestRow({request}) {
   
     // Handles updating the request status:
     const updateStatus = async () => {
+      
       setIsShowingSpinner(true)
       var status = request.status
   
@@ -257,7 +258,7 @@ export default function RequestRow({request}) {
   
       sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
       handleCloseConfirmDialog()
-      setIsShowingSpinner(false)
+      setTimeout( function() { setIsShowingSpinner(false) }, 1000)
     }
 
     // Sets data for the pdf into a fire store documetnt for the current

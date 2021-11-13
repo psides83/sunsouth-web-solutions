@@ -20,6 +20,8 @@ import AddIcon from '@mui/icons-material/Add';
 import AddLoanerView from '../AddLoanerView'
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 import { sendLoanerStatusEmail } from '../../services/email-service';
+import Spinner from '../../components/Spinner';
+import { DialogTitle } from '@mui/material';
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -35,90 +37,135 @@ function Row({loaner}) {
   // #region State Properties
     const [{ userProfile }] = useStateValue();
     const classes = useRowStyles();
+    const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false)
+    const [isShowingSpinner, setIsShowingSpinner] = useState(false)
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
   // #endregion 
+
+  const handleCloseConfirmDialog = () => {
+    setIsShowingConfirmDialog(false);
+  };
+
+  const handleToggleConfirmDialog = () => {
+    setIsShowingConfirmDialog(!isShowingConfirmDialog);
+  };
   
-    // Handles updating the request status:
-    const updateStatus = async () => {
-      var status = loaner.status
-  
-      switch (status) {
-        case "Out":
-          status = "Returned";
-          break;
-        default:
-          status = "Returned";
-      }
-  
-      const changeLogEntry = {
-  
-        user: fullName,
-        change: `Status updated to ${status}`, 
-        timestamp: moment().format("DD-MMM-yyyy hh:mmA")
-      }
-  
-      loaner.changeLog.push(changeLogEntry)
-  
-      const loanerRef = doc(db, 'branches',  userProfile.branch, 'loaners', loaner.id);
-  
-      await setDoc(loanerRef, { 
-  
-        status: status, 
-        statusTimestamp: moment().format("DD-MMM-yyyy"), 
-        changeLog: loaner.changeLog 
-      }, { merge: true });
-  
-      sendLoanerStatusEmail(loaner, fullName, userProfile)
+  // Handles updating the request status:
+  const updateStatus = async () => {
+
+    setIsShowingSpinner(true)
+    var status = loaner.status
+
+    switch (status) {
+      case "Out":
+        status = "Returned";
+        break;
+      default:
+        status = "Returned";
     }
-  
-    // Request row UI:
-    return (
-      <React.Fragment>
-        <TableRow key={loaner.id} className={classes.root}  >
-          <TableCell key={loaner.employee} component="th" scope="row" >
-            <p>
-              {loaner.employee}
-            </p>
-            <small>
-              {loaner.timestamp}
-            </small>
-          </TableCell>  
-          
-          <TableCell key={loaner.model} align="left">
-              {loaner.model}
-          </TableCell>
 
-          <TableCell key={loaner.stock} component="th" scope="row" >
-            <p>
-              {`Stock: ${loaner.stock}`}
-            </p>
-            <small>
-              {`Serial: ${loaner.serial}`}
-            </small>
-          </TableCell>  
-          
-          <TableCell key={loaner.hours} align="left">
-            { loaner.hours }
-          </TableCell>
+    const changeLogEntry = {
 
-          <TableCell key={loaner.customer} align="left">
-            { loaner.customer }
-          </TableCell>
-          
-          <TableCell  key={loaner.status} align="left">
-            <Tooltip title="Update Status">
-              <Button color="success" size="small" variant={loaner.status === 'In Progress' ? "contained" : "outlined"} onClick={updateStatus}>
-                {loaner.status}
-              </Button>
-            </Tooltip>
-            <p><small>
-            {loaner.statusTimestamp}
-            </small></p>
-          </TableCell>
-        </TableRow>
-      </React.Fragment>
-    );
+      user: fullName,
+      change: `Status updated to ${status}`, 
+      timestamp: moment().format("DD-MMM-yyyy hh:mmA")
+    }
+
+    loaner.changeLog.push(changeLogEntry)
+
+    const loanerRef = doc(db, 'branches',  userProfile.branch, 'loaners', loaner.id);
+
+    await setDoc(loanerRef, { 
+
+      status: status, 
+      statusTimestamp: moment().format("DD-MMM-yyyy"), 
+      changeLog: loaner.changeLog 
+    }, { merge: true });
+
+    sendLoanerStatusEmail(loaner, fullName, userProfile)
+    handleCloseConfirmDialog()
+    setTimeout( function() { setIsShowingSpinner(false) }, 1000)
   }
+
+  const statusUpdateText = () => {
+    if(loaner.status === 'Out') {
+      return 'Returned'
+    } else {
+      return 'Out'
+    }
+  }
+
+  // Request row UI:
+  return (
+    <React.Fragment>
+      <TableRow key={loaner.id} className={classes.root}  >
+        <TableCell key={loaner.employee} component="th" scope="row" >
+          <p>
+            {loaner.employee}
+          </p>
+          <small>
+            {loaner.timestamp}
+          </small>
+        </TableCell>  
+        
+        <TableCell key={loaner.model} align="left">
+            {loaner.model}
+        </TableCell>
+
+        <TableCell key={loaner.stock} component="th" scope="row" >
+          <p>
+            {`Stock: ${loaner.stock}`}
+          </p>
+          <small>
+            {`Serial: ${loaner.serial}`}
+          </small>
+        </TableCell>  
+        
+        <TableCell key={loaner.hours} align="left">
+          { loaner.hours }
+        </TableCell>
+
+        <TableCell key={loaner.customer} align="left">
+          { loaner.customer }
+        </TableCell>
+        
+        <TableCell  key={loaner.status} align="left">
+          <Tooltip title="Update Status">
+            <Button color="success" size="small" variant="outlined" onClick={handleToggleConfirmDialog}>
+              {loaner.status}
+            </Button>
+          </Tooltip>
+          <p><small>
+          {loaner.statusTimestamp}
+          </small></p>
+
+          <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
+              <div style={{ display: 'flex', flexDirection: 'column', margin: '5px 25px 25px 25px' }}>
+                <DialogTitle>Confirm Update</DialogTitle>
+                {
+                  isShowingSpinner
+                  ?
+                  <div style={{ justifyContent: 'center', alignContent: 'center', justifySelf: 'center', alignSelf: 'center' }}>
+                    <Typography>Saving</Typography>
+                    <Spinner frame={false}/>
+                  </div>
+                  :
+                  <div>
+                    <Typography>{`Update the loaner's status from`}</Typography>
+                    <Typography>{`\"${loaner.status}" to "${statusUpdateText()}"?`}</Typography>
+                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', marginTop: '25px' }}>
+                      <Button variant="outlined" color="error" onClick={handleCloseConfirmDialog}>Cancel</Button>
+                      <Button variant="contained" color="success" onClick={updateStatus}>Update</Button>
+                    </div>
+                  </div>
+                }
+                </div>
+              </Dialog>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  );
+}
 
   // Whole table view:
 export default function LoanerManager() {
@@ -160,13 +207,14 @@ export default function LoanerManager() {
             statusTimestamp: doc.data().statusTimestamp,
             changeLog: doc.data().changeLog
           })))
+
+          setTimeout( function() { setLoading(false) }, 1000)
       });
     }
   }, [userProfile])
 
   useEffect(() => {
     fetch()
-    setTimeout( function() { setLoading(false) }, 1000)
   }, [fetch])
 
   // Table UI:

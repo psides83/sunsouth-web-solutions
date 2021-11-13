@@ -42,15 +42,16 @@ export default function ActiveRequestsTable() {
     );
     
     onSnapshot(requestsQuery, (querySnapshot) => {
-        setRequests(querySnapshot.docs.map((doc) => ({
-          id: doc.data().id,
-          salesman: doc.data().salesman,
-          timestamp: doc.data().timestamp,
-          workOrder: doc.data().workOrder,
-          status: doc.data().status,
-          statusTimestamp: doc.data().statusTimestamp,
-          changeLog: doc.data().changeLog
-        })))
+      setRequests(querySnapshot.docs.map((doc) => ({
+        id: doc.data().id,
+        salesman: doc.data().salesman,
+        timestamp: doc.data().timestamp,
+        workOrder: doc.data().workOrder,
+        status: doc.data().status,
+        statusTimestamp: doc.data().statusTimestamp,
+        changeLog: doc.data().changeLog
+      })))
+      setTimeout( function() { setLoading(false) }, 1000)
     });
   } else {
     console.log("userProfile not loaded")
@@ -59,7 +60,6 @@ export default function ActiveRequestsTable() {
 
   useEffect(() => {
     fetch()
-    setTimeout( function() { setLoading(false) }, 1000)
   }, [fetch])
 
   // Table UI:
