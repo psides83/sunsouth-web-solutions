@@ -3,11 +3,9 @@ import moment from 'moment';
 import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
-const serviceID = 'service_3fgcwz9';
-const templateID = 'template_5dg1ys6';
-const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
-const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-const emailID = moment().format("yyyyMMDDHHmmss")
+// const serviceID = 'service_3fgcwz9';
+// const templateID = 'template_5dg1ys6';
+// const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
 
 const roles = {
     request: ['admin', 'service', 'parts'],
@@ -58,6 +56,8 @@ const setRecipients = async (recipientRoles, userProfile, salesman) => {
 const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userProfile, fullName, model, stock, serial, work, notes) => {
 
     // Creates the paramaters for the email template
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`;
     const body = `<body>
@@ -112,6 +112,8 @@ const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userPr
 const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model, userProfile, salesman) => {
 
     // creates the paramaters for the email template
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
@@ -141,6 +143,8 @@ const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model
 // Sends email when equipment is added to a request from the Active Requests Table
 const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile, salesman) => {
 
+    // creates the paramaters for the email template
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = request.workOrder !== ''
                     ? 
@@ -187,6 +191,9 @@ const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, mo
 // Send email when request status is updated:
 const sendStatusEmail = async (status, equipment, request, fullName, userProfile, salesman) => {
 
+    // creates the paramaters for the email template
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
     const body = `<body>
@@ -216,6 +223,8 @@ const sendStatusEmail = async (status, equipment, request, fullName, userProfile
 // Sends email when new request is submitted
 const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfile, salesman) => {
 
+    // creates the paramaters for the email template
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.request, userProfile, salesman)
     const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
     var body = `<body>
@@ -260,6 +269,9 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
 // Send email when loaner is logged.
 const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, userProfile) => {
 
+    // creates the paramaters for the email template
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.loaner, userProfile, 'none')
     const subject = `${model}, ${stock} has been loaned out`;
     const body = `<body>
@@ -294,6 +306,9 @@ const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, use
 // Send email when request status is updated:
 const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   
+    // creates the paramaters for the email template
+    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+    const emailID = moment().format("yyyyMMDDHHmmss")
     const recipients = await setRecipients(roles.loaner, userProfile, 'none')
     const subject = `${loaner?.model}, ${loaner?.stock} has been returned`;
     const body = `<body>
