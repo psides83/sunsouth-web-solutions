@@ -1,12 +1,13 @@
 import emailjs from 'emailjs-com';
 import moment from 'moment';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
 const serviceID = 'service_3fgcwz9';
 const templateID = 'template_5dg1ys6';
 const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
 const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+const emailID = moment().format("yyyyMMDDHHmmss")
 
 const roles = {
     request: ['admin', 'service', 'parts'],
@@ -67,8 +68,8 @@ const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userPr
                     </section>
                     <hr style="height:3px;border-width:0;color:gray;background-color:gray">
                     <section>
-                        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;">
-                        <dl style="margin-right: 75px;">
+                        <div style="display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center;">
+                        <dl style="margin-right: 80px;">
                             <dt><h4>Previous</h4></dt>
                             <dt><strong>Model:</strong> ${currentValues.model}</dt>
                             <dt><strong>Stock Number:</strong> ${currentValues.stock}</dt>
@@ -90,17 +91,20 @@ const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userPr
                     <body>`;
 
     // Sets paramaters for the email template
-    const templateParams = {
+    const emailData = {
         to: recipients,
         replyTo: userProfile.email,
-        from: "PDI/Setup Requests",
-        copy: userProfile.email,
-        subject: subject,
-        message: body
+        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
     // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID);
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 }
 
@@ -117,17 +121,20 @@ const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model
                     <body>`;
 
     // Sets paramaters for the email template
-    const templateParams = {
+    const emailData = {
         to: recipients,
-        replyTo: userProfile.email, 
-        from: "PDI/Setup Requests", 
-        copy: userProfile.email,
-        subject: subject,
-        message: body
+        replyTo: userProfile.email,
+        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
     // sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID);
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 }
 
@@ -159,17 +166,21 @@ const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, mo
                 </section>
                 <body>`;
 
-    const templateParams = {
+    // Sets paramaters for the email template
+    const emailData = {
         to: recipients,
-        replyTo: userProfile.email, 
-        from: "PDI/Setup Requests", 
-        copy: userProfile.email,
-        subject: subject,
-        message: body
+        replyTo: userProfile.email,
+        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
-    // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID);
+    // sends the email
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 }
 
@@ -184,17 +195,21 @@ const sendStatusEmail = async (status, equipment, request, fullName, userProfile
                     <p>The status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
                   <body>`;
 
-    const templateParams = {
-      to: recipients,
-      replyTo: userProfile.email, 
-      from: "PDI/Setup Requests", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
+    // Sets paramaters for the email template
+    const emailData = {
+        to: recipients,
+        replyTo: userProfile.email,
+        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
-    // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID);
+    // sends the email
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
   }
 
@@ -224,17 +239,21 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
 
     body += '</body>';
 
-    const templateParams = {
+    // Sets paramaters for the email template
+    const emailData = {
         to: recipients,
-        replyTo: userProfile.email, 
-        from: "PDI/Setup Requests", 
-        copy: userProfile.email,
-        subject: subject,
-        message: body
+        replyTo: userProfile.email,
+        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
-    // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID);
+    // sends the email
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 };
 
@@ -254,18 +273,21 @@ const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, use
                     </dl>
                 </body>`;
 
-
-    const templateParams = {
+    // Sets paramaters for the email template
+    const emailData = {
         to: recipients,
-        replyTo: userProfile.email, 
-        from: "Loaned Equipment Manager", 
-        copy: userProfile.email,
-        subject: subject,
-        message: body
+        replyTo: userProfile.email,
+        from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
-    // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID)
+    // sends the email
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 };
 
@@ -285,17 +307,21 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
                     </dl>
                   </body>`;
 
-    const templateParams = {
-      to: recipients,
-      replyTo: userProfile.email, 
-      from: "Loaned Equipment Manager", 
-      copy: userProfile.email,
-      subject: subject,
-      message: body
+    // Sets paramaters for the email template
+    const emailData = {
+        to: recipients,
+        replyTo: userProfile.email,
+        from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+        cc: userProfile.email,
+        replyTo: userProfile.email,
+        message: {
+            subject: subject,
+            html: body
+        }
     };
 
-    // Sends the email
-    await emailjs.send(serviceID, templateID, templateParams, userID)
+    // sends the email
+    await setDoc(doc(db, 'sentEmails', emailID), emailData)
     // console.log(recipients)
 };
 

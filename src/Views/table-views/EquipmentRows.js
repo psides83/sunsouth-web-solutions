@@ -148,7 +148,7 @@ export default function EquipmentRow({classes, request, item}) {
           className={classes.root} 
           sx={{ '& > *': { borderBottom: 'unset' } }}
         >
-          <TableCell key={model} align="left" component="th" scope="row"> {
+          <TableCell key="model" align="left" component="th" scope="row"> {
             isEditingEquipment 
             ? 
             <TextField 
@@ -167,7 +167,7 @@ export default function EquipmentRow({classes, request, item}) {
   
           { isEditingEquipment 
             ?
-            <TableCell key={stock} align="left">
+            <TableCell key="stock" align="left">
                 <br/>
                 <p>
                   <TextField 
@@ -196,13 +196,13 @@ export default function EquipmentRow({classes, request, item}) {
                 </p>
             </TableCell>
             :
-            <TableCell key={serial} align="left">
+            <TableCell key="serial" align="left">
                 { `Stock: ${item.stock}` }
                 <p><small>{ `Serial: ${item.serial}` }</small></p>
             </TableCell>
           }
   
-          <TableCell key={work} align="left">  {
+          <TableCell key="work" align="left">  {
             isEditingEquipment 
             ? 
             <TextField 
@@ -219,7 +219,7 @@ export default function EquipmentRow({classes, request, item}) {
           }
           </TableCell>
   
-          <TableCell key={notes} align="left"> {
+          <TableCell key="notes" align="left"> {
             isEditingEquipment 
             ? 
             <TextField 
