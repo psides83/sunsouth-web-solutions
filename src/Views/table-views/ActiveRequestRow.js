@@ -10,7 +10,7 @@ import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import { collection, query, orderBy, onSnapshot, setDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, setDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import Button from '@mui/material/Button';
 import { TableFooter, TextField, Tooltip, Typography } from '@material-ui/core';
@@ -36,6 +36,7 @@ import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import EquipmentRow from './EquipmentRows';
 import { Link } from 'react-router-dom';
 import Spinner from '../../components/Spinner';
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -66,6 +67,7 @@ export default function RequestRow({request}) {
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`
     const [openChangeLog, setOpenChangeLog] = useState(false);
     const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false)
+    const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false)
     const [isShowingSpinner, setIsShowingSpinner] = useState(false)
     // #endregion
   
@@ -83,6 +85,14 @@ export default function RequestRow({request}) {
 
     const handleToggleConfirmDialog = () => {
       setIsShowingConfirmDialog(!isShowingConfirmDialog);
+    };
+
+    const handleCloseDeleteDialog = () => {
+      setIsShowingDeleteDialog(false);
+    };
+
+    const handleToggleDeleteDialog = () => {
+      setIsShowingDeleteDialog(!isShowingConfirmDialog);
     };
   
     // Fetches equipment from firestore:
@@ -170,7 +180,7 @@ export default function RequestRow({request}) {
             timestamp: timestamp
           }]
   
-          const equipment = {
+          const newEquipment = {
             requestID: request.id,
             timestamp: timestamp,
             model: model,
@@ -182,8 +192,8 @@ export default function RequestRow({request}) {
           }
           
           // Sets the added equipment to firestore:
-          const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', equipment.stock);
-          await setDoc(equipmentRef, equipment, { merge: true });
+          const equipmentRef = doc(db, 'branches',  userProfile.branch, 'requests', request.id, 'equipment', newEquipment.stock);
+          await setDoc(equipmentRef, newEquipment, { merge: true });
   
           // Append the equipment addition to the request's changealog
           const changeLogEntry = {
@@ -284,6 +294,19 @@ export default function RequestRow({request}) {
         return 'Requested'
       }
     }
+
+    const deleteRequest = async () => {
+  
+      await deleteDoc(
+        doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          request.id
+        )
+      );
+    };
   
     // Request row UI:
     return (
@@ -434,7 +457,78 @@ export default function RequestRow({request}) {
                   }
                 </IconButton>
               </div>
+                  <div className="delete-button">
+              {isEditingWorkOrder ? (
+            <IconButton
+              color="success"
+              style={{ fontSize: 20 }}
+              onClick={handleToggleDeleteDialog}
+            >
+              <Tooltip title="Delete Equipment">
+                <DeleteRoundedIcon color="success" style={{ fontSize: 18 }} />
+              </Tooltip>
+            </IconButton>
+          ) : null}
+          </div>
             </div>
+
+
+
+            <Dialog
+            onClose={handleCloseDeleteDialog}
+            open={isShowingDeleteDialog}
+          >
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                margin: "5px 25px 25px 25px",
+              }}
+            >
+              <DialogTitle>Confirm Delete</DialogTitle>
+              {isShowingSpinner ? (
+                <div
+                  style={{
+                    justifyContent: "center",
+                    alignContent: "center",
+                    justifySelf: "center",
+                    alignSelf: "center",
+                  }}
+                >
+                  <Typography>Saving</Typography>
+                  <Spinner frame={false} />
+                </div>
+              ) : (
+                <div>
+                  <Typography>Are you sure you want to delete</Typography>
+                  <Typography>delete this request?</Typography>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "space-between",
+                      marginTop: "25px",
+                    }}
+                  >
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      onClick={handleCloseDeleteDialog}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={deleteRequest}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </Dialog>
           </TableCell>
         </TableRow>
   
