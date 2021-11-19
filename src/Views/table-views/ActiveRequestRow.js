@@ -30,7 +30,7 @@ import TimelineContent from '@mui/lab/TimelineContent';
 import TimelineDot from '@mui/lab/TimelineDot';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
 import { EquipmentTableHeaderView } from '../../components/TableHeaderViews';
-import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail } from '../../services/email-service'
+import { sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendRequestDeletedEmail } from '../../services/email-service'
 import AgricultureIcon from '@mui/icons-material/Agriculture';
 import PrintOutlinedIcon from '@mui/icons-material/PrintOutlined';
 import EquipmentRow from './EquipmentRows';
@@ -150,7 +150,7 @@ export default function RequestRow({request}) {
           }
   
           await setDoc(doc(db, 'branches', userProfile.branch, "requests", request.id), { workOrder: workOrder, changeLog: request.changeLog }, { merge: true })
-          sendWorkOrderEmail(equipment, request, workOrder, fullName, model, userProfile, request.salesman)
+          sendWorkOrderEmail(equipment, request, workOrder, fullName, model, userProfile)
           setIsEditingWorkOrder(false)
         } else {
   
@@ -208,7 +208,7 @@ export default function RequestRow({request}) {
           await setDoc(requestRef, { changeLog: request.changeLog }, { merge: true });
   
           // Send email about addition of equipment
-          sendNewEquipmentEmail(request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile, request.salesman)
+          sendNewEquipmentEmail(request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile)
           // Hides add equipment TextFields
           setIsShowingAddEquipment(false)
           setEquipment([])
@@ -266,7 +266,7 @@ export default function RequestRow({request}) {
               merge: true 
             });
   
-      sendStatusEmail(status, equipment, request, fullName, userProfile, request.salesman)
+      sendStatusEmail(status, equipment, request, fullName, userProfile)
       handleCloseConfirmDialog()
       setTimeout( function() { setIsShowingSpinner(false) }, 1000)
     }
@@ -306,6 +306,8 @@ export default function RequestRow({request}) {
           request.id
         )
       );
+
+      sendRequestDeletedEmail(equipment, request, fullName, userProfile)
     };
   
     // Request row UI:
