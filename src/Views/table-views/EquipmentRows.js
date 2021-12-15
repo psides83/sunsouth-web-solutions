@@ -133,7 +133,6 @@ export default function EquipmentRow({ classes, request, item }) {
         sendEquipmentUpdateEmail(
           currentValues,
           request,
-          request.salesman,
           userProfile,
           fullName,
           model,
@@ -229,7 +228,6 @@ export default function EquipmentRow({ classes, request, item }) {
       request,
       fullName,
       userProfile,
-      request.salesman
     );
   };
 
