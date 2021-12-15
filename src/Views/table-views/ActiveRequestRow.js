@@ -296,6 +296,8 @@ export default function RequestRow({request}) {
     }
 
     const deleteRequest = async () => {
+
+      
   
       await deleteDoc(
         doc(
