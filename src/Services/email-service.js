@@ -1,66 +1,83 @@
-import emailjs from 'emailjs-com';
-import moment from 'moment';
-import { collection, query, where, getDocs, doc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
+import emailjs from "emailjs-com";
+import moment from "moment";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 // const serviceID = 'service_3fgcwz9';
 // const templateID = 'template_5dg1ys6';
 // const userID = 'user_3ub5f4KJJHBND1Wzl1FQi';
 
 const roles = {
-    request: ['admin', 'service', 'parts'],
-    loaner: ['admin', 'service', 'sales']
-}
+  request: ["admin", "service", "parts"],
+  loaner: ["admin", "service", "sales"],
+};
 
 // Sets recipients based on type of send email called
 const setRecipients = async (recipientRoles, userProfile, salesman) => {
+  if (userProfile) {
+    var recipients = [];
 
-    if(userProfile) {
+    const usersQuery = query(
+      collection(db, "users"),
+      where("branch", "==", userProfile?.branch)
+    );
+    const docSnapshot = await getDocs(usersQuery);
 
-        var recipients = []
-    
-        const usersQuery = query(collection(db, 'users'), where('branch', '==', userProfile?.branch));
-        const docSnapshot = await getDocs(usersQuery)      
+    docSnapshot.docs.map((doc) =>
+      recipients.push({
+        salesman: `${doc.data().firstName} ${doc.data().lastName}`,
+        email: doc.data().email,
+        role: doc.data().role,
+      })
+    );
 
-        docSnapshot.docs.map((doc) => (
+    var recipientEmails = [];
 
-            recipients.push({
-                salesman: `${doc.data().firstName} ${doc.data().lastName}`,
-                email: doc.data().email,
-                role: doc.data().role
-            })
-        ))
-
-        var recipientEmails = []
-        
-        if (recipientRoles === roles.request) {
-            recipients.filter((recipient) => recipient.salesman === salesman).map((recipient) => (
-
-                recipientEmails.push(recipient.email)
-            ))
-        }
-
-        recipients.filter((recipient) => recipientRoles.includes(recipient.role)).map((recipient) => (
-
-            recipientEmails.push(recipient.email)
-        ))
-
-        return recipientEmails.toString().replace(/,/g, ", ")
-
-    } else {
-        console.log("no user profile")
+    if (recipientRoles === roles.request) {
+      recipients
+        .filter((recipient) => recipient.salesman === salesman)
+        .map((recipient) => recipientEmails.push(recipient.email));
     }
-}
+
+    recipients
+      .filter((recipient) => recipientRoles.includes(recipient.role))
+      .map((recipient) => recipientEmails.push(recipient.email));
+
+    return recipientEmails.toString().replace(/,/g, ", ");
+  } else {
+    console.log("no user profile");
+  }
+};
 
 // Sends email when equipment is updated:
-const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userProfile, fullName, model, stock, serial, work, notes) => {
-
-    // Creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`;
-    const body = `<body>
+const sendEquipmentUpdateEmail = async (
+  currentValues,
+  request,
+  userProfile,
+  fullName,
+  model,
+  stock,
+  serial,
+  work,
+  notes
+) => {
+  // Creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject = `UPDATED - request on model ${currentValues.model}, ${currentValues.stock}`;
+  const body = `<body>
                     <section>
                         <p>${timestamp}</p>
                         <p><strong>Work Order:</strong> ${request.workOrder}</p>
@@ -90,71 +107,94 @@ const sendEquipmentUpdateEmail = async (currentValues, request, salesman, userPr
                     </section>
                     <body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // Sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-}
+  // Sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
 
 // Sends email when work order number is added or updated
-const sendWorkOrderEmail = async (equipment, request, workOrder, fullName, model, userProfile, salesman) => {
-
-    // creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
-    const body = `<body>
+const sendWorkOrderEmail = async (
+  equipment,
+  request,
+  workOrder,
+  fullName,
+  model,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject = `UPDATED - request on model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
+  const body = `<body>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p><br>
                     <p>Work order # ${workOrder} has been added or updated by ${fullName} to the request on ${model} ${equipment[0]?.model}, ST# ${equipment[0]?.stock}.</p>
-                    <body>`;
+                <body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-}
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
 
 // Sends email when equipment is added to a request from the Active Requests Table
-const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, model, stock, serial, work, notes, userProfile, salesman) => {
+const sendNewEquipmentEmail = async (
+  request,
+  equipment,
+  timestamp,
+  fullName,
+  model,
+  stock,
+  serial,
+  work,
+  notes,
+  userProfile
+) => {
+  console.log(equipment);
 
-    console.log(equipment)
+  // creates the paramaters for the email template
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject =
+    request.workOrder !== ""
+      ? `Equipment Added to request with WO# ${request.workOrder}`
+      : `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`;
 
-    // creates the paramaters for the email template
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = request.workOrder !== ''
-                    ? 
-                    `Equipment Added to request with WO# ${request.workOrder}`
-                    :
-                    `Equipment Added to previous request on ${equipment[0]?.model}, ST# ${equipment[0]?.stock}`;
-
-    var body = `<body>
+  var body = `<body>
                 <section>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p>
@@ -170,108 +210,173 @@ const sendNewEquipmentEmail = async (request, equipment, timestamp, fullName, mo
                     <p>Work Required: ${work}</p>
                     <p>Additional Notes: ${notes}</p>
                 </section>
-                <body>`;
+            <body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        // to: "psides83@hotmail.com",
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    // to: "psides83@hotmail.com",
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-}
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
 
 // Send email when request status is updated:
-const sendStatusEmail = async (status, equipment, request, fullName, userProfile, salesman) => {
-
-    // creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
-    const body = `<body>
+const sendStatusEmail = async (
+  status,
+  equipment,
+  request,
+  fullName,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject = `UPDATED - Status updated to ${status} for model ${equipment[0]?.model}, ${equipment[0]?.stock}`;
+  const body = `<body>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p><br> 
                     <p>The status of ${equipment[0]?.model} ST# ${equipment[0]?.stock} has been updated by ${fullName} to ${status}.</p> 
-                  <body>`;
+                <body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-  }
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
 
-  // Send email when request status is updated:
-const sendEquipmentDeletedEmail = async (equipment, request, userFullName, userProfile, salesman) => {
-
-    // creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `DELETED - ${equipment.model}, ${equipment.stock} from setup request`;
-    const body = `<body>
+// Send email when Equipment is deleted:
+const sendEquipmentDeletedEmail = async (
+  equipment,
+  request,
+  userFullName,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject = `DELETED - ${equipment.model}, ${equipment.stock} from setup request`;
+  const body = `<body>
                     <p>${timestamp}</p>
                     <p>Request ID: ${request.id}</p><br> 
-                    <p>${equipment.model} ST# ${equipment.stock} has been deleted from this request by ${userFullName}.</p> 
-                  <body>`;
+                    <p>${equipment.model} ST# ${equipment.stock} has been removed from this request by ${userFullName}.</p> 
+                <body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        // to: "psides83@hotmail.com",
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    // to: "psides83@hotmail.com",
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-  }
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
+
+// Send email when request is deleted:
+const sendRequestDeletedEmail = async (
+  equipment,
+  request,
+  userFullName,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject =
+    request.workOrder !== ""
+      ? `DELETED - Request on WO# ${request.workOrder} with ${equipment[0].model}`
+      : `DELETED - Request on ${equipment[0].model}, ST# ${equipment[0].stock}`;
+  const body = `<body>
+                    <p>${timestamp}</p>
+                    <p>Request ID: ${request.id}</p><br> 
+                    <p>Request on ${equipment.model} ST# ${equipment.stock} has been deleted by ${userFullName}.</p> 
+                <body>`;
+
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    // to: "psides83@hotmail.com",
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
+
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
 
 // Sends email when new request is submitted
-const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfile, salesman) => {
-
-    // creates the paramaters for the email template
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
-    var body = `<body>
+const sendNewRequestEmail = async (
+  timestamp,
+  equipmentList,
+  fullName,
+  userProfile,
+  salesman
+) => {
+  // creates the paramaters for the email template
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(roles.request, userProfile, salesman);
+  const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
+  var body = `<body>
                     <section>
                         <p>${timestamp}</p>
                         <p>${fullName} is requesting work to be done on the following equipment.</p>
                     </section>`;
-            
-    for (var i = 0; i < equipmentList.length; i++) {
 
-        body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray"/>
+  for (var i = 0; i < equipmentList.length; i++) {
+    body += `<hr style="height:3px;border-width:0;color:gray;background-color:gray"/>
                 <section>
                     <h3>Equipment ${i + 1}</h3>
                     <p>Model: ${equipmentList[i].model}</p>
@@ -279,38 +384,44 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
                     <p>Serial Number: ${equipmentList[i].serial}</p>
                     <p>Work Required: ${equipmentList[i].work}</p>
                     <p>Additional Notes: ${equipmentList[i].notes}</p>
-                </section>`
-    };
+                </section>`;
+  }
 
-    body += '</body>';
+  body += "</body>";
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
 };
 
 // Send email when loaner is logged.
-const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, userProfile) => {
-
-    // creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.loaner, userProfile, 'none')
-    const subject = `${model}, ${stock} has been loaned out`;
-    const body = `<body>
+const sendNewLoanerEmail = async (
+  model,
+  stock,
+  dateOut,
+  customer,
+  employee,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(roles.loaner, userProfile, "none");
+  const subject = `${model}, ${stock} has been loaned out`;
+  const body = `<body>
                     <h2>Equipment Loaned Out</h2>
                     <dl>
                         <dt>Date Loaned: ${dateOut}</dt>
@@ -321,33 +432,32 @@ const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, use
                     </dl>
                 </body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
 };
 
 // Send email when request status is updated:
 const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
-  
-    // creates the paramaters for the email template
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.loaner, userProfile, 'none')
-    const subject = `${loaner?.model}, ${loaner?.stock} has been returned`;
-    const body = `<body>
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(roles.loaner, userProfile, "none");
+  const subject = `${loaner?.model}, ${loaner?.stock} has been returned`;
+  const body = `<body>
                     <h2>Loaned Equipment Returned</h2>
                     <dl>
                       <dt>Date Returned: ${timestamp}</dt>
@@ -358,22 +468,32 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
                     </dl>
                   </body>`;
 
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
 
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
 };
 
-export { sendEquipmentUpdateEmail, sendWorkOrderEmail, sendNewEquipmentEmail, sendStatusEmail, sendNewRequestEmail, sendNewLoanerEmail, sendLoanerStatusEmail, sendEquipmentDeletedEmail };
+export {
+  sendEquipmentUpdateEmail,
+  sendWorkOrderEmail,
+  sendNewEquipmentEmail,
+  sendStatusEmail,
+  sendNewRequestEmail,
+  sendNewLoanerEmail,
+  sendLoanerStatusEmail,
+  sendEquipmentDeletedEmail,
+  sendRequestDeletedEmail,
+};

@@ -223,12 +223,7 @@ export default function EquipmentRow({ classes, request, item }) {
       )
     );
 
-    sendEquipmentDeletedEmail(
-      item,
-      request,
-      fullName,
-      userProfile,
-    );
+    sendEquipmentDeletedEmail(item, request, fullName, userProfile);
   };
 
   // Equipment row UI:
