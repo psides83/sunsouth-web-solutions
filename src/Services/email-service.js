@@ -45,7 +45,7 @@ const setRecipients = async (recipientRoles, userProfile, salesman) => {
             recipientEmails.push(recipient.email)
         ))
 
-        return recipientEmails.toString().replace(/,[s]*/g, ", ")
+        return recipientEmails.toString().replace(/,/g, ", ")
 
     } else {
         console.log("no user profile")
