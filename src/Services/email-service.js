@@ -302,52 +302,6 @@ const sendNewRequestEmail = async (timestamp, equipmentList, fullName, userProfi
     // console.log(recipients)
 };
 
-// Sends email when new request is submitted
-const sendRequestDeletedEmail = async (timestamp, equipmentList, fullName, userProfile, salesman) => {
-
-    // creates the paramaters for the email template
-    const emailID = moment().format("yyyyMMDDHHmmss")
-    const recipients = await setRecipients(roles.request, userProfile, salesman)
-    const subject = `${fullName}, ${equipmentList[0].model}, ${equipmentList[0].stock}, ${equipmentList[0].serial}`;
-    var body = `<body>
-                    <section>
-                        <p>${timestamp}</p>
-                        <p>${fullName} is requesting work to be done on the following equipment.</p>
-                    </section>`;
-            
-    for (var i = 0; i < equipmentList.length; i++) {
-
-        body +=  `<hr style="height:3px;border-width:0;color:gray;background-color:gray"/>
-                <section>
-                    <h3>Equipment ${i + 1}</h3>
-                    <p>Model: ${equipmentList[i].model}</p>
-                    <p>Stock Number: ${equipmentList[i].stock}</p>
-                    <p>Serial Number: ${equipmentList[i].serial}</p>
-                    <p>Work Required: ${equipmentList[i].work}</p>
-                    <p>Additional Notes: ${equipmentList[i].notes}</p>
-                </section>`
-    };
-
-    body += '</body>';
-
-    // Sets paramaters for the email template
-    const emailData = {
-        to: recipients,
-        replyTo: userProfile.email,
-        from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
-        cc: userProfile.email,
-        replyTo: userProfile.email,
-        message: {
-            subject: subject,
-            html: body
-        }
-    };
-
-    // sends the email
-    await setDoc(doc(db, 'sentEmails', emailID), emailData)
-    // console.log(recipients)
-};
-
 // Send email when loaner is logged.
 const sendNewLoanerEmail = async (model, stock, dateOut, customer, employee, userProfile) => {
 

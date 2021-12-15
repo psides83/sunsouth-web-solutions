@@ -335,13 +335,13 @@ export default function AddRequestView() {
       await setDoc(equipmentRef, equipment, { merge: true });
     }
 
-    // sendNewRequestEmail(
-    //   timestamp,
-    //   equipmentList,
-    //   fullName,
-    //   userProfile,
-    //   salesman
-    // );
+    sendNewRequestEmail(
+      timestamp,
+      equipmentList,
+      fullName,
+      userProfile,
+      salesman
+    );
     resetForm();
     setEquepmentList([]);
   };
