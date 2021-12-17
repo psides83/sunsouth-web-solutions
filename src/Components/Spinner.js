@@ -11,7 +11,7 @@ export default function Spinner(frame) {
       {
       frame === true
       ?
-      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", alignContent: "center", height: 800 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", alignContent: "center", height: "100vh" }}>
         <CircularProgress
           variant="determinate"
           sx={{
@@ -39,7 +39,7 @@ export default function Spinner(frame) {
         />
       </Box>
       :
-      <div>
+      <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", alignContent: "center", height: "100vh" }}>
         <CircularProgress
           variant="determinate"
           sx={{
