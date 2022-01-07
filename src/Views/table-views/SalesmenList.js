@@ -78,7 +78,7 @@ function Row({salesman}) {
         search(salesmen).map((salesman) => (
             branchEmails.push(salesman.email)
         )) 
-        return branchEmails.toString().replace(/,/g, ", ")
+        return branchEmails.toString().replace(/,/g, "; ")
       })
       setisShowingTransferRequest(!isShowingTransferRequest);
     };

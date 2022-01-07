@@ -275,7 +275,7 @@ export default function AddRequestView() {
 
     for (let i of work) i && temp.push(i); // copy each non-empty value to the 'temp' array
 
-    work = temp;
+    setWork(temp);
   };
 
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection.
@@ -367,11 +367,14 @@ export default function AddRequestView() {
 
   // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
   const pushEquipmentToRequest = async () => {
-    var workString = work.toString().replace(/,[s]*/g, ", ");
+    var workString = work.toString().replace(/,/g, ", ");
 
+    
     if (workString[0] === ",") {
       workString = workString.substring(1).trim();
     }
+    
+    // console.log(workString)
 
     const changeLog = [
       {

@@ -50,7 +50,7 @@ const setRecipients = async (recipientRoles, userProfile, salesman) => {
       .filter((recipient) => recipientRoles.includes(recipient.role))
       .map((recipient) => recipientEmails.push(recipient.email));
 
-    return recipientEmails.toString().replace(/,/g, ", ");
+    return recipientEmails.toString().replace(/,/g, "; ");
   } else {
     console.log("no user profile");
   }
