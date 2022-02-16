@@ -13,7 +13,7 @@ function Media() {
             <Box sx={{ pt: 0.5 }}>
               <Skeleton width="20%" height={50} />
             </Box>
-            <Skeleton variant="rectangular" height={300} />
+            <Skeleton variant="rectangular" height={600} />
         </Box>
     </Grid>
   );
@@ -22,7 +22,6 @@ function Media() {
 export default function HomeSkeleton() {
   return (
     <Box sx={{ overflow: 'hidden' }}>
-      <Media />
       <Media />
     </Box>
   );

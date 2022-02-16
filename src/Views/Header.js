@@ -72,6 +72,13 @@ function Header() {
                     </div>
                 </Link>
 
+                <Link className="link" to={user && "/transport-manager"}>
+                    <div className="header-option">
+                        <span className="header-optionLineOne">Transport</span>
+                        <span className="header-optionLineTwo">Manager</span>
+                    </div>
+                </Link>
+
                 <Link className="link" to={user && "/salesmen-list"}>
                     <div className="header-option">
                         <span className="header-optionLineOne">Salesmen</span>
