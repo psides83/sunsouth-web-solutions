@@ -87,7 +87,10 @@ export default function AddTransportView() {
   const [openError, setOpenError] = useState(false);
   var [customerName, setCustomerName] = useState("");
   var [customerPhone, setCustomerPhone] = useState("");
-  var [customerAddress, setCustomerAddress] = useState("");
+  var [customerStreet, setCustomerStreet] = useState("");
+  var [customerCity, setCustomerCity] = useState("");
+  var [customerState, setCustomerState] = useState("");
+  var [customerZip, setCustomerZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
@@ -570,11 +573,11 @@ export default function AddTransportView() {
                 fullWidth
                 size="small"
                 inputProps={{ style: { fontSize: 14 } }}
-                id="phone"
-                label="Phone Number"
-                name="phone"
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                value={customerPhone}
+                id="street"
+                label="Street"
+                name="street"
+                onChange={(e) => setCustomerStreet(e.target.value)}
+                value={customerStreet}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -584,25 +587,39 @@ export default function AddTransportView() {
                 fullWidth
                 size="small"
                 inputProps={{ style: { fontSize: 14 } }}
-                id="phone"
-                label="Phone Number"
-                name="phone"
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                value={customerPhone}
+                id="city"
+                label="City"
+                name="city"
+                onChange={(e) => setCustomerCity(e.target.value)}
+                value={customerCity}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={2}>
               <TextField
                 variant="outlined"
                 required
                 fullWidth
                 size="small"
                 inputProps={{ style: { fontSize: 14 } }}
-                id="phone"
-                label="Phone Number"
-                name="phone"
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                value={customerPhone}
+                id="state"
+                label="State"
+                name="state"
+                onChange={(e) => setCustomerStreet(e.target.value)}
+                value={customerStreet}
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                size="small"
+                inputProps={{ style: { fontSize: 14 } }}
+                id="zip"
+                label="Zip"
+                name="zip"
+                onChange={(e) => setCustomerZip(e.target.value)}
+                value={customerZip}
               />
             </Grid>
             <Grid item xs={12}>
