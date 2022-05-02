@@ -12,10 +12,10 @@ import "../../styles/Table.css";
 import { Link } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import Dialog from "@mui/material/Dialog";
-import AddRequestView from "../AddRequestView";
+import AddTransportView from "../AddTransportView";
 import { RequestsTableHeaderView } from "../../components/TableHeaderViews";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
-import RequestRow from "./ActiveRequestRow";
+import TransportRow from "./TransportManagerRow";
 import { Typography } from "@material-ui/core";
 
 // Whole table view:
@@ -77,9 +77,9 @@ export default function TransportManager() {
             <Typography
               variant="h4"
               color="primary"
-              style={{ marginLeft: 25, marginBottom: 10 }}
+              style={{ marginLeft: 25, marginBottom: 10, marginTop: 25 }}
             >
-              Active Setup Requests
+              Transport Manager
             </Typography>
 
             <Button
@@ -104,7 +104,7 @@ export default function TransportManager() {
               </Button>
             </div>
             <div className="addRequestView">
-              <AddRequestView />
+              <AddTransportView />
             </div>
           </Dialog>
 
@@ -118,7 +118,7 @@ export default function TransportManager() {
               <RequestsTableHeaderView />
               <TableBody>
                 {requests.map((request) => (
-                  <RequestRow request={request} />
+                  <TransportRow request={request} />
                 ))}
               </TableBody>
             </Table>
