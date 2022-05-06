@@ -15,7 +15,7 @@ import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
 import SendRoundedIcon from "@mui/icons-material/SendRounded";
 import { Avatar, FormGroup } from "@material-ui/core";
-import { Alert, Stack } from "@mui/material";
+import { Alert, MenuItem, Stack } from "@mui/material";
 import "../styles/AddRequest.css";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useStateValue } from "../state-management/StateProvider";
@@ -25,6 +25,7 @@ import Chip from "@mui/material/Chip";
 import Snackbar from "@material-ui/core/Snackbar";
 import { sendNewRequestEmail } from "../services/email-service";
 import { LocalShippingRounded } from "@mui/icons-material";
+import { states } from "../models/states";
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({
@@ -89,9 +90,11 @@ export default function AddTransportView() {
   var [customerPhone, setCustomerPhone] = useState("");
   var [customerStreet, setCustomerStreet] = useState("");
   var [customerCity, setCustomerCity] = useState("");
-  var [customerState, setCustomerState] = useState("");
+  var [customerState, setCustomerState] = useState("AL");
   var [customerZip, setCustomerZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
+  var [requestType, setRequestType] = useState("");
+  var [hasTrade, setHasTrade] = useState(false);
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
@@ -130,12 +133,12 @@ export default function AddTransportView() {
   var workOptions = [
     {
       id: "1",
-      work: "PDI",
+      work: "Pickup",
       checkedState: checked1,
     },
     {
       id: "2",
-      work: "Water in tires",
+      work: "Delivery",
       checkedState: checked2,
     },
     {
@@ -181,6 +184,14 @@ export default function AddTransportView() {
     setEquepmentList((equipmentList) =>
       equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
     );
+  };
+
+  const handleHasTrade = () => {
+    if (hasTrade) {
+      setHasTrade(false);
+    } else {
+      setHasTrade(true);
+    }
   };
 
   // Handle changes in the checkboxes.
@@ -580,7 +591,7 @@ export default function AddTransportView() {
                 value={customerStreet}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={5}>
               <TextField
                 variant="outlined"
                 required
@@ -594,19 +605,24 @@ export default function AddTransportView() {
                 value={customerCity}
               />
             </Grid>
-            <Grid item xs={12} sm={2}>
+            <Grid item xs={12} sm={3}>
               <TextField
+                size="small"
                 variant="outlined"
                 required
                 fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
+                labelId="demo-simple-select-label"
                 id="state"
+                className={classes.select}
+                value={customerState}
                 label="State"
-                name="state"
-                onChange={(e) => setCustomerStreet(e.target.value)}
-                value={customerStreet}
-              />
+                onChange={(e) => setCustomerState(e.target.value)}
+                select
+              >
+                {states.map((state) => (
+                  <MenuItem value={state}>{state}</MenuItem>
+                ))}
+              </TextField>
             </Grid>
             <Grid item xs={12} sm={4}>
               <TextField
@@ -622,67 +638,49 @@ export default function AddTransportView() {
                 value={customerZip}
               />
             </Grid>
-            <Grid item xs={12}>
-              <div className="checkBoxes">
-                <FormGroup>
-                  <Typography variant="h6" style={{ fontSize: 18 }}>
-                    Work Required*
-                  </Typography>
-                  {workOptions.map((option) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id={option.id}
-                          checked={option.checkedState}
-                          size="small"
-                          onChange={handleChange}
-                          color="primary"
-                          value={option.work}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          {option.work}
-                        </Typography>
-                      }
-                    />
-                  ))}
-                  <Stack direction="row">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id="8"
-                          checked={checked8}
-                          size="small"
-                          onChange={handleChange}
-                          disabled={otherDisabled}
-                          color="primary"
-                          value={other}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          Other:{" "}
-                        </Typography>
-                      }
-                    />
-
-                    <TextField
-                      fullWidth
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="outlined"
+                required
+                fullWidth
+                size="small"
+                inputProps={{ style: { fontSize: 14 } }}
+                id="type"
+                label="Request Type"
+                name="type"
+                onChange={(e) => setRequestType(e.target.value)}
+                value={requestType}
+                select
+              >
+                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
+                <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={hasTrade}
                       size="small"
-                      inputProps={{ style: { fontSize: 14 } }}
-                      id="other"
-                      value={other}
-                      onChange={enableOther}
-                    ></TextField>
-                  </Stack>
-                </FormGroup>
-              </div>
+                      onChange={handleHasTrade}
+                      color="primary"
+                      value={hasTrade}
+                    />
+                  }
+                  label={
+                    <Typography style={{ fontSize: 14 }}>
+                      Trade to return?
+                    </Typography>
+                  }
+                />
+              </FormGroup>
             </Grid>
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
                 fullWidth
+                multiline
                 size="small"
                 inputProps={{ style: { fontSize: 14 } }}
                 id="notes"
