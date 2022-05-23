@@ -60,9 +60,11 @@ const useRowStyles = makeStyles({
   },
 });
 
+// TODO update for transport
 // Request row view:
-export default function RequestRow({ request }) {
+export default function TransportRow(props) {
   //#region State Properties
+  const {request} = props;
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
   const classes = useRowStyles();
@@ -109,33 +111,33 @@ export default function RequestRow({ request }) {
   };
 
   // Fetches equipment from firestore:
-  const fetchEquipment = useCallback(() => {
-    const equipmentQuery = query(
-      collection(
-        db,
-        "branches",
-        userProfile?.branch,
-        "requests",
-        request.id,
-        "equipment"
-      ),
-      orderBy("timestamp", "asc")
-    );
+  // const fetchEquipment = useCallback(() => {
+  //   const equipmentQuery = query(
+  //     collection(
+  //       db,
+  //       "branches",
+  //       userProfile?.branch,
+  //       "requests",
+  //       request.id,
+  //       "equipment"
+  //     ),
+  //     orderBy("timestamp", "asc")
+  //   );
 
-    onSnapshot(equipmentQuery, (querySnapshot) => {
-      setEquipment(
-        querySnapshot.docs.map((doc) => ({
-          requestID: doc.data().requestID,
-          model: doc.data().model.toString().toUpperCase(),
-          stock: doc.data().stock,
-          serial: doc.data().serial.toString().toUpperCase(),
-          work: doc.data().work,
-          notes: doc.data().notes,
-          changeLog: doc.data().changeLog,
-        }))
-      );
-    });
-  }, [request.id, userProfile.branch]);
+  //   onSnapshot(equipmentQuery, (querySnapshot) => {
+  //     setEquipment(
+  //       querySnapshot.docs.map((doc) => ({
+  //         requestID: doc.data().requestID,
+  //         model: doc.data().model.toString().toUpperCase(),
+  //         stock: doc.data().stock,
+  //         serial: doc.data().serial.toString().toUpperCase(),
+  //         work: doc.data().work,
+  //         notes: doc.data().notes,
+  //         changeLog: doc.data().changeLog,
+  //       }))
+  //     );
+  //   });
+  // }, [request.id, userProfile.branch]);
 
   useEffect(() => {
     // Checks for changes in workOrder value and updates state
@@ -146,9 +148,9 @@ export default function RequestRow({ request }) {
     }
 
     // Fetch equipment data from firestore
-    fetchEquipment();
+    // fetchEquipment();
   }, [
-    fetchEquipment,
+    // fetchEquipment,
     currentWorkOrder,
     workOrder,
     isShowingAddEquipment,
@@ -175,7 +177,7 @@ export default function RequestRow({ request }) {
         }
 
         await setDoc(
-          doc(db, "branches", userProfile.branch, "requests", request.id),
+          doc(db, "branches", userProfile.branch, "transport", request.id),
           { workOrder: workOrder, changeLog: request.changeLog },
           { merge: true }
         );
@@ -199,6 +201,7 @@ export default function RequestRow({ request }) {
     }
   };
 
+  // TODO update to add equipment to the request rather than a seperate "equipment" collection
   // Handles adding equipment to the request:
   const addEquipment = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
@@ -258,19 +261,21 @@ export default function RequestRow({ request }) {
           { merge: true }
         );
 
+        // TODO update to a transport email
         // Send email about addition of equipment
-        sendNewEquipmentEmail(
-          request,
-          equipment,
-          timestamp,
-          fullName,
-          model,
-          stock,
-          serial,
-          work,
-          notes,
-          userProfile
-        );
+        // sendNewEquipmentEmail(
+        //   request,
+        //   equipment,
+        //   timestamp,
+        //   fullName,
+        //   model,
+        //   stock,
+        //   serial,
+        //   work,
+        //   notes,
+        //   userProfile
+        // );
+
         // Hides add equipment TextFields
         setIsShowingAddEquipment(false);
         setEquipment([]);
@@ -294,7 +299,11 @@ export default function RequestRow({ request }) {
 
     switch (status) {
       case "Requested":
-        status = "In Progress";
+        status = "Scheduled";
+        break;
+      
+      case "Scheduled":
+        status = "In Progress"
         break;
 
       case "In Progress":
@@ -316,7 +325,7 @@ export default function RequestRow({ request }) {
       db,
       "branches",
       userProfile.branch,
-      "requests",
+      "transport",
       request.id
     );
     await setDoc(
@@ -331,30 +340,35 @@ export default function RequestRow({ request }) {
       }
     );
 
-    sendStatusEmail(status, equipment, request, fullName, userProfile);
+    // TODO update to transport email
+    // sendStatusEmail(status, equipment, request, fullName, userProfile);
+
     handleCloseConfirmDialog();
     setTimeout(function () {
       setIsShowingSpinner(false);
     }, 1000);
   };
 
+  // TODO build a transport PDF and update this to transport PDF
   // Sets data for the pdf into a fire store documetnt for the current
-  const setPDFData = () => {
-    const requestRef = doc(db, "users", userProfile?.id, "pdf", "pdfData");
-    setDoc(
-      requestRef,
-      {
-        request: request,
-        equipment: equipment,
-      },
-      {
-        merge: true,
-      }
-    );
-  };
+  // const setPDFData = () => {
+  //   const requestRef = doc(db, "users", userProfile?.id, "pdf", "pdfData");
+  //   setDoc(
+  //     requestRef,
+  //     {
+  //       request: request,
+  //       equipment: equipment,
+  //     },
+  //     {
+  //       merge: true,
+  //     }
+  //   );
+  // };
 
   const statusUpdateText = () => {
     if (request.status === "Requested") {
+      return "Scheduled";
+    } else if (request.status === "Scheduled") {
       return "In Progress";
     } else if (request.status === "In Progress") {
       return "Completed";
@@ -365,16 +379,17 @@ export default function RequestRow({ request }) {
 
   const deleteRequest = async () => {
     await deleteDoc(
-      doc(db, "branches", userProfile.branch, "requests", request.id)
+      doc(db, "branches", userProfile.branch, "trasnport", request.id)
     );
 
-    sendRequestDeletedEmail(equipment, request, fullName, userProfile);
+    // TODO update to transport deleted email
+    // sendRequestDeletedEmail(equipment, request, fullName, userProfile);
   };
 
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} className={classes.root}>
+      <TableRow key={request.equipment.id} className={classes.root}>
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
@@ -388,10 +403,10 @@ export default function RequestRow({ request }) {
         </TableCell>
 
         <TableCell key="model" align="left">
-          <strong className="model">{equipment[0]?.model}</strong>
+          <strong className="model">{request.equipment[0]?.model}</strong>
           <p>
             <small>
-              {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
+              {request.equipment?.length > 1 ? `and ${request.equipment?.length - 1} more` : ""}
             </small>
           </p>
         </TableCell>
@@ -531,7 +546,8 @@ export default function RequestRow({ request }) {
               </Dialog>
             </div>
 
-            <div>
+            {/* TODO update to transport PDF */}
+            {/* <div>
               <Link
                 target="_blank"
                 rel="noopener noreferrer"
@@ -544,7 +560,7 @@ export default function RequestRow({ request }) {
                   </Tooltip>
                 </IconButton>
               </Link>
-            </div>
+            </div> */}
 
             <div className="editIcon">
               <IconButton className={classes.icon} onClick={editWorkOrder}>

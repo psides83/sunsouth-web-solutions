@@ -33,11 +33,12 @@ export default function TransportManager() {
     setOpenAddTransportView(!openAddTransportView);
   };
 
+  // TODO update with transport collection instead of pdi colletion
   // Fetch requests from firestore:
   const fetch = useCallback(async () => {
     if (userProfile) {
       const transportQuery = query(
-        collection(db, "branches", userProfile?.branch, "transports"),
+        collection(db, "branches", userProfile?.branch, "transport"),
         where("status", "!=", "Completed")
       );
 
@@ -48,8 +49,19 @@ export default function TransportManager() {
             salesman: doc.data().salesman,
             timestamp: doc.data().timestamp,
             workOrder: doc.data().workOrder,
+            customerName: doc.data().customerName,
+            customerPhone: doc.data().customerPhone,
+            customerStreet: doc.data().customerStreet,
+            customerCity: doc.data().customerCity,
+            customerState: doc.data().customerState,
+            customerZip: doc.data().customerZip,
+            requestNotes: doc.data().requestNotes,
+            requestType: doc.data().requestType,
+            requestDate: doc.data().requestDate,
+            scheduledDate: doc.data().scheduledDate,
             status: doc.data().status,
             statusTimestamp: doc.data().statusTimestamp,
+            equipment: doc.data().equipment,
             changeLog: doc.data().changeLog,
           }))
         );

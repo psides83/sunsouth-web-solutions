@@ -486,6 +486,8 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   // console.log(recipients)
 };
 
+// TODO add emails for transport feature
+
 export {
   sendEquipmentUpdateEmail,
   sendWorkOrderEmail,

@@ -21,8 +21,9 @@ import Spinner from "../../components/Spinner";
 import Button from "@mui/material/Button";
 
 // Equipment row view:
-export default function EquipmentRow({ classes, request, item }) {
+export default function EquipmentRow(props) {
   //#region State Properties
+  const { classes, request, item } = props;
   const [{ userProfile }] = useStateValue();
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
@@ -109,6 +110,7 @@ export default function EquipmentRow({ classes, request, item }) {
 
         item.changeLog.push(changeLogEntry);
 
+        // TODO update to add equipment to the equipment array on the request rather than using a seperate equipment collection
         await setDoc(
           doc(
             db,
@@ -130,17 +132,19 @@ export default function EquipmentRow({ classes, request, item }) {
           { merge: true }
         );
 
-        sendEquipmentUpdateEmail(
-          currentValues,
-          request,
-          userProfile,
-          fullName,
-          model,
-          stock,
-          serial,
-          work,
-          notes
-        );
+        // TODO update to a transport email
+
+        // sendEquipmentUpdateEmail(
+        //   currentValues,
+        //   request,
+        //   userProfile,
+        //   fullName,
+        //   model,
+        //   stock,
+        //   serial,
+        //   work,
+        //   notes
+        // );
         setIsEditingEquipment(false);
 
         // if equipmentHasChanges check is false,

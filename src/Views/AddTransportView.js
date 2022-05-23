@@ -24,7 +24,7 @@ import { styled } from "@mui/material/styles";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@material-ui/core/Snackbar";
 import { sendNewRequestEmail } from "../services/email-service";
-import { LocalShippingRounded } from "@mui/icons-material";
+import { Agriculture, AgricultureRounded, LocalShippingRounded } from "@mui/icons-material";
 import { states } from "../models/states";
 
 // Sets useStyles for customizing Material UI components.
@@ -94,23 +94,13 @@ export default function AddTransportView() {
   var [customerZip, setCustomerZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
   var [requestType, setRequestType] = useState("");
+  var [requestNotes, setRequestNotes] = useState("");
   var [hasTrade, setHasTrade] = useState(false);
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
-  var [work, setWork] = useState([]);
   var [notes, setNotes] = useState("");
-  var [other, setOther] = useState("");
-  var [checked1, setChecked1] = useState(false);
-  var [checked2, setChecked2] = useState(false);
-  var [checked3, setChecked3] = useState(false);
-  var [checked4, setChecked4] = useState(false);
-  var [checked5, setChecked5] = useState(false);
-  var [checked6, setChecked6] = useState(false);
-  var [checked7, setChecked7] = useState(false);
-  var [checked8, setChecked8] = useState(false);
-  var [equipmentList, setEquepmentList] = useState([]);
-  var [otherDisabled, setOtherState] = useState(true);
+  var [equipmentList, setEquipmentList] = useState([]);
   var [validationMessage, setValidationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
@@ -129,59 +119,9 @@ export default function AddTransportView() {
   const heading =
     equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request";
 
-  // Array of work options that populate the checkbox setion of the form.
-  var workOptions = [
-    {
-      id: "1",
-      work: "Pickup",
-      checkedState: checked1,
-    },
-    {
-      id: "2",
-      work: "Delivery",
-      checkedState: checked2,
-    },
-    {
-      id: "3",
-      work: "Mount to listed tractor/CCE machine",
-      checkedState: checked3,
-    },
-    {
-      id: "4",
-      work: "Add 3rd function",
-      checkedState: checked4,
-    },
-    {
-      id: "5",
-      work: "Install radio",
-      checkedState: checked5,
-    },
-    {
-      id: "6",
-      work: "Mount canopy",
-      checkedState: checked6,
-    },
-    {
-      id: "7",
-      work: "Widen tires",
-      checkedState: checked7,
-    },
-  ];
-
-  // Set the state of the "other" checkbox. It's disabled if the textfield is empty.
-  const enableOther = (event) => {
-    setOther(event.target.value);
-
-    if (event.target.value !== "") {
-      setOtherState(false);
-    } else if (event.target.value === "") {
-      setOtherState(true);
-    }
-  };
-
   // Handle deleting of equipment from the request.
   const handleDelete = (equipmentToDelete) => () => {
-    setEquepmentList((equipmentList) =>
+    setEquipmentList((equipmentList) =>
       equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
     );
   };
@@ -192,108 +132,6 @@ export default function AddTransportView() {
     } else {
       setHasTrade(true);
     }
-  };
-
-  // Handle changes in the checkboxes.
-  const handleChange = (event) => {
-    switch (event.target.id) {
-      case "1":
-        if (!checked1) {
-          setChecked1(true);
-          work[0] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked1(false);
-          work[0] = null;
-          setWork(work);
-        }
-        break;
-      case "2":
-        if (!checked2) {
-          setChecked2(true);
-          work[1] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked2(false);
-          work[1] = null;
-          setWork(work);
-        }
-        break;
-      case "3":
-        if (!checked3) {
-          setChecked3(true);
-          work[2] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked3(false);
-          work[2] = null;
-          setWork(work);
-        }
-        break;
-      case "4":
-        if (!checked4) {
-          setChecked4(true);
-          work[3] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked4(false);
-          work[3] = null;
-          setWork(work);
-        }
-        break;
-      case "5":
-        if (!checked5) {
-          setChecked5(true);
-          work[4] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked5(false);
-          work[4] = null;
-          setWork(work);
-        }
-        break;
-      case "6":
-        if (!checked6) {
-          setChecked6(true);
-          work[5] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked6(false);
-          work[5] = null;
-          setWork(work);
-        }
-        break;
-      case "7":
-        if (!checked7) {
-          setChecked7(true);
-          work[6] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked7(false);
-          work[6] = null;
-          setWork(work);
-        }
-        break;
-      case "8":
-        if (!checked8) {
-          setChecked8(true);
-          work[7] = event.target.value;
-          setWork(work);
-        } else {
-          setChecked8(false);
-          work[7] = null;
-          setWork(work);
-        }
-        break;
-      default:
-        break;
-    }
-
-    var temp = [];
-
-    for (let i of work) i && temp.push(i); // copy each non-empty value to the 'temp' array
-
-    setWork(temp);
   };
 
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection.
@@ -309,13 +147,24 @@ export default function AddTransportView() {
       },
     ];
 
-    const firestoreRequest = {
+    const firestoreTransportRequest = {
       id: id,
       timestamp: timestamp,
       salesman: salesman,
       status: "Requested",
       statusTimestamp: timestamp,
       workOrder: "",
+      requestDate: requestedDate,
+      customerName: customerName,
+      customerPhone: customerPhone,
+      customerStreet: customerStreet,
+      customerCity: customerCity,
+      customerState: customerState,
+      customerZip: customerZip,
+      requestType: requestType,
+      hasTrade: hasTrade,
+      requestNotes: requestNotes,
+      equipment: equipmentList,
       changeLog: changeLog,
     };
 
@@ -323,76 +172,41 @@ export default function AddTransportView() {
       db,
       "branches",
       userProfile.branch,
-      "requests",
-      firestoreRequest.id
+      "transport",
+      firestoreTransportRequest.id
     );
 
-    await setDoc(requestRef, firestoreRequest, { merge: true });
+    await setDoc(requestRef, firestoreTransportRequest, { merge: true });
 
-    for (var i = 0; i < equipmentList.length; i++) {
-      const equipment = {
-        requestID: firestoreRequest.id,
-        timestamp: firestoreRequest.timestamp,
-        model: equipmentList[i].model,
-        stock: equipmentList[i].stock,
-        serial: equipmentList[i].serial,
-        work: equipmentList[i].work,
-        notes: equipmentList[i].notes,
-        changeLog: equipmentList[i].changeLog,
-      };
+    //  TODO update to new transport email
+    // sendNewRequestEmail(
+    //   timestamp,
+    //   equipmentList,
+    //   fullName,
+    //   userProfile,
+    //   salesman
+    // );
 
-      const equipmentRef = doc(
-        db,
-        "branches",
-        userProfile.branch,
-        "requests",
-        firestoreRequest.id,
-        "equipment",
-        equipment.stock
-      );
-      await setDoc(equipmentRef, equipment, { merge: true });
-    }
-
-    sendNewRequestEmail(
-      timestamp,
-      equipmentList,
-      fullName,
-      userProfile,
-      salesman
-    );
-    resetForm();
-    setEquepmentList([]);
+    resetEquipmentForm();
+    setEquipmentList([]);
   };
 
+  // TODO add request rest
+
+  // TODO add complete form reset
+
   // Reset the form
-  const resetForm = async () => {
+  const resetEquipmentForm = async () => {
     setModel("");
     setStock("");
     setSerial("");
     setNotes("");
-    setOther("");
-    setChecked1(false);
-    setChecked2(false);
-    setChecked3(false);
-    setChecked4(false);
-    setChecked5(false);
-    setChecked6(false);
-    setChecked7(false);
-    setChecked8(false);
-    setWork([]);
     console.log("form reset");
   };
 
   // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
   const pushEquipmentToRequest = async () => {
-    var workString = work.toString().replace(/,/g, ", ");
-
-    if (workString[0] === ",") {
-      workString = workString.substring(1).trim();
-    }
-
-    // console.log(workString)
-
+    const id = moment().format("yyyyMMDDHHmmss");
     const changeLog = [
       {
         user: fullName,
@@ -402,21 +216,19 @@ export default function AddTransportView() {
     ];
 
     var equipment = {
-      id: equipmentList.length + 1,
+      id: id,
       model: model,
       stock: stock,
       serial: serial,
-      work: workString,
       notes: notes,
       changeLog: changeLog,
     };
 
     equipmentList.push(equipment);
-    setEquepmentList(equipmentList);
-    console.log("Temp EQ");
+    setEquipmentList(equipmentList);
     console.log(equipmentList);
 
-    await resetForm();
+    await resetEquipmentForm();
   };
 
   // Squipment submission validation.
@@ -445,12 +257,6 @@ export default function AddTransportView() {
     } else if (serial === "") {
       setValidationMessage(
         "Equipment must have a serial number to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else if (work.length === 0) {
-      setValidationMessage(
-        "Equipment must have a work requested to be added to a request"
       );
       setOpenError(true);
       return;
@@ -492,12 +298,6 @@ export default function AddTransportView() {
       );
       setOpenError(true);
       return false;
-    } else if (work.length === 0 && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a work requested to be added to a request"
-      );
-      setOpenError(true);
-      return false;
     } else {
       console.log("eq added directly from submit");
       if (
@@ -505,8 +305,7 @@ export default function AddTransportView() {
         (stock.length === 6 ||
           stock.match(lowerCaseLetters) === false ||
           stock.match(upperCaseLetters) === false) &&
-        serial !== "" &&
-        work.length !== 0
+        serial !== ""
       ) {
         console.log("another eq added first");
         await pushEquipmentToRequest();
@@ -515,6 +314,17 @@ export default function AddTransportView() {
       setValidationMessage("Request successfully submitted");
       setOpenSuccess(true);
     }
+  };
+
+  // Handle lead name input and capitolize each word
+  const handleNameInput = (e) => {
+    const names = e.target.value;
+
+    const finalName = names.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+      letter.toUpperCase()
+    );
+
+    setCustomerName(finalName);
   };
 
   // UI view of the submission form
@@ -559,7 +369,7 @@ export default function AddTransportView() {
                 id="customerName"
                 label="Customer Name"
                 autoFocus
-                onChange={(e) => setCustomerName(e.target.value)}
+                onChange={handleNameInput}
                 value={customerName}
               />
             </Grid>
@@ -687,8 +497,8 @@ export default function AddTransportView() {
                 label="Addtional Notes"
                 name="notes"
                 type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
+                value={requestNotes}
+                onChange={(e) => setRequestNotes(e.target.value)}
               />
             </Grid>
           </Grid>
@@ -711,7 +521,7 @@ export default function AddTransportView() {
               component="ul"
             >
               {equipmentList.map((data) => {
-                let icon = <LocalShippingRounded />;
+                let icon = <AgricultureRounded />;
 
                 return (
                   <ListItem key={data.id}>
@@ -770,7 +580,7 @@ export default function AddTransportView() {
                 value={serial}
               ></TextField>
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <div className="checkBoxes">
                 <FormGroup>
                   <Typography variant="h6" style={{ fontSize: 18 }}>
@@ -826,7 +636,7 @@ export default function AddTransportView() {
                   </Stack>
                 </FormGroup>
               </div>
-            </Grid>
+            </Grid> */}
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
