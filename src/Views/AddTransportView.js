@@ -24,7 +24,11 @@ import { styled } from "@mui/material/styles";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@material-ui/core/Snackbar";
 import { sendNewRequestEmail } from "../services/email-service";
-import { Agriculture, AgricultureRounded, LocalShippingRounded } from "@mui/icons-material";
+import {
+  Agriculture,
+  AgricultureRounded,
+  LocalShippingRounded,
+} from "@mui/icons-material";
 import { states } from "../models/states";
 
 // Sets useStyles for customizing Material UI components.
@@ -147,6 +151,14 @@ export default function AddTransportView() {
       },
     ];
 
+    const calendarData = {
+      id: id,
+      title: `${customerName}, ${equipmentList[0].model}`,
+      startDate: `${requestedDate}T07:00`,
+      endDate: `${requestedDate}T09:00`,
+      location: `${customerStreet}, ${customerCity}, ${customerState} ${customerZip}`,
+    };
+
     const firestoreTransportRequest = {
       id: id,
       timestamp: timestamp,
@@ -161,11 +173,12 @@ export default function AddTransportView() {
       customerCity: customerCity,
       customerState: customerState,
       customerZip: customerZip,
-      requestType: requestType,
+      requestedType: requestType,
       hasTrade: hasTrade,
       requestNotes: requestNotes,
       equipment: equipmentList,
       changeLog: changeLog,
+      calendarData: calendarData,
     };
 
     const requestRef = doc(

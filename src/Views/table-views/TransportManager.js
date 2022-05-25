@@ -16,12 +16,14 @@ import AddTransportView from "../AddTransportView";
 import { RequestsTableHeaderView } from "../../components/TableHeaderViews";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TransportRow from "./TransportManagerRow";
-import { Typography } from "@material-ui/core";
+import { Box, Typography } from "@material-ui/core";
+import CalendarView from "../CalendarView";
 
 // Whole table view:
 export default function TransportManager() {
   const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
+  const [calendarRequests, setCalendarRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openAddTransportView, setOpenAddTransportView] = useState(false);
 
@@ -36,42 +38,80 @@ export default function TransportManager() {
   // TODO update with transport collection instead of pdi colletion
   // Fetch requests from firestore:
   const fetch = useCallback(async () => {
-    if (userProfile) {
-      const transportQuery = query(
-        collection(db, "branches", userProfile?.branch, "transport"),
-        where("status", "!=", "Completed")
+    if (userProfile == null || userProfile == undefined)
+      return console.log("userProfile not loaded");
+
+    const transportQuery = query(
+      collection(db, "branches", userProfile?.branch, "transport"),
+      where("status", "!=", "Completed")
+    );
+
+    const scheduledDateCheck = (scheduledDate, requestedDate) => {
+      console.log(scheduledDate);
+      console.log(requestedDate);
+      if (scheduledDate == undefined) return requestedDate;
+      if (scheduledDate == null) return requestedDate;
+      if (scheduledDate === "") return requestedDate;
+      return scheduledDate;
+    };
+
+    function formatPhoneNumber(phoneNumberString) {
+      var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
+      var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+      if (match) {
+        return "(" + match[1] + ") " + match[2] + "-" + match[3];
+      }
+      return null;
+    }
+
+    onSnapshot(transportQuery, (querySnapshot) => {
+      setRequests(
+        querySnapshot.docs.map((doc) => ({
+          id: doc.data().id,
+          salesman: doc.data().salesman,
+          timestamp: doc.data().timestamp,
+          workOrder: doc.data().workOrder,
+          customerName: doc.data().customerName,
+          customerPhone: doc.data().customerPhone,
+          customerStreet: doc.data().customerStreet,
+          customerCity: doc.data().customerCity,
+          customerState: doc.data().customerState,
+          customerZip: doc.data().customerZip,
+          requestNotes: doc.data().requestNotes,
+          requestType: doc.data().requestType,
+          requestedDate: doc.data().requestedDate,
+          scheduledDate: doc.data().scheduledDate,
+          status: doc.data().status,
+          statusTimestamp: doc.data().statusTimestamp,
+          equipment: doc.data().equipment,
+          changeLog: doc.data().changeLog,
+        }))
       );
 
-      onSnapshot(transportQuery, (querySnapshot) => {
-        setRequests(
-          querySnapshot.docs.map((doc) => ({
-            id: doc.data().id,
-            salesman: doc.data().salesman,
-            timestamp: doc.data().timestamp,
-            workOrder: doc.data().workOrder,
-            customerName: doc.data().customerName,
-            customerPhone: doc.data().customerPhone,
-            customerStreet: doc.data().customerStreet,
-            customerCity: doc.data().customerCity,
-            customerState: doc.data().customerState,
-            customerZip: doc.data().customerZip,
-            requestNotes: doc.data().requestNotes,
-            requestType: doc.data().requestType,
-            requestDate: doc.data().requestDate,
-            scheduledDate: doc.data().scheduledDate,
-            status: doc.data().status,
-            statusTimestamp: doc.data().statusTimestamp,
-            equipment: doc.data().equipment,
-            changeLog: doc.data().changeLog,
-          }))
-        );
-        setTimeout(function () {
-          setLoading(false);
-        }, 1000);
-      });
-    } else {
-      console.log("userProfile not loaded");
-    }
+      setCalendarRequests(
+        querySnapshot.docs.map((doc) => ({
+          id: doc.data().id,
+          title: `${doc.data().customerName}, ${doc.data().equipment[0].model}`,
+          status: doc.data().status,
+          startDate: `${scheduledDateCheck(
+            doc.data().scheduledDate,
+            doc.data().requestedDate
+          )}T07:00`,
+          endDate: `${scheduledDateCheck(
+            doc.data().scheduledDate,
+            doc.data().requestedDate
+          )}T09:00`,
+          location: `${doc.data().customerStreet}, ${
+            doc.data().customerCity
+          }, ${doc.data().customerState} ${doc.data().customerZip}`,
+          phone: formatPhoneNumber(doc.data().customerPhone),
+        }))
+      );
+      setTimeout(function () {
+        setLoading(false);
+      }, 1000);
+    });
+    console.table(calendarRequests);
   }, [userProfile]);
 
   useEffect(() => {
@@ -81,6 +121,8 @@ export default function TransportManager() {
   // Table UI:
   return (
     <React.Fragment>
+      <CalendarView calendarRequests={calendarRequests} />
+
       {loading ? (
         <HomeSkeleton />
       ) : (

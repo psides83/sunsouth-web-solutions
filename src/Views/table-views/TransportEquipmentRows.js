@@ -21,7 +21,7 @@ import Spinner from "../../components/Spinner";
 import Button from "@mui/material/Button";
 
 // Equipment row view:
-export default function EquipmentRow(props) {
+export default function TransportEquipmentRow(props) {
   //#region State Properties
   const { classes, request, item } = props;
   const [{ userProfile }] = useStateValue();
@@ -110,39 +110,41 @@ export default function EquipmentRow(props) {
 
         item.changeLog.push(changeLogEntry);
 
-        await setDoc(
-          doc(
-            db,
-            "branches",
-            userProfile.branch,
-            "requests",
-            item.requestID,
-            "equipment",
-            item.stock
-          ),
-          {
-            model: model,
-            stock: stock,
-            serial: serial,
-            work: work,
-            notes: notes,
-            changeLog: item.changeLog,
-          },
-          { merge: true }
-        );
+        // TODO update to add equipment to the equipment array on the request rather than using a seperate equipment collection
+        // await setDoc(
+        //   doc(
+        //     db,
+        //     "branches",
+        //     userProfile.branch,
+        //     "requests",
+        //     item.requestID,
+        //     "equipment",
+        //     item.stock
+        //   ),
+        //   {
+        //     model: model,
+        //     stock: stock,
+        //     serial: serial,
+        //     work: work,
+        //     notes: notes,
+        //     changeLog: item.changeLog,
+        //   },
+        //   { merge: true }
+        // );
 
+        // TODO update to a transport email
 
-        sendEquipmentUpdateEmail(
-          currentValues,
-          request,
-          userProfile,
-          fullName,
-          model,
-          stock,
-          serial,
-          work,
-          notes
-        );
+        // sendEquipmentUpdateEmail(
+        //   currentValues,
+        //   request,
+        //   userProfile,
+        //   fullName,
+        //   model,
+        //   stock,
+        //   serial,
+        //   work,
+        //   notes
+        // );
         setIsEditingEquipment(false);
 
         // if equipmentHasChanges check is false,
@@ -198,35 +200,34 @@ export default function EquipmentRow(props) {
     setEquipmentHasChanges,
   ]);
 
-  const deleteEquipment = async () => {
-    request.changeLog.push({
-      user: fullName,
-      timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-      change: `${item.model} ST# ${item.stock} deleted from the request`,
-    });
+  // TODO updte to delete equipment record under request equipment array rather than equipment being in it's oen collection
+  // const deleteEquipment = async () => {
+  //   request.changeLog.push({
+  //     user: fullName,
+  //     timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
+  //     change: `${item.model} ST# ${item.stock} deleted from the request`,
+  //   });
 
-    await setDoc(
-      doc(db, "branches", userProfile.branch, "requests", item.requestID),
-      {
-        changeLog: request.changeLog,
-      },
-      { merge: true }
-    );
+  //   await setDoc(
+  //     doc(db, "branches", userProfile.branch, "requests", item.requestID),
+  //     {
+  //       changeLog: request.changeLog,
+  //     },
+  //     { merge: true }
+  //   );
 
-    await deleteDoc(
-      doc(
-        db,
-        "branches",
-        userProfile.branch,
-        "requests",
-        item.requestID,
-        "equipment",
-        item.stock
-      )
-    );
-
-    sendEquipmentDeletedEmail(item, request, fullName, userProfile);
-  };
+  //   await deleteDoc(
+  //     doc(
+  //       db,
+  //       "branches",
+  //       userProfile.branch,
+  //       "requests",
+  //       item.requestID,
+  //       "equipment",
+  //       item.stock
+  //     )
+  //   );
+  // };
 
   // Equipment row UI:
   return (
@@ -406,7 +407,8 @@ export default function EquipmentRow(props) {
                     <Button
                       variant="contained"
                       color="error"
-                      onClick={deleteEquipment}
+                      // TODO uncomment once this fuction is fixed
+                      // onClick={deleteEquipment}
                     >
                       Delete
                     </Button>

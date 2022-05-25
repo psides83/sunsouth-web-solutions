@@ -50,6 +50,7 @@ import EquipmentRow from "./EquipmentRows";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/Spinner";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
+import TransportEquipmentRow from "./TransportEquipmentRows";
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -181,14 +182,16 @@ export default function TransportRow(props) {
           { workOrder: workOrder, changeLog: request.changeLog },
           { merge: true }
         );
-        sendWorkOrderEmail(
-          equipment,
-          request,
-          workOrder,
-          fullName,
-          model,
-          userProfile
-        );
+
+        // TODO upadate to transport WO email
+        // sendWorkOrderEmail(
+        //   request.equipment,
+        //   request,
+        //   workOrder,
+        //   fullName,
+        //   model,
+        //   userProfile
+        // );
         setIsEditingWorkOrder(false);
       } else {
         console.log("no changes to equipment");
@@ -203,94 +206,94 @@ export default function TransportRow(props) {
 
   // TODO update to add equipment to the request rather than a seperate "equipment" collection
   // Handles adding equipment to the request:
-  const addEquipment = async () => {
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  // const addEquipment = async () => {
+  //   const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
 
-    if (isShowingAddEquipment) {
-      if (model !== "" && stock !== "" && serial !== "" && work !== "") {
-        const changeLog = [
-          {
-            user: fullName,
-            change: `request created`,
-            timestamp: timestamp,
-          },
-        ];
+  //   if (isShowingAddEquipment) {
+  //     if (model !== "" && stock !== "" && serial !== "" && work !== "") {
+  //       const changeLog = [
+  //         {
+  //           user: fullName,
+  //           change: `request created`,
+  //           timestamp: timestamp,
+  //         },
+  //       ];
 
-        const newEquipment = {
-          requestID: request.id,
-          timestamp: timestamp,
-          model: model,
-          stock: stock,
-          serial: serial,
-          work: work,
-          notes: notes,
-          changeLog: changeLog,
-        };
+  //       const newEquipment = {
+  //         requestID: request.id,
+  //         timestamp: timestamp,
+  //         model: model,
+  //         stock: stock,
+  //         serial: serial,
+  //         work: work,
+  //         notes: notes,
+  //         changeLog: changeLog,
+  //       };
 
-        // Sets the added equipment to firestore:
-        const equipmentRef = doc(
-          db,
-          "branches",
-          userProfile.branch,
-          "requests",
-          request.id,
-          "equipment",
-          newEquipment.stock
-        );
-        await setDoc(equipmentRef, newEquipment, { merge: true });
+  //       // Sets the added equipment to firestore:
+  //       const equipmentRef = doc(
+  //         db,
+  //         "branches",
+  //         userProfile.branch,
+  //         "requests",
+  //         request.id,
+  //         "equipment",
+  //         newEquipment.stock
+  //       );
+  //       await setDoc(equipmentRef, newEquipment, { merge: true });
 
-        // Append the equipment addition to the request's changealog
-        const changeLogEntry = {
-          user: fullName,
-          change: `Equipment model ${model} added to the request`,
-          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-        };
+  //       // Append the equipment addition to the request's changealog
+  //       const changeLogEntry = {
+  //         user: fullName,
+  //         change: `Equipment model ${model} added to the request`,
+  //         timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
+  //       };
 
-        request.changeLog.push(changeLogEntry);
+  //       request.changeLog.push(changeLogEntry);
 
-        const requestRef = doc(
-          db,
-          "branches",
-          userProfile.branch,
-          "requests",
-          request.id
-        );
-        await setDoc(
-          requestRef,
-          { changeLog: request.changeLog },
-          { merge: true }
-        );
+  //       const requestRef = doc(
+  //         db,
+  //         "branches",
+  //         userProfile.branch,
+  //         "requests",
+  //         request.id
+  //       );
+  //       await setDoc(
+  //         requestRef,
+  //         { changeLog: request.changeLog },
+  //         { merge: true }
+  //       );
 
-        // TODO update to a transport email
-        // Send email about addition of equipment
-        // sendNewEquipmentEmail(
-        //   request,
-        //   equipment,
-        //   timestamp,
-        //   fullName,
-        //   model,
-        //   stock,
-        //   serial,
-        //   work,
-        //   notes,
-        //   userProfile
-        // );
+  //       // TODO update to a transport email
+  //       // Send email about addition of equipment
+  //       // sendNewEquipmentEmail(
+  //       //   request,
+  //       //   equipment,
+  //       //   timestamp,
+  //       //   fullName,
+  //       //   model,
+  //       //   stock,
+  //       //   serial,
+  //       //   work,
+  //       //   notes,
+  //       //   userProfile
+  //       // );
 
-        // Hides add equipment TextFields
-        setIsShowingAddEquipment(false);
-        setEquipment([]);
-        setModel("");
-        setStock("");
-        setSerial("");
-        setWork("");
-        setNotes("");
-      } else {
-        setIsShowingAddEquipment(false);
-      }
-    } else {
-      setIsShowingAddEquipment(true);
-    }
-  };
+  //       // Hides add equipment TextFields
+  //       setIsShowingAddEquipment(false);
+  //       setEquipment([]);
+  //       setModel("");
+  //       setStock("");
+  //       setSerial("");
+  //       setWork("");
+  //       setNotes("");
+  //     } else {
+  //       setIsShowingAddEquipment(false);
+  //     }
+  //   } else {
+  //     setIsShowingAddEquipment(true);
+  //   }
+  // };
 
   // Handles updating the request status:
   const updateStatus = async () => {
@@ -678,8 +681,8 @@ export default function TransportRow(props) {
                 <EquipmentTableHeaderView />
                 <TableBody>
                   {" "}
-                  {equipment.map((item) => (
-                    <EquipmentRow
+                  {request.equipment.map((item) => (
+                    <TransportEquipmentRow
                       key={item?.stock}
                       classes={classes}
                       request={request}
@@ -761,7 +764,7 @@ export default function TransportRow(props) {
                       <TableCell key="saveAddButton" align="center">
                         <IconButton
                           style={{ fontSize: 20 }}
-                          onClick={addEquipment}
+                          // onClick={addEquipment}
                         >
                           {" "}
                           {model !== "" &&
@@ -798,7 +801,8 @@ export default function TransportRow(props) {
                           <Button
                             startIcon={[<AddIcon />, <AgricultureIcon />]}
                             color="success"
-                            onClick={addEquipment}
+                            // TODO ucomment once this function is fixed
+                            // onClick={addEquipment}
                           ></Button>
                         </Tooltip>
                       </TableCell>
