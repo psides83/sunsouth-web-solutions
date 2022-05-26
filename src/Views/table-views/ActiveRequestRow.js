@@ -674,7 +674,6 @@ export default function RequestRow({ request }) {
                         <TextField
                           variant="outlined"
                           label="Model"
-                          inputProps={{ style: { fontSize: 14 } }}
                           size="small"
                           onChange={(e) =>
                             setModel(e.target.value.toUpperCase())
@@ -689,7 +688,6 @@ export default function RequestRow({ request }) {
                           <TextField
                             variant="outlined"
                             label="Stock"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) => setStock(e.target.value)}
                             value={stock}
@@ -700,7 +698,6 @@ export default function RequestRow({ request }) {
                           <TextField
                             variant="outlined"
                             label="Serial"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) =>
                               setSerial(e.target.value.toUpperCase())
@@ -714,7 +711,6 @@ export default function RequestRow({ request }) {
                         <TextField
                           variant="outlined"
                           label="Work"
-                          inputProps={{ style: { fontSize: 14 } }}
                           size="small"
                           onChange={(e) => setWork(e.target.value)}
                           value={work}
@@ -725,8 +721,6 @@ export default function RequestRow({ request }) {
                         <TextField
                           variant="outlined"
                           label="Notes"
-                          inputProps={{ style: { fontSize: 14 } }}
-                          style={{ fontSize: 18 }}
                           size="small"
                           onChange={(e) => setNotes(e.target.value)}
                           value={notes}
