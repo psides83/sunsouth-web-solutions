@@ -20,10 +20,9 @@ import {
   AppointmentTooltip,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import moment from "moment";
-import { Grid } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { PhoneRounded, RestorePage, Room } from "@mui/icons-material";
-import { Typography } from "@material-ui/core";
 
 const currentDate = moment().format();
 

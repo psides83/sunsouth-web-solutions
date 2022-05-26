@@ -130,10 +130,9 @@ function TransportUpdateDialog(props) {
     <>
       <Tooltip title="Update Status">
         <Button
-          color="success"
           size="small"
           sx={{ width: "115px", pt: "5px" }}
-          variant={request.status === "In Progress" ? "contained" : "outlined"}
+          variant={request.status === "Requested" ? "outlined" : "contained"}
           onClick={handleToggleConfirmDialog}
         >
           {request.status}

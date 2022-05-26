@@ -9,9 +9,11 @@ import AddRequestView from "../AddRequestView";
 import { RequestsTableHeaderView } from "../../components/TableHeaderViews";
 import RequestRow from "./ActiveRequestRow";
 import {
+  Box,
   Button,
   Dialog,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableContainer,
@@ -73,8 +75,14 @@ export default function ActiveRequestsTable() {
       {loading ? (
         <HomeSkeleton />
       ) : (
-        <React.Fragment>
-          <div className="tableHead">
+        <Box display="flex" flexDirection="column" alignItems="center" >
+          <Stack direction="row"
+            style={{
+              width: "100%",
+              maxWidth: "1100px",
+              justifyContent: "space-between",
+            }}
+          >
             <Typography
               variant="h4"
               color="primary"
@@ -84,7 +92,6 @@ export default function ActiveRequestsTable() {
             </Typography>
 
             <Button
-              color="success"
               size="small"
               variant="outlined"
               startIcon={<AddRounded />}
@@ -93,7 +100,7 @@ export default function ActiveRequestsTable() {
             >
               Submit Request
             </Button>
-          </div>
+          </Stack>
 
           <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
             <div className="closeButtonContainer">
@@ -106,7 +113,10 @@ export default function ActiveRequestsTable() {
             </div>
           </Dialog>
 
-          <TableContainer component={Paper} style={{ borderRadius: 10 }}>
+          <TableContainer
+            component={Paper}
+            style={{ borderRadius: 10, maxWidth: "1100px" }}
+          >
             <Table
               size="small"
               aria-label="collapsible table"
@@ -126,7 +136,7 @@ export default function ActiveRequestsTable() {
               <h3>View completed requests</h3>
             </Link>
           </div>
-        </React.Fragment>
+        </Box>
       )}
     </React.Fragment>
   );

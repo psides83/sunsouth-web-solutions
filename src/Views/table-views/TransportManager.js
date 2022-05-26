@@ -138,7 +138,6 @@ export default function TransportManager() {
             </Typography>
 
             <Button
-              color="success"
               size="small"
               variant="outlined"
               startIcon={<AddRounded />}

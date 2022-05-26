@@ -240,7 +240,7 @@ export default function EquipmentRow(props) {
       <TableRow
         key={item.requestID}
         style={{ fontSize: 18}}
-        sx={{ '& > *': { borderBottom: 'unset' } }}
+        sx={{ '& > *': { borderBottom: '0' } }}
       >
         <TableCell key="model" align="left" component="th" scope="row">
           {" "}

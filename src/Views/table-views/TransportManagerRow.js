@@ -328,7 +328,7 @@ export default function TransportRow(props) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.equipment.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
+      <TableRow key={request.equipment.id} sx={{ '& > *': { borderBottom: '0' } }}>
         <TableCell key="expand">
           <Stack alignItems="center">
             <Typography variant="h6">{request.requestType}</Typography>
@@ -451,7 +451,7 @@ export default function TransportRow(props) {
               <IconButton onClick={handleToggleEditTansportView}>
                 <div className="edit-button-bg">
                   <Tooltip title="Edit Work Order">
-                    <EditRounded color="success" style={{ fontSize: 16 }} />
+                    <EditRounded color="primary" style={{ fontSize: 16 }} />
                   </Tooltip>
                 </div>
               </IconButton>
@@ -526,7 +526,6 @@ export default function TransportRow(props) {
                   >
                     <Button
                       variant="outlined"
-                      color="success"
                       onClick={handleCloseDeleteDialog}
                     >
                       Cancel
@@ -576,7 +575,8 @@ export default function TransportRow(props) {
                   {isShowingAddEquipment ? (
                     <TableRow
                       key="addEquipmentRow"
-                      style={{ fontSize: 18, borderBottom: "unset" }}
+                      sx={{ '& > *': { borderBottom: '0' } }}
+                      style={{ fontSize: 18 }}
                     >
                       <TableCell key="addModel" component="th" scope="row">
                         <TextField
@@ -637,14 +637,14 @@ export default function TransportRow(props) {
                           work !== "" ? (
                             <Tooltip title="Save">
                               <CheckRounded
-                                color="success"
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
                           ) : (
                             <Tooltip title="Cancel">
                               <CloseRounded
-                                color="success"
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
@@ -656,13 +656,13 @@ export default function TransportRow(props) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
-                      style={{ fontSize: 18, borderBottom: "unset" }}
+                      sx={{ '& > *': { borderBottom: '0' } }}
+                      style={{ fontSize: 18 }}
                     >
                       <TableCell key="addButtonCell">
                         <Tooltip title="Add Equipment">
                           <Button
                             startIcon={[<AddRounded />, <AgricultureRounded />]}
-                            color="success"
                             // TODO ucomment once this function is fixed
                             // onClick={addEquipment}
                           ></Button>

@@ -374,7 +374,7 @@ export default function RequestRow({ request }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: 'unset' } }}>
+      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: '0' } }}>
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
@@ -388,7 +388,7 @@ export default function RequestRow({ request }) {
         </TableCell>
 
         <TableCell key="model" align="left">
-          <strong className="model">{equipment[0]?.model}</strong>
+          <Typography style={{fontWeight: "bold"}}>{equipment[0]?.model}</Typography>
           <p>
             <small>
               {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
@@ -396,9 +396,9 @@ export default function RequestRow({ request }) {
           </p>
         </TableCell>
 
-        <TableCell key="salesman" component="th" scope="row">
-          <p>{request.salesman}</p>
-          <small>{request.timestamp}</small>
+        <TableCell key="salesman" align="left" scope="row">
+          <Typography component="p">{request.salesman}</Typography>
+          <Typography variant="caption">{request.timestamp}</Typography>
         </TableCell>
 
         <TableCell key="workOrder" align="left">
@@ -420,7 +420,6 @@ export default function RequestRow({ request }) {
         <TableCell key="status" align="left">
           <Tooltip title="Update Status">
             <Button
-              color="success"
               size="small"
               sx={{ width: "115px", pt: "5px" }}
               variant={
@@ -431,9 +430,9 @@ export default function RequestRow({ request }) {
               {request.status}
             </Button>
           </Tooltip>
-          <p>
-            <small>{request.statusTimestamp}</small>
-          </p>
+          <Typography component="p" variant="caption">
+            {request.statusTimestamp}
+          </Typography>
 
           <Dialog
             onClose={handleCloseConfirmDialog}
@@ -758,13 +757,13 @@ export default function RequestRow({ request }) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
-                      style={{ fontSize: 18, borderBottom: "unset" }}
+                      sx={{ '& > *': { borderBottom: '0' } }}
+                      style={{ fontSize: 18 }}
                     >
                       <TableCell key="addButtonCell">
                         <Tooltip title="Add Equipment">
                           <Button
                             startIcon={[<AddRounded />, <AgricultureRounded />]}
-                            color="success"
                             onClick={addEquipment}
                           ></Button>
                         </Tooltip>
