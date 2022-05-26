@@ -1,25 +1,28 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableContainer from "@material-ui/core/TableContainer";
-import Paper from "@material-ui/core/Paper";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import Button from "@mui/material/Button";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/Table.css";
 import { Link } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
-import Dialog from "@mui/material/Dialog";
 import AddTransportView from "../AddTransportView";
 import { TransportTableHeaderView } from "../../components/TableHeaderViews";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TransportRow from "./TransportManagerRow";
-import { Box, Grid, Typography } from "@material-ui/core";
 import CalendarView from "../CalendarView";
 import { formatPhoneNumber } from "../../utils/utils";
 import moment from "moment";
+import {
+  Box,
+  Button,
+  Dialog,
+  Grid,
+  Paper,
+  Table,
+  TableBody,
+  TableContainer,
+  Typography,
+} from "@mui/material";
+import { AddRounded, CancelOutlined } from "@mui/icons-material";
 
 // Whole table view:
 export default function TransportManager() {
@@ -29,7 +32,7 @@ export default function TransportManager() {
   const [loading, setLoading] = useState(true);
   const [openAddTransportView, setOpenAddTransportView] = useState(false);
 
-  console.log(moment().format("yyyy-mm-DD"))
+  console.log(moment().format("yyyy-mm-DD"));
 
   const handleCloseAddTansportView = () => {
     setOpenAddTransportView(false);
@@ -138,7 +141,7 @@ export default function TransportManager() {
               color="success"
               size="small"
               variant="outlined"
-              startIcon={<AddIcon />}
+              startIcon={<AddRounded />}
               onClick={handleToggleAddTansportView}
               sx={{ mx: 4, mb: 1, mt: 1 }}
             >
@@ -152,11 +155,13 @@ export default function TransportManager() {
           >
             <div className="closeButtonContainer">
               <Button onClick={handleCloseAddTansportView} color="success">
-                <CancelOutlinedIcon />
+                <CancelOutlined />
               </Button>
             </div>
             <div className="addRequestView">
-              <AddTransportView handleCloseAddTansportView={handleCloseAddTansportView} />
+              <AddTransportView
+                handleCloseAddTansportView={handleCloseAddTansportView}
+              />
             </div>
           </Dialog>
 
@@ -168,13 +173,7 @@ export default function TransportManager() {
             }}
             spacing={1}
           >
-            <Grid
-              item
-              xs={12}
-              sm={12}
-              md={5}
-              lg={5}
-            >
+            <Grid item xs={12} sm={12} md={5} lg={5}>
               <TableContainer component={Paper} style={{ borderRadius: 10 }}>
                 <Table
                   size="small"
@@ -191,13 +190,7 @@ export default function TransportManager() {
                 </Table>
               </TableContainer>
             </Grid>
-            <Grid
-              item
-              xs={12}
-              sm={12}
-              md={7}
-              lg={7}
-            >
+            <Grid item xs={12} sm={12} md={7} lg={7}>
               <CalendarView calendarRequests={calendarRequests} />
             </Grid>
           </Grid>
