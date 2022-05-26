@@ -51,9 +51,9 @@ import {
   KeyboardArrowDown,
   KeyboardArrowUp,
   PrintOutlined,
-  Timeline,
 } from "@mui/icons-material";
 import {
+  Timeline,
   TimelineConnector,
   TimelineContent,
   TimelineDot,
@@ -66,7 +66,6 @@ export default function RequestRow({ request }) {
   //#region State Properties
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
-  // const classes = useRowStyles();
   var [workOrder, setWorkOrder] = useState("");
   var [currentWorkOrder, setCurrentWorkOrder] = useState("");
   var [equipment, setEquipment] = useState([]);
