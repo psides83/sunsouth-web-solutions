@@ -9,6 +9,8 @@ import DialogTitle from "@mui/material/DialogTitle";
 import Dialog from "@mui/material/Dialog";
 import moment from "moment";
 import { db } from "../services/firebase";
+import { sendTransportStatusEmail } from "../services/email-service";
+import { Stack } from "@mui/material";
 
 function TransportUpdateDialog(props) {
   const {
@@ -76,7 +78,14 @@ function TransportUpdateDialog(props) {
     );
 
     // TODO update to transport email
-    // sendStatusEmail(status, equipment, request, fullName, userProfile);
+    sendTransportStatusEmail(
+      status,
+      startDate,
+      endDate,
+      request,
+      fullName,
+      userProfile
+    );
 
     handleCloseConfirmDialog();
     setTimeout(function () {
@@ -97,33 +106,41 @@ function TransportUpdateDialog(props) {
   };
 
   const disableButton = () => {
-    if (request.status !== "Requested") return false
-    console.log("requested")
-    if (startDate == undefined || startDate == null || startDate === "") return true
-    if (endDate == undefined || endDate == null || endDate === "") return true
-  }
+    if (request.status !== "Requested") return false;
+    console.log("requested");
+    if (startDate == undefined || startDate == null || startDate === "")
+      return true;
+    if (endDate == undefined || endDate == null || endDate === "") return true;
+  };
+
+  const handleStartDateInput = (e) => {
+    if (e.target.value < moment().format()) return setStartDate("");
+    return setStartDate(e.target.value);
+  };
 
   const handleEndDateInput = (e) => {
-    if (e.target.value < startDate) return setEndDate("")
-    return setEndDate(e.target.value)
-  }
+    if (e.target.value < startDate) return setEndDate("");
+    return setEndDate(e.target.value);
+  };
 
   return (
     <>
-      <Tooltip title="Update Status">
-        <Button
-          color="success"
-          size="small"
-          sx={{ width: "115px", pt: "5px" }}
-          variant={request.status === "In Progress" ? "contained" : "outlined"}
-          onClick={handleToggleConfirmDialog}
-        >
-          {request.status}
-        </Button>
-      </Tooltip>
-      <p>
-        <small>{request.statusTimestamp}</small>
-      </p>
+        <Tooltip title="Update Status">
+          <Button
+            color="success"
+            size="small"
+            sx={{ width: "115px", pt: "5px" }}
+            variant={
+              request.status === "In Progress" ? "contained" : "outlined"
+            }
+            onClick={handleToggleConfirmDialog}
+          >
+            {request.status}
+          </Button>
+        </Tooltip>
+        <p>
+          <small>{request.statusTimestamp}</small>
+        </p>
 
       <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
         <div
@@ -172,12 +189,12 @@ function TransportUpdateDialog(props) {
                         size="small"
                         id="startDate"
                         autoFocus
-                        onChange={(e) => setStartDate(e.target.value)}
+                        onChange={handleStartDateInput}
                         value={startDate}
                         InputLabelProps={{
                           shrink: true,
                         }}
-                        label="Start Date"
+                        label="Start"
                       />
                     </Grid>
                     <Grid item xs={12} sm={12}>
@@ -194,7 +211,7 @@ function TransportUpdateDialog(props) {
                         InputLabelProps={{
                           shrink: true,
                         }}
-                        label="End Date"
+                        label="End"
                       />
                     </Grid>
                   </>

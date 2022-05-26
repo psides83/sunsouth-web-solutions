@@ -54,6 +54,7 @@ import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import TransportEquipmentRow from "./TransportEquipmentRows";
 import TransportUpdateDialog from "../TransportUpdateDialog";
 import EditTransportView from "../EditTransportView";
+import { Stack } from "@mui/material";
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -337,6 +338,8 @@ export default function TransportRow(props) {
     <React.Fragment>
       <TableRow key={request.equipment.id} className={classes.root}>
         <TableCell key="expand">
+          <Stack alignItems="center" >
+          <Typography variant="h6">{request.requestType}</Typography>
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
               aria-label="expand row"
@@ -346,6 +349,7 @@ export default function TransportRow(props) {
               {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
             </IconButton>
           </Tooltip>
+          </Stack>
         </TableCell>
 
         <TableCell key="model" align="left">

@@ -18,6 +18,8 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TransportRow from "./TransportManagerRow";
 import { Box, Grid, Typography } from "@material-ui/core";
 import CalendarView from "../CalendarView";
+import { formatPhoneNumber } from "../../utils/utils";
+import moment from "moment";
 
 // Whole table view:
 export default function TransportManager() {
@@ -26,6 +28,8 @@ export default function TransportManager() {
   const [calendarRequests, setCalendarRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openAddTransportView, setOpenAddTransportView] = useState(false);
+
+  console.log(moment().format("yyyy-mm-DD"))
 
   const handleCloseAddTansportView = () => {
     setOpenAddTransportView(false);
@@ -47,8 +51,6 @@ export default function TransportManager() {
     );
 
     const startDateCheck = (startDate, requestedDate) => {
-      console.log(startDate);
-      console.log(requestedDate);
       if (startDate == undefined) return `${requestedDate}T07:00`;
       if (startDate == null) return `${requestedDate}T07:00`;
       if (startDate === "") return `${requestedDate}T07:00`;
@@ -56,21 +58,11 @@ export default function TransportManager() {
     };
 
     const endDateCheck = (endDate, requestedDate) => {
-      console.log(endDate);
       if (endDate == undefined) return `${requestedDate}T09:00`;
       if (endDate == null) return `${requestedDate}T09:00`;
       if (endDate === "") return `${requestedDate}T09:00`;
       return endDate;
     };
-
-    function formatPhoneNumber(phoneNumberString) {
-      var cleaned = ("" + phoneNumberString).replace(/\D/g, "");
-      var match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-      if (match) {
-        return "(" + match[1] + ") " + match[2] + "-" + match[3];
-      }
-      return null;
-    }
 
     onSnapshot(transportQuery, (querySnapshot) => {
       setRequests(
@@ -120,7 +112,6 @@ export default function TransportManager() {
         setLoading(false);
       }, 1000);
     });
-    console.table(calendarRequests);
   }, [userProfile]);
 
   useEffect(() => {
@@ -165,7 +156,7 @@ export default function TransportManager() {
               </Button>
             </div>
             <div className="addRequestView">
-              <AddTransportView />
+              <AddTransportView handleCloseAddTansportView={handleCloseAddTansportView} />
             </div>
           </Dialog>
 
@@ -191,7 +182,7 @@ export default function TransportManager() {
                   // style={{ margin: 15 }}
                   sx={{ paddingTop: 2 }}
                 >
-                  <TransportTableHeaderView />
+                  {/* <TransportTableHeaderView /> */}
                   <TableBody>
                     {requests.map((request) => (
                       <TransportRow request={request} />

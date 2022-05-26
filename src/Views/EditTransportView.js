@@ -256,7 +256,7 @@ export default function EditTransportView(props) {
           <Grid container spacing={2}>
             <Grid item sm={12}>
               <Typography>
-                {`Date Requested: ${moment(requestedDate).format(
+                {`${requestType} Date Requested: ${moment(requestedDate).format(
                   "DD-MMM-yyyy"
                 )}`}
               </Typography>
@@ -422,8 +422,8 @@ export default function EditTransportView(props) {
                 value={requestType}
                 select
               >
-                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
                 <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>

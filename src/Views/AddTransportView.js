@@ -23,7 +23,10 @@ import moment from "moment";
 import { styled } from "@mui/material/styles";
 import Chip from "@mui/material/Chip";
 import Snackbar from "@material-ui/core/Snackbar";
-import { sendNewRequestEmail } from "../services/email-service";
+import {
+  sendNewRequestEmail,
+  sendNewTransportRequestEmail,
+} from "../services/email-service";
 import {
   Agriculture,
   AgricultureRounded,
@@ -85,10 +88,11 @@ const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
 }));
 
-export default function AddTransportView() {
+export default function AddTransportView(props) {
   //#region State Properties
   const classes = useStyles();
   const [{ userProfile }] = useStateValue();
+  const {handleCloseAddTansportView} = props;
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [customerName, setCustomerName] = useState("");
@@ -98,7 +102,7 @@ export default function AddTransportView() {
   var [customerState, setCustomerState] = useState("AL");
   var [customerZip, setCustomerZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
-  var [requestType, setRequestType] = useState("");
+  var [requestType, setRequestType] = useState("Delivery");
   var [requestNotes, setRequestNotes] = useState("");
   var [hasTrade, setHasTrade] = useState(false);
   var [model, setModel] = useState("");
@@ -183,23 +187,18 @@ export default function AddTransportView() {
 
     await setDoc(requestRef, firestoreTransportRequest, { merge: true });
 
-    //  TODO update to new transport email
-    // sendNewRequestEmail(
-    //   timestamp,
-    //   equipmentList,
-    //   fullName,
-    //   userProfile,
-    //   salesman
-    // );
+    sendNewTransportRequestEmail(
+      timestamp,
+      firestoreTransportRequest,
+      fullName,
+      userProfile,
+      salesman
+    );
     resetTransportForm();
     resetEquipmentForm();
     setEquipmentList([]);
-    handleClose();
+    handleCloseAddTansportView();
   };
-
-  // TODO add request rest
-
-  // TODO add complete form reset
 
   // Reset the form
   const resetEquipmentForm = async () => {
@@ -286,6 +285,50 @@ export default function AddTransportView() {
       setValidationMessage(lastIndex + " successfully added to the request");
       setOpenSuccess(true);
     }
+  };
+
+  // checks form validation to activate submit buton
+  const submitIsDisabled = () => {
+    const lowerCaseLetters = /[a-z]/g;
+    const upperCaseLetters = /[A-Z]/g;
+
+    if (
+      requestedDate === "" ||
+      customerName === "" ||
+      customerPhone === "" ||
+      customerStreet === "" ||
+      customerCity === "" ||
+      customerState === "" ||
+      customerZip === "" ||
+      requestType === ""
+    )
+      return true;
+
+    if (model === "" && equipmentList.length === 0) return true;
+    if (
+      (stock.length !== 6 ||
+        stock.match(lowerCaseLetters) ||
+        stock.match(upperCaseLetters)) &&
+      equipmentList.length === 0
+    )
+      return true;
+
+    if (serial === "" && equipmentList.length === 0) return true;
+  };
+
+  // checks form validation to activate submit buton
+  const equipmentSubmitIsDisabled = () => {
+    const lowerCaseLetters = /[a-z]/g;
+    const upperCaseLetters = /[A-Z]/g;
+
+    if (
+      model === "" ||
+      stock.length !== 6 ||
+      stock.match(lowerCaseLetters) ||
+      stock.match(upperCaseLetters) ||
+      serial === ""
+    )
+      return true;
   };
 
   // Requst submission validation.
@@ -406,7 +449,9 @@ export default function AddTransportView() {
                 InputProps={{
                   inputComponent: PhoneNumberMask,
                 }}
-                onChange={(e) => setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))}
+                onChange={(e) =>
+                  setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
+                }
                 value={customerPhone}
               />
             </Grid>
@@ -485,8 +530,8 @@ export default function AddTransportView() {
                 value={requestType}
                 select
               >
-                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
                 <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -708,6 +753,7 @@ export default function AddTransportView() {
             <Button
               variant="outlined"
               color="primary"
+              disabled={equipmentSubmitIsDisabled()}
               startIcon={<AddCircleOutlineIcon />}
               className={classes.addEquipment}
               onClick={equipmentSubmitValidation}
@@ -717,18 +763,22 @@ export default function AddTransportView() {
             <Button
               variant="contained"
               color="primary"
-              endIcon={<SendRoundedIcon className={classes.submitIcon} />}
+              disabled={submitIsDisabled()}
+              endIcon={
+                <SendRoundedIcon
+                  className={submitIsDisabled() ? null : classes.submitIcon}
+                />
+              }
               className={classes.submit}
               onClick={requestSubmitValidation}
             >
-              <p className={classes.submitIcon}>Submit</p>
+              <p className={submitIsDisabled() ? null : classes.submitIcon}>
+                Submit
+              </p>
             </Button>
           </Grid>
         </form>
       </Box>
-      {/* <Box mt={5}>
-        <Copyright />
-      </Box> */}
     </Container>
   );
 }

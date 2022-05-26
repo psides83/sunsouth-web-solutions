@@ -9,6 +9,7 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { db } from "./firebase";
+import { formatPhoneNumber } from "../utils/utils";
 
 // const serviceID = 'service_3fgcwz9';
 // const templateID = 'template_5dg1ys6';
@@ -486,6 +487,156 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   // console.log(recipients)
 };
 
+// Sends email when new request is submitted
+const sendNewTransportRequestEmail = async (
+  timestamp,
+  transportRequest,
+  fullName,
+  userProfile,
+  salesman
+) => {
+  // creates the paramaters for the email template
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  // const recipients = await setRecipients(roles.request, userProfile, salesman);
+  const recipients = "psides@sunsouth.com";
+  const subject = `New equipment ${transportRequest.type} request from ${fullName}`;
+  var body = `<body>
+                    <section>
+                        <p>${timestamp}</p>
+                        <p>${fullName} is requesting ${
+    transportRequest.requestType
+  } of equipment ${
+    transportRequest.requestType === "Delivery" ? "to" : "from"
+  } the customer below.</p>
+                    </section>
+                    <section>
+                        <h3>${
+                          transportRequest.requestType
+                        } Date Requested: ${moment(
+    transportRequest.requestedDate
+  ).format("DD-MMM-yyyy")}</h3>
+                        <p>Customer: ${transportRequest.customerName}</p>
+                        <p>Phone: ${formatPhoneNumber(
+                          transportRequest.customerPhone
+                        )}</p>
+                        <p>Address:</p>
+                        <p>${transportRequest.customerStreet}</p>
+                        <p>${transportRequest.customerCity}, ${
+    transportRequest.customerState
+  } ${transportRequest.customerZip}</p>
+                    </section>
+                    `;
+
+  for (var i = 0; i < transportRequest.equipment.length; i++) {
+    body += `<hr style="height:3px;border-width:0;color:gray;background-color:gray"/>
+                <section>
+                    <h3>Equipment ${i + 1}</h3>
+                    <p>Model: ${transportRequest.equipment[i].model}</p>
+                    <p>Stock Number: ${transportRequest.equipment[i].stock}</p>
+                    <p>Serial Number: ${
+                      transportRequest.equipment[i].serial
+                    }</p>
+                    <p>Additional Notes: ${
+                      transportRequest.equipment[i].notes
+                    }</p>
+                </section>`;
+  }
+
+  body += "</body>";
+
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
+
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
+
+// Send email when request status is updated:
+const sendTransportStatusEmail = async (
+  status,
+  startDate,
+  endDate,
+  transportRequest,
+  fullName,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  // const recipients = await setRecipients(
+  //   roles.request,
+  //   userProfile,
+  //   transportRequest.salesman
+  // );
+  const recipients = "psides@sunsouth.com";
+  const equipment = () => {
+    const models = [];
+    for (var i = 0; i < transportRequest.equipment.length; i++) {
+      models.push(transportRequest.equipment[i].model);
+    }
+
+    return models.toString().replace(/,/g, ", ");
+  };
+  const subject = `UPDATED - ${transportRequest.requestType} status updated to ${status} for customer ${transportRequest.customerName}`;
+  const body = () => {
+    if (status === "Scheduled") {
+      return `<body>
+                    <p>${timestamp}</p>
+                    <p><strong>Work Order:</strong> ${transportRequest.workOrder}</p>
+                    <p><strong>Customer:</strong> ${transportRequest.customerName}</p>
+                    <p><strong>Equipment:</strong> ${equipment()}</p>
+                    <p><strong>${transportRequest.requestType} Status:</strong> ${status}</p>
+                    <p><strong>Scheduled ${transportRequest.requestType} Date:</strong> ${moment(
+        startDate
+      ).format("DD-MMM-yyyy")}</p>
+                    <p>Scheduled ${transportRequest.requestType} Time Window: ${moment(
+        startDate
+      ).format("LT")} - ${moment(endDate).format("LT")}</p>
+                    <p>Updated By: ${fullName}</p>
+                <body>`;
+    }
+
+    if (status === "In Progress" || status === "Completed") {
+      return `<body>
+                  <p>${timestamp}</p>
+                  <p><strong>Work Order:</strong> ${transportRequest.workOrder}</p>
+                  <p><strong>Customer:</strong> ${transportRequest.customerName}</p>
+                  <p><strong>Equipment:</strong> ${equipment()}</p>
+                  <p><strong>${transportRequest.requestType} Status:</strong> ${status}</p>
+                  <p><strong>Updated By:</strong> ${fullName}</p>
+              <body>`;
+    }
+  };
+
+  // Sets paramaters for the email template
+  const emailData = {
+    to: recipients,
+    replyTo: userProfile.email,
+    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body(),
+    },
+  };
+
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
+
 // TODO add emails for transport feature
 
 export {
@@ -498,4 +649,6 @@ export {
   sendLoanerStatusEmail,
   sendEquipmentDeletedEmail,
   sendRequestDeletedEmail,
+  sendNewTransportRequestEmail,
+  sendTransportStatusEmail,
 };
