@@ -719,6 +719,7 @@ export default function AddTransportView(props) {
           </Alert>
         </Snackbar>
 
+{/* TODO fix buttons */}
         <Grid container justifyContent="space-between">
           <Button
             variant="outlined"
@@ -734,11 +735,11 @@ export default function AddTransportView(props) {
             color="primary"
             disabled={submitIsDisabled()}
             endIcon={
-              <SendRounded color={submitIsDisabled() ? null : "secondary"} />
+              <SendRounded color={submitIsDisabled() ? "" : "secondary"} />
             }
             onClick={requestSubmitValidation}
           >
-            <Typography color={submitIsDisabled() ? null : "secondary"}>
+            <Typography color={submitIsDisabled() ? "" : "secondary"}>
               Submit
             </Typography>
           </Button>

@@ -106,7 +106,7 @@ function Row({ loaner }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={loaner.id} style={{ borderBottom: "unset" }}>
+      <TableRow key={loaner.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key={loaner.employee} component="th" scope="row">
           <p>{loaner.employee}</p>
           <small>{loaner.timestamp}</small>

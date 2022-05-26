@@ -239,7 +239,8 @@ export default function EquipmentRow(props) {
     <React.Fragment>
       <TableRow
         key={item.requestID}
-        style={{ fontSize: 18, borderBottom: "unset" }}
+        style={{ fontSize: 18}}
+        sx={{ '& > *': { borderBottom: 'unset' } }}
       >
         <TableCell key="model" align="left" component="th" scope="row">
           {" "}

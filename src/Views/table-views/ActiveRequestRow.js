@@ -374,7 +374,7 @@ export default function RequestRow({ request }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} style={{ borderBottom: "unset" }}>
+      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton

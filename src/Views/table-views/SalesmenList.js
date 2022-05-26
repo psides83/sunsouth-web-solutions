@@ -30,7 +30,7 @@ function Row({ salesman }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={salesman.id} style={{ borderBottom: "unset" }}>
+      <TableRow key={salesman.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key="branch" component="th" scope="row">
           {salesman.branch}
         </TableCell>

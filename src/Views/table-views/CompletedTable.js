@@ -57,7 +57,7 @@ function EquipmentRow({ item }) {
   // Equipment row UI:
   return (
     <React.Fragment>
-      <TableRow key={"id"} style={{ fontSize: 18, borderBottom: "unset" }}>
+      <TableRow key={"id"} style={{ fontSize: 18 }} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key={"model"} align="left" component="th" scope="row">
           {item.model}
         </TableCell>
@@ -172,7 +172,7 @@ function Row({ request }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.id} style={{ borderBottom: "unset" }}>
+      <TableRow key={request.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell>
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton

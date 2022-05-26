@@ -328,7 +328,7 @@ export default function TransportRow(props) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.equipment.id} style={{ borderBottom: "unset" }}>
+      <TableRow key={request.equipment.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key="expand">
           <Stack alignItems="center">
             <Typography variant="h6">{request.requestType}</Typography>
