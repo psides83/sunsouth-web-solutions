@@ -132,7 +132,6 @@ function Row({ loaner }) {
         <TableCell key={loaner.status} align="left">
           <Tooltip title="Update Status">
             <Button
-              color="success"
               size="small"
               variant="outlined"
               onClick={handleToggleConfirmDialog}
@@ -191,7 +190,6 @@ function Row({ loaner }) {
                     </Button>
                     <Button
                       variant="contained"
-                      color="success"
                       onClick={updateStatus}
                     >
                       Update
@@ -287,7 +285,6 @@ export default function LoanerManager() {
                 </Typography>
                 <Button
                   onClick={handleToggleAddLoanerView}
-                  color="success"
                   size="small"
                   variant="outlined"
                   startIcon={<AddRounded />}
@@ -303,7 +300,7 @@ export default function LoanerManager() {
                 open={openAddLoanerView}
               >
                 <div className="closeButtonContainer">
-                  <Button onClick={handleCloseAddLoanerView} color="success">
+                  <Button onClick={handleCloseAddLoanerView} >
                     <CancelOutlined />
                   </Button>
                 </div>
