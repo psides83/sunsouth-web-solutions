@@ -1,29 +1,34 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import IconButton from "@material-ui/core/IconButton";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import { setDoc, doc, deleteDoc } from "firebase/firestore";
-import { db } from "../../services/firebase";
-import { TextField, Tooltip, Typography } from "@material-ui/core";
 import moment from "moment";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import "../../styles/Table.css";
-import CheckIcon from "@mui/icons-material/Check";
-import CloseIcon from "@mui/icons-material/Close";
 import {
   sendEquipmentDeletedEmail,
   sendEquipmentUpdateEmail,
 } from "../../services/email-service";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import { Dialog, DialogTitle } from "@mui/material";
 import Spinner from "../../components/Spinner";
-import Button from "@mui/material/Button";
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  TableCell,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  CheckRounded,
+  CloseRounded,
+  DeleteRounded,
+  EditRounded,
+} from "@mui/icons-material";
 
 // Equipment row view:
 export default function TransportEquipmentRow(props) {
   //#region State Properties
-  const { classes, request, item } = props;
+  const { request, item } = props;
   const [{ userProfile }] = useStateValue();
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
@@ -234,9 +239,7 @@ export default function TransportEquipmentRow(props) {
     <React.Fragment>
       <TableRow
         key={item.requestID}
-        style={{ fontSize: 18 }}
-        className={classes.root}
-        sx={{ "& > *": { borderBottom: "unset" } }}
+        style={{ fontSize: 18, borderBottom: "unset" }}
       >
         <TableCell key="model" align="left" component="th" scope="row">
           {" "}
@@ -320,16 +323,16 @@ export default function TransportEquipmentRow(props) {
             {isEditingEquipment ? (
               equipmentHasChanges ? (
                 <Tooltip title="Save">
-                  <CheckIcon color="success" style={{ fontSize: 18 }} />
+                  <CheckRounded color="success" style={{ fontSize: 18 }} />
                 </Tooltip>
               ) : (
                 <Tooltip title="Cancel">
-                  <CloseIcon color="success" style={{ fontSize: 18 }} />
+                  <CloseRounded color="success" style={{ fontSize: 18 }} />
                 </Tooltip>
               )
             ) : (
               <Tooltip title="Edit Equipment">
-                <EditRoundedIcon color="success" style={{ fontSize: 18 }} />
+                <EditRounded color="success" style={{ fontSize: 18 }} />
               </Tooltip>
             )}
           </IconButton>
@@ -340,7 +343,7 @@ export default function TransportEquipmentRow(props) {
               onClick={handleToggleConfirmDialog}
             >
               <Tooltip title="Delete Equipment">
-                <DeleteRoundedIcon color="success" style={{ fontSize: 18 }} />
+                <DeleteRounded color="success" style={{ fontSize: 18 }} />
               </Tooltip>
             </IconButton>
           ) : null}
