@@ -10,8 +10,8 @@ import { auth, db } from "./services/firebase";
 import { useStateValue } from "./state-management/StateProvider";
 import SignIn from "./views/SignIn";
 import SignUp from "./views/SignUp";
-import { createTheme, ThemeProvider } from "@material-ui/core/styles";
-import CssBaseline from "@material-ui/core/CssBaseline";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
 import Spinner from "./components/Spinner";
 import AddRequestView from "./views/AddRequestView";
 import Completed from "./views/Completed";
@@ -25,15 +25,36 @@ import { doc, getDoc } from "@firebase/firestore";
 
 const theme = createTheme({
   palette: {
+    mode: "light",
     primary: {
-      light: "#5e9655",
+      // light: "#367C2B",
       main: "#367C2B",
-      dark: "#25561e",
+      // dark: "#367C2B",
     },
     secondary: {
-      light: "#ffe433",
+      // light: "#FFDE00",
       main: "#FFDE00",
-      dark: "#b29b00",
+      // dark: "#FFDE00",
+    },
+    success: {
+      // light: "#81c784",
+      main: "#66bb6a",
+      // dark: "#388e3c",
+    },
+    error: {
+      // light: "#e57373",
+      main: "#f44336",
+      // dark: "#d32f2f",
+    },
+    info: {
+      // light: "#708090",
+      main: "#708090",
+      // dark: "#708090",
+    },
+    background: {
+      // main: "#20301d",
+      default: "#e3e8e8",
+      // paper: "#f2f2f2",
     },
   },
 });
