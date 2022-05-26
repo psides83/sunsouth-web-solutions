@@ -1,79 +1,63 @@
 //Imports
 import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Grid from "@material-ui/core/Grid";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import { Avatar, FormGroup } from "@material-ui/core";
-import { Alert, Stack } from "@mui/material";
 import "../styles/AddRequest.css";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useStateValue } from "../state-management/StateProvider";
 import moment from "moment";
-import AgricultureIcon from "@mui/icons-material/Agriculture";
-import { styled } from "@mui/material/styles";
-import Chip from "@mui/material/Chip";
-import Snackbar from "@material-ui/core/Snackbar";
 import { sendNewRequestEmail } from "../services/email-service";
+import { Alert, Avatar, Box, Button, Checkbox, Chip, FormControlLabel, FormGroup, Grid, Snackbar, Stack, styled, TextField, Typography } from "@mui/material";
+import { AddCircleOutline, Agriculture, AgricultureRounded, SendRounded } from "@mui/icons-material";
 
 // Sets useStyles for customizing Material UI components.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(4),
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
-  },
-  img: {
-    padding: 1,
-  },
-  icon: {
-    color: theme.palette.secondary.main,
-  },
-  title: {
-    color: theme.palette.primary.main,
-  },
-  form: {
-    width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
-  },
-  addEquipment: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  submitIcon: {
-    color: theme.palette.secondary.main,
-  },
-  select: {
-    "&:before": {
-      borderColor: theme.palette.secondary.main,
-    },
-    "&:after": {
-      borderColor: theme.palette.secondary.main,
-    },
-    "&:not(.Mui-disabled):hover::before": {
-      borderColor: theme.palette.secondary.main,
-    },
-  },
-}));
+// const useStyles = makeStyles((theme) => ({
+//   paper: {
+//     marginTop: theme.spacing(4),
+//     display: "flex",
+//     flexDirection: "column",
+//     alignItems: "center",
+//   },
+//   avatar: {
+//     width: 64,
+//     height: 64,
+//     margin: theme.spacing(1),
+//     backgroundColor: theme.palette.primary.main,
+//   },
+//   img: {
+//     padding: 1,
+//   },
+//   icon: {
+//     color: theme.palette.secondary.main,
+//   },
+//   title: {
+//     color: theme.palette.primary.main,
+//   },
+//   form: {
+//     width: "100%", // Fix IE 11 issue.
+//     marginTop: theme.spacing(3),
+//   },
+//   addEquipment: {
+//     margin: theme.spacing(3, 0, 2),
+//   },
+//   submit: {
+//     margin: theme.spacing(3, 0, 2),
+//   },
+//   submitIcon: {
+//     color: theme.palette.secondary.main,
+//   },
+//   select: {
+//     "&:before": {
+//       borderColor: theme.palette.secondary.main,
+//     },
+//     "&:after": {
+//       borderColor: theme.palette.secondary.main,
+//     },
+//     "&:not(.Mui-disabled):hover::before": {
+//       borderColor: theme.palette.secondary.main,
+//     },
+//   },
+// }));
 
 const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
@@ -81,7 +65,6 @@ const ListItem = styled("li")(({ theme }) => ({
 
 export default function AddRequestView() {
   //#region State Properties
-  const classes = useStyles();
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -502,16 +485,32 @@ export default function AddRequestView() {
 
   // UI view of the submission form
   return (
-    <Container component="main" maxWidth="xs" sx={{ margin: 20 }}>
-      <CssBaseline />
-      <Box className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <AgricultureIcon className={classes.icon} fontSize="large" />
+      <Box display="flex"
+      sx={{
+        flexDirection: "column",
+        alignItems: "center",
+        maxWidth: "380px",
+        padding: (theme) => theme.spacing(3),
+        paddingLeft: (theme) => theme.spacing(4),
+        paddingRight: (theme) => theme.spacing(4),
+        paddingBottom: (theme) => theme.spacing(3),
+      }}>
+        <Avatar  key="avatar"
+        style={{
+          width: 64,
+          height: 64,
+          margin: "10px",
+          backgroundColor: "#367C2B",
+        }}>
+          <AgricultureRounded color="secondary" fontSize="large" />
         </Avatar>
-        <Typography component="h1" variant="h" className={classes.title}>
+        <Typography key="heading"
+        color="primary"
+        variant="h5"
+        style={{ fontWeight: "bold" }}>
           Submit PDI/Setup Request
         </Typography>
-        <form className={classes.form} noValidate>
+        <form style={{ width: "100%", marginTop: "10px" }} noValidate>
           <Stack mb={1}>
             <Typography component="h1" variant="h6">
               {heading}
@@ -531,7 +530,7 @@ export default function AddRequestView() {
               component="ul"
             >
               {equipmentList.map((data) => {
-                let icon = <AgricultureIcon />;
+                let icon = <Agriculture />;
 
                 return (
                   <ListItem key={data.id}>
@@ -555,7 +554,6 @@ export default function AddRequestView() {
                 required
                 fullWidth
                 size="small"
-                inputProps={{ style: { fontSize: 14 } }}
                 id="model"
                 label="Model"
                 autoFocus
@@ -695,8 +693,7 @@ export default function AddRequestView() {
             <Button
               variant="outlined"
               color="primary"
-              startIcon={<AddCircleOutlineIcon />}
-              className={classes.addEquipment}
+              startIcon={<AddCircleOutline />}
               onClick={equipmentSubmitValidation}
             >
               Add More Equipment
@@ -704,18 +701,13 @@ export default function AddRequestView() {
             <Button
               variant="contained"
               color="primary"
-              endIcon={<SendRoundedIcon className={classes.submitIcon} />}
-              className={classes.submit}
+              endIcon={<SendRounded color="secondary" />}
               onClick={requestSubmitValidation}
             >
-              <p className={classes.submitIcon}>Submit</p>
+              <Typography color="secondary">Submit</Typography>
             </Button>
           </Grid>
         </form>
       </Box>
-      {/* <Box mt={5}>
-        <Copyright />
-      </Box> */}
-    </Container>
   );
 }

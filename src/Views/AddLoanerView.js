@@ -294,7 +294,6 @@ export default function AddLoanerView() {
               <Grid item xs={5}></Grid>
           <Grid item spacing={2} xs={7}>
             <Button
-              item
               size="small"
               variant="contained"
               color="primary"
