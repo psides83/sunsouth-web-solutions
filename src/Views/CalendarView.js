@@ -39,14 +39,44 @@ const Appointment = ({ style, data, ...restProps }) => (
   />
 );
 
+const Header = ({ children, appointmentData, ...restProps }) => (
+  <AppointmentTooltip.Header {...restProps} appointmentData={appointmentData}>
+    <Grid container alignItems="center">
+      <Grid item xs={10} style={{ textAlign: "center", marginTop: "5px" }}>
+        <Typography
+          variant="h5"
+          style={{
+            fontWeight: "bold",
+            color: appointmentData.status === "Requested" ? "gray" : "#367C2B",
+          }}
+        >
+          {appointmentData.status}
+        </Typography>
+      </Grid>
+    </Grid>
+  </AppointmentTooltip.Header>
+);
+
 const Content = ({ children, appointmentData, ...restProps }) => (
   <AppointmentTooltip.Content {...restProps} appointmentData={appointmentData}>
     <Grid container alignItems="center">
+      <Grid item xs={2} style={{ textAlign: "center" }}></Grid>
+      <Grid item xs={10} style={{ textAlign: "start" }}>
+        <Typography style={{ fontWeight: "bold", color: "gray" }}>
+          {appointmentData.type}
+        </Typography>
+      </Grid>
+      <Grid item xs={2} style={{ textAlign: "center" }}></Grid>
+      <Grid item xs={10} style={{ textAlign: "start" }}>
+        <Typography style={{ fontWeight: "bold", color: "gray" }}>
+          {appointmentData.hasTrade ? "Return Trade" : null}
+        </Typography>
+      </Grid>
       <Grid item xs={2} style={{ textAlign: "center" }}>
         <PhoneRounded style={{ color: "gray" }} />
       </Grid>
       <Grid item xs={10}>
-        <a href={`tel:${appointmentData.phone}`} >{appointmentData.phone} </a>
+        <a href={`tel:${appointmentData.phone}`}>{appointmentData.phone} </a>
       </Grid>
     </Grid>
     <Grid container alignItems="center">
@@ -69,11 +99,11 @@ export default function CalendarView(props) {
     <Paper
       style={{
         padding: "5px",
-        margin: "20px 30px 0 50px",
+        // margin: "0 20px 0 20px",
         borderRadius: "10px",
       }}
     >
-      <Scheduler height={660} data={calendarRequests}>
+      <Scheduler height={600} data={calendarRequests}>
         {/* <EditingState onCommitChanges={null} /> */}
         {/* <IntegratedEditing /> */}
         <ViewState
@@ -88,7 +118,11 @@ export default function CalendarView(props) {
         <TodayButton />
         <ViewSwitcher />
         <Appointments appointmentComponent={Appointment} />
-        <AppointmentTooltip contentComponent={Content} showCloseButton />
+        <AppointmentTooltip
+          headerComponent={Header}
+          contentComponent={Content}
+          showCloseButton
+        />
         <AllDayPanel />
         <AppointmentForm readOnly />
       </Scheduler>

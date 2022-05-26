@@ -37,7 +37,8 @@ import TimelineConnector from "@mui/lab/TimelineConnector";
 import TimelineContent from "@mui/lab/TimelineContent";
 import TimelineDot from "@mui/lab/TimelineDot";
 import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
-import { EquipmentTableHeaderView } from "../../components/TableHeaderViews";
+import { EquipmentTableHeaderView, TransportEquipmentTableHeaderView } from "../../components/TableHeaderViews";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import {
   sendWorkOrderEmail,
   sendNewEquipmentEmail,
@@ -51,6 +52,8 @@ import { Link } from "react-router-dom";
 import Spinner from "../../components/Spinner";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import TransportEquipmentRow from "./TransportEquipmentRows";
+import TransportUpdateDialog from "../TransportUpdateDialog";
+import EditTransportView from "../EditTransportView";
 
 // Styles:
 const useRowStyles = makeStyles({
@@ -65,7 +68,7 @@ const useRowStyles = makeStyles({
 // Request row view:
 export default function TransportRow(props) {
   //#region State Properties
-  const {request} = props;
+  const { request } = props;
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
   const classes = useRowStyles();
@@ -85,7 +88,16 @@ export default function TransportRow(props) {
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
+  const [openAddTransportView, setOpenAddTransportView] = useState(false);
   // #endregion
+
+  const handleCloseEditTansportView = () => {
+    setOpenAddTransportView(false);
+  };
+
+  const handleToggleEditTansportView = () => {
+    setOpenAddTransportView(!openAddTransportView);
+  };
 
   const handleCloseChangeLog = () => {
     setOpenChangeLog(false);
@@ -295,63 +307,6 @@ export default function TransportRow(props) {
   //   }
   // };
 
-  // Handles updating the request status:
-  const updateStatus = async () => {
-    setIsShowingSpinner(true);
-    var status = request.status;
-
-    switch (status) {
-      case "Requested":
-        status = "Scheduled";
-        break;
-      
-      case "Scheduled":
-        status = "In Progress"
-        break;
-
-      case "In Progress":
-        status = "Completed";
-        break;
-
-      default:
-        status = "Completed";
-    }
-
-    const changeLogEntry = {
-      user: fullName,
-      change: `Status updated to ${status}`,
-      timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-    };
-
-    request.changeLog.push(changeLogEntry);
-    const requestRef = doc(
-      db,
-      "branches",
-      userProfile.branch,
-      "transport",
-      request.id
-    );
-    await setDoc(
-      requestRef,
-      {
-        status: status,
-        statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
-        changeLog: request.changeLog,
-      },
-      {
-        merge: true,
-      }
-    );
-
-    // TODO update to transport email
-    // sendStatusEmail(status, equipment, request, fullName, userProfile);
-
-    handleCloseConfirmDialog();
-    setTimeout(function () {
-      setIsShowingSpinner(false);
-    }, 1000);
-  };
-
   // TODO build a transport PDF and update this to transport PDF
   // Sets data for the pdf into a fire store documetnt for the current
   // const setPDFData = () => {
@@ -367,18 +322,6 @@ export default function TransportRow(props) {
   //     }
   //   );
   // };
-
-  const statusUpdateText = () => {
-    if (request.status === "Requested") {
-      return "Scheduled";
-    } else if (request.status === "Scheduled") {
-      return "In Progress";
-    } else if (request.status === "In Progress") {
-      return "Completed";
-    } else {
-      return "Requested";
-    }
-  };
 
   const deleteRequest = async () => {
     await deleteDoc(
@@ -406,20 +349,23 @@ export default function TransportRow(props) {
         </TableCell>
 
         <TableCell key="model" align="left">
-          <strong className="model">{request.equipment[0]?.model}</strong>
-          <p>
-            <small>
-              {request.equipment?.length > 1 ? `and ${request.equipment?.length - 1} more` : ""}
-            </small>
-          </p>
+          <Typography style={{fontWeight: "bold"}}>
+            {request.customerName}
+          </Typography>
+          <Typography variant="body2" >{request.equipment[0]?.model}</Typography>
+            <Typography variant="caption">
+              {request.equipment?.length > 1
+                ? `and ${request.equipment?.length - 1} more`
+                : ""}
+            </Typography>
         </TableCell>
 
-        <TableCell key="salesman" component="th" scope="row">
+        {/* <TableCell key="salesman" component="th" scope="row">
           <p>{request.salesman}</p>
           <small>{request.timestamp}</small>
-        </TableCell>
+        </TableCell> */}
 
-        <TableCell key="workOrder" align="left">
+        {/* <TableCell key="workOrder" align="left">
           {" "}
           {isEditingWorkOrder ? (
             <TextField
@@ -433,83 +379,20 @@ export default function TransportRow(props) {
           ) : (
             request.workOrder
           )}
-        </TableCell>
+        </TableCell> */}
 
         <TableCell key="status" align="left">
-          <Tooltip title="Update Status">
-            <Button
-              color="success"
-              size="small"
-              sx={{ width: "115px", pt: "5px" }}
-              variant={
-                request.status === "In Progress" ? "contained" : "outlined"
-              }
-              onClick={handleToggleConfirmDialog}
-            >
-              {request.status}
-            </Button>
-          </Tooltip>
-          <p>
-            <small>{request.statusTimestamp}</small>
-          </p>
-
-          <Dialog
-            onClose={handleCloseConfirmDialog}
-            open={isShowingConfirmDialog}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
-              }}
-            >
-              <DialogTitle>Confirm Update</DialogTitle>
-              {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Typography>Saving</Typography>
-                  <Spinner frame={false} />
-                </div>
-              ) : (
-                <div>
-                  <Typography>{`Update the request's status from`}</Typography>
-                  <Typography>{`\"${
-                    request.status
-                  }" to "${statusUpdateText()}"?`}</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleCloseConfirmDialog}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="success"
-                      onClick={updateStatus}
-                    >
-                      Update
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Dialog>
+          <TransportUpdateDialog
+            request={request}
+            handleCloseConfirmDialog={handleCloseConfirmDialog}
+            isShowingConfirmDialog={isShowingConfirmDialog}
+            handleToggleConfirmDialog={handleToggleConfirmDialog}
+            fullName={fullName}
+            userProfile={userProfile}
+            isShowingSpinner={isShowingSpinner}
+            setIsShowingSpinner={setIsShowingSpinner}
+          />
+          
         </TableCell>
 
         <TableCell key="buttons" align="right">
@@ -566,28 +449,15 @@ export default function TransportRow(props) {
             </div> */}
 
             <div className="editIcon">
-              <IconButton className={classes.icon} onClick={editWorkOrder}>
-                {" "}
-                {isEditingWorkOrder ? (
-                  workOrderHasChanges ? (
-                    <Tooltip title="Save">
-                      <CheckIcon color="success" style={{ fontSize: 18 }} />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="Cancel">
-                      <CloseIcon color="success" style={{ fontSize: 18 }} />
-                    </Tooltip>
-                  )
-                ) : (
-                  <div className="edit-button-bg">
-                    <Tooltip title="Edit Work Order">
-                      <EditRoundedIcon
-                        color="success"
-                        style={{ fontSize: 16 }}
-                      />
-                    </Tooltip>
-                  </div>
-                )}
+              <IconButton
+                className={classes.icon}
+                onClick={handleToggleEditTansportView}
+              >
+                <div className="edit-button-bg">
+                  <Tooltip title="Edit Work Order">
+                    <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
+                  </Tooltip>
+                </div>
               </IconButton>
             </div>
             <div className="delete-button">
@@ -598,15 +468,26 @@ export default function TransportRow(props) {
                   onClick={handleToggleDeleteDialog}
                 >
                   <Tooltip title="Delete Equipment">
-                    <DeleteRoundedIcon
-                      color="success"
-                      style={{ fontSize: 18 }}
-                    />
+                    <DeleteRoundedIcon color="error" style={{ fontSize: 18 }} />
                   </Tooltip>
                 </IconButton>
               ) : null}
             </div>
           </div>
+
+          <Dialog
+            onClose={handleCloseEditTansportView}
+            open={openAddTransportView}
+          >
+            <div className="closeButtonContainer">
+              <Button onClick={handleCloseEditTansportView} color="success">
+                <CancelOutlinedIcon />
+              </Button>
+            </div>
+            <div className="addRequestView">
+              <EditTransportView transportRequest={request} handleCloseEditTansportView={handleCloseEditTansportView} />
+            </div>
+          </Dialog>
 
           <Dialog
             onClose={handleCloseDeleteDialog}
@@ -674,11 +555,14 @@ export default function TransportRow(props) {
         >
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
-              <Typography variant="subtitle1" gutterBottom component="div">
-                {`Request ID: ${request.id}`}
+              <Typography variant="caption" gutterBottom component="div">
+                {`Request ID: ${request.id} Work Order: ${request.workOrder}`}
+              </Typography>
+              <Typography variant="caption" gutterBottom component="div">
+                {`Salesman: ${request.salesman}`}
               </Typography>
               <Table size="small" aria-label="equipment">
-                <EquipmentTableHeaderView />
+                <TransportEquipmentTableHeaderView />
                 <TableBody>
                   {" "}
                   {request.equipment.map((item) => (
@@ -736,17 +620,6 @@ export default function TransportRow(props) {
                             value={serial}
                           ></TextField>
                         </p>
-                      </TableCell>
-
-                      <TableCell key="addWork">
-                        <TextField
-                          variant="outlined"
-                          label="Work"
-                          inputProps={{ style: { fontSize: 14 } }}
-                          size="small"
-                          onChange={(e) => setWork(e.target.value)}
-                          value={work}
-                        ></TextField>
                       </TableCell>
 
                       <TableCell key="addNotes">

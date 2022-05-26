@@ -293,23 +293,6 @@ export default function TransportEquipmentRow(props) {
           </TableCell>
         )}
 
-        <TableCell key="work" align="left">
-          {" "}
-          {isEditingEquipment ? (
-            <TextField
-              variant="outlined"
-              label="Work"
-              inputProps={{ style: { fontSize: 14 } }}
-              style={{ fontSize: 18 }}
-              size="small"
-              onChange={(e) => setWork(e.target.value)}
-              value={work}
-            ></TextField>
-          ) : (
-            item.work
-          )}
-        </TableCell>
-
         <TableCell key="notes" align="left">
           {" "}
           {isEditingEquipment ? (

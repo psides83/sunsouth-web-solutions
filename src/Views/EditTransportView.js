@@ -1,5 +1,5 @@
 //Imports
-import React, { useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
@@ -31,6 +31,7 @@ import {
 } from "@mui/icons-material";
 import { states } from "../models/states";
 import { PhoneNumberMask } from "../components/phone-number-mask";
+
 
 // Sets useStyles for customizing Material UI components.
 const useStyles = makeStyles((theme) => ({
@@ -85,12 +86,14 @@ const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
 }));
 
-export default function AddTransportView() {
+export default function EditTransportView(props) {
   //#region State Properties
+  const { transportRequest, handleCloseEditTansportView } = props;
   const classes = useStyles();
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
+  var [workOrder, setWorkOrder] = useState("");
   var [customerName, setCustomerName] = useState("");
   var [customerPhone, setCustomerPhone] = useState("");
   var [customerStreet, setCustomerStreet] = useState("");
@@ -101,11 +104,9 @@ export default function AddTransportView() {
   var [requestType, setRequestType] = useState("");
   var [requestNotes, setRequestNotes] = useState("");
   var [hasTrade, setHasTrade] = useState(false);
-  var [model, setModel] = useState("");
-  var [stock, setStock] = useState("");
-  var [serial, setSerial] = useState("");
-  var [notes, setNotes] = useState("");
-  var [equipmentList, setEquipmentList] = useState([]);
+  var [startDate, setStartDate] = useState("");
+  var [endDate, setEndDate] = useState("");
+  var [status, setStatus] = useState("");
   var [validationMessage, setValidationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
@@ -120,16 +121,46 @@ export default function AddTransportView() {
     setOpenError(false);
   };
 
-  // Dynamic heading for the form.
-  const heading =
-    equipmentList.length === 0 ? "Add Equipment" : "Equipment on Request";
+  const loadTransport = useCallback(() => {
+    setWorkOrder(transportRequest.workOrder);
+    setCustomerName(transportRequest.customerName);
+    setCustomerPhone(transportRequest.customerPhone);
+    setCustomerStreet(transportRequest.customerStreet);
+    setCustomerCity(transportRequest.customerCity);
+    setCustomerState(transportRequest.customerState);
+    setCustomerZip(transportRequest.customerZip);
+    setRequestType(transportRequest.requestType);
+    setRequestNotes(transportRequest.requestNotes);
+    setRequestedDate(transportRequest.requestedDate);
+    if (
+      transportRequest.startDate != undefined ||
+      transportRequest.startDate != null ||
+      transportRequest.startDate != ""
+    ) {
+      setStartDate(transportRequest.startDate);
+    }
+    if (
+      transportRequest.endDate != undefined ||
+      transportRequest.endDate != null ||
+      transportRequest.endDate != ""
+    ) {
+      setEndDate(transportRequest.endDate);
+    }
+    setHasTrade(transportRequest.hasTrade);
+    setStatus(transportRequest.status);
+  }, [transportRequest]);
 
+  useEffect(() => {
+    loadTransport();
+  }, [loadTransport]);
+
+  // TODO update to delete request
   // Handle deleting of equipment from the request.
-  const handleDelete = (equipmentToDelete) => () => {
-    setEquipmentList((equipmentList) =>
-      equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
-    );
-  };
+  //   const handleDelete = (equipmentToDelete) => () => {
+  //     setEquipmentList((equipmentList) =>
+  //       equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
+  //     );
+  //   };
 
   const handleHasTrade = () => {
     if (hasTrade) {
@@ -142,24 +173,21 @@ export default function AddTransportView() {
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection.
   const setRequestToFirestore = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    const id = moment().format("yyyyMMDDHHmmss");
+    // const id = moment().format("yyyyMMDDHHmmss");
     const salesman = `${userProfile?.firstName} ${userProfile?.lastName}`;
     const changeLog = [
       {
         user: fullName,
-        change: `request created`,
+        change: `request edited`,
         timestamp: timestamp,
       },
     ];
 
     const firestoreTransportRequest = {
-      id: id,
-      timestamp: timestamp,
-      salesman: salesman,
-      status: "Requested",
+      status: status,
       statusTimestamp: timestamp,
-      workOrder: "",
-      requestedDate: requestedDate,
+      startDate: startDate,
+      endDate: endDate,
       customerName: customerName,
       customerPhone: customerPhone,
       customerStreet: customerStreet,
@@ -169,7 +197,6 @@ export default function AddTransportView() {
       requestType: requestType,
       hasTrade: hasTrade,
       requestNotes: requestNotes,
-      equipment: equipmentList,
       changeLog: changeLog,
     };
 
@@ -178,7 +205,7 @@ export default function AddTransportView() {
       "branches",
       userProfile.branch,
       "transport",
-      firestoreTransportRequest.id
+      transportRequest.id
     );
 
     await setDoc(requestRef, firestoreTransportRequest, { merge: true });
@@ -191,150 +218,12 @@ export default function AddTransportView() {
     //   userProfile,
     //   salesman
     // );
-    resetTransportForm();
-    resetEquipmentForm();
-    setEquipmentList([]);
-    handleClose();
+    handleCloseEditTansportView();
   };
 
   // TODO add request rest
 
   // TODO add complete form reset
-
-  // Reset the form
-  const resetEquipmentForm = async () => {
-    setModel("");
-    setStock("");
-    setSerial("");
-    setNotes("");
-    console.log("form reset");
-  };
-
-  // reset transport form
-  const resetTransportForm = () => {
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerStreet("");
-    setCustomerCity("");
-    setCustomerState("");
-    setCustomerZip("");
-    setRequestedDate("");
-    setRequestType("");
-    setHasTrade(false);
-    setRequestNotes("");
-  };
-
-  // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
-  const pushEquipmentToRequest = async () => {
-    const id = moment().format("yyyyMMDDHHmmss");
-    const changeLog = [
-      {
-        user: fullName,
-        change: `equipment added to request`,
-        timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-      },
-    ];
-
-    var equipment = {
-      id: id,
-      model: model,
-      stock: stock,
-      serial: serial,
-      notes: notes,
-      changeLog: changeLog,
-    };
-
-    equipmentList.push(equipment);
-    setEquipmentList(equipmentList);
-    console.log(equipmentList);
-
-    await resetEquipmentForm();
-  };
-
-  // Squipment submission validation.
-  const equipmentSubmitValidation = async (event) => {
-    event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
-    if (model === "") {
-      setValidationMessage(
-        "Equipment must have a model to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else if (
-      stock.length !== 6 ||
-      stock.match(lowerCaseLetters) ||
-      stock.match(upperCaseLetters)
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else if (serial === "") {
-      setValidationMessage(
-        "Equipment must have a serial number to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else {
-      pushEquipmentToRequest();
-      const lastIndex = equipmentList[equipmentList.length - 1]?.model;
-      setValidationMessage(lastIndex + " successfully added to the request");
-      setOpenSuccess(true);
-    }
-  };
-
-  // Requst submission validation.
-  const requestSubmitValidation = async (event) => {
-    event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
-    if (model === "" && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a model to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else if (
-      (stock.length !== 6 ||
-        stock.match(lowerCaseLetters) ||
-        stock.match(upperCaseLetters)) &&
-      equipmentList.length === 0
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else if (serial === "" && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a serial number to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else {
-      console.log("eq added directly from submit");
-      if (
-        model !== "" &&
-        (stock.length === 6 ||
-          stock.match(lowerCaseLetters) === false ||
-          stock.match(upperCaseLetters) === false) &&
-        serial !== ""
-      ) {
-        console.log("another eq added first");
-        await pushEquipmentToRequest();
-      }
-      await setRequestToFirestore();
-      setValidationMessage("Request successfully submitted");
-      setOpenSuccess(true);
-    }
-  };
 
   // Handle lead name input and capitolize each word
   const handleNameInput = (e) => {
@@ -345,6 +234,11 @@ export default function AddTransportView() {
     );
 
     setCustomerName(finalName);
+  };
+
+  const handleEndDateInput = (e) => {
+    if (e.target.value < startDate) return setEndDate("");
+    return setEndDate(e.target.value);
   };
 
   // UI view of the submission form
@@ -360,23 +254,45 @@ export default function AddTransportView() {
         </Typography>
         <form className={classes.form} noValidate>
           <Grid container spacing={2}>
+            <Grid item sm={12}>
+              <Typography>
+                {`Date Requested: ${moment(requestedDate).format(
+                  "DD-MMM-yyyy"
+                )}`}
+              </Typography>
+            </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                key="date"
-                name="date"
+                key="startDate"
+                name="startDate"
                 variant="outlined"
-                type="date"
-                required
+                type="datetime-local"
                 fullWidth
                 size="small"
-                id="date"
-                autoFocus
-                onChange={(e) => setRequestedDate(e.target.value)}
-                value={requestedDate}
+                id="startDate"
+                onChange={(e) => setStartDate(e.target.value)}
+                value={startDate}
                 InputLabelProps={{
                   shrink: true,
                 }}
-                label="Date"
+                label="Start Date"
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                key="endDate"
+                name="endDate"
+                variant="outlined"
+                type="datetime-local"
+                fullWidth
+                size="small"
+                id="endDate"
+                onChange={handleEndDateInput}
+                value={endDate}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+                label="End Date"
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -403,14 +319,14 @@ export default function AddTransportView() {
                 id="phone"
                 label="Phone Number"
                 name="phone"
-                InputProps={{
-                  inputComponent: PhoneNumberMask,
-                }}
+                // InputProps={{
+                //     inputComponent: PhoneNumberMask,
+                //   }}
                 onChange={(e) => setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))}
                 value={customerPhone}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={12}>
               <TextField
                 variant="outlined"
                 required
@@ -471,6 +387,27 @@ export default function AddTransportView() {
                 value={customerZip}
               />
             </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="outlined"
+                fullWidth
+                size="small"
+                inputProps={{ style: { fontSize: 14 } }}
+                id="status"
+                label="Status Status"
+                name="status"
+                onChange={(e) => setStatus(e.target.value)}
+                value={status}
+                select
+              >
+                <MenuItem value={"Requested"}>{"Requested"}</MenuItem>
+                <MenuItem value={"Scheduled"}>{"Scheduled"}</MenuItem>
+                <MenuItem value={"In Progress"}>{"In Progress"}</MenuItem>
+                <MenuItem value={"Completed"}>{"Completed"}</MenuItem>
+              </TextField>
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <TextField
                 variant="outlined"
@@ -509,6 +446,19 @@ export default function AddTransportView() {
                 />
               </FormGroup>
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="outlined"
+                fullWidth
+                size="small"
+                inputProps={{ style: { fontSize: 14 } }}
+                id="workOrder"
+                label="Work Order"
+                name="workOrder"
+                onChange={(e) => setWorkOrder(e.target.value)}
+                value={workOrder}
+              />
+            </Grid>
             <Grid item xs={12}>
               <TextField
                 variant="outlined"
@@ -522,156 +472,6 @@ export default function AddTransportView() {
                 type="text"
                 value={requestNotes}
                 onChange={(e) => setRequestNotes(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-          <Stack mb={1}>
-            <Typography component="h1" variant="h6">
-              {heading}
-            </Typography>
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-start",
-                alignContent: "center",
-                alignItems: "center",
-                flexWrap: "wrap",
-                listStyle: "none",
-                p: 0.5,
-                m: 0,
-              }}
-              component="ul"
-            >
-              {equipmentList.map((data) => {
-                let icon = <AgricultureRounded />;
-
-                return (
-                  <ListItem key={data.id}>
-                    <Chip
-                      icon={icon}
-                      label={data.model}
-                      variant="outlined"
-                      color="success"
-                      // size="small"
-                      onDelete={handleDelete(data)}
-                    />
-                  </ListItem>
-                );
-              })}
-            </Box>
-          </Stack>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="model"
-                label="Model"
-                autoFocus
-                onChange={(e) => setModel(e.target.value.toUpperCase())}
-                value={model}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="stock"
-                label="Stock"
-                name="stock"
-                onChange={(e) => setStock(e.target.value)}
-                value={stock}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                required
-                id="serial"
-                label="Serial"
-                onChange={(e) => setSerial(e.target.value.toUpperCase())}
-                value={serial}
-              ></TextField>
-            </Grid>
-            {/* <Grid item xs={12}>
-              <div className="checkBoxes">
-                <FormGroup>
-                  <Typography variant="h6" style={{ fontSize: 18 }}>
-                    Work Required*
-                  </Typography>
-                  {workOptions.map((option) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id={option.id}
-                          checked={option.checkedState}
-                          size="small"
-                          onChange={handleChange}
-                          color="primary"
-                          value={option.work}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          {option.work}
-                        </Typography>
-                      }
-                    />
-                  ))}
-                  <Stack direction="row">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id="8"
-                          checked={checked8}
-                          size="small"
-                          onChange={handleChange}
-                          disabled={otherDisabled}
-                          color="primary"
-                          value={other}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          Other:{" "}
-                        </Typography>
-                      }
-                    />
-
-                    <TextField
-                      fullWidth
-                      size="small"
-                      inputProps={{ style: { fontSize: 14 } }}
-                      id="other"
-                      value={other}
-                      onChange={enableOther}
-                    ></TextField>
-                  </Stack>
-                </FormGroup>
-              </div>
-            </Grid> */}
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="notes"
-                label="Addtional Notes"
-                name="notes"
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
               />
             </Grid>
           </Grid>
@@ -707,28 +507,24 @@ export default function AddTransportView() {
           <Grid container justifyContent="space-between">
             <Button
               variant="outlined"
-              color="primary"
-              startIcon={<AddCircleOutlineIcon />}
+              color="error"
               className={classes.addEquipment}
-              onClick={equipmentSubmitValidation}
+              onClick={handleCloseEditTansportView}
             >
-              Add More Equipment
+              Cancel
             </Button>
             <Button
               variant="contained"
               color="primary"
               endIcon={<SendRoundedIcon className={classes.submitIcon} />}
               className={classes.submit}
-              onClick={requestSubmitValidation}
+              onClick={setRequestToFirestore}
             >
               <p className={classes.submitIcon}>Submit</p>
             </Button>
           </Grid>
         </form>
       </Box>
-      {/* <Box mt={5}>
-        <Copyright />
-      </Box> */}
     </Container>
   );
 }

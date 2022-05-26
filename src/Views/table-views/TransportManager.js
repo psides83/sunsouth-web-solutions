@@ -13,10 +13,10 @@ import { Link } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import Dialog from "@mui/material/Dialog";
 import AddTransportView from "../AddTransportView";
-import { RequestsTableHeaderView } from "../../components/TableHeaderViews";
+import { TransportTableHeaderView } from "../../components/TableHeaderViews";
 import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import TransportRow from "./TransportManagerRow";
-import { Box, Typography } from "@material-ui/core";
+import { Box, Grid, Typography } from "@material-ui/core";
 import CalendarView from "../CalendarView";
 
 // Whole table view:
@@ -46,13 +46,21 @@ export default function TransportManager() {
       where("status", "!=", "Completed")
     );
 
-    const scheduledDateCheck = (scheduledDate, requestedDate) => {
-      console.log(scheduledDate);
+    const startDateCheck = (startDate, requestedDate) => {
+      console.log(startDate);
       console.log(requestedDate);
-      if (scheduledDate == undefined) return requestedDate;
-      if (scheduledDate == null) return requestedDate;
-      if (scheduledDate === "") return requestedDate;
-      return scheduledDate;
+      if (startDate == undefined) return `${requestedDate}T07:00`;
+      if (startDate == null) return `${requestedDate}T07:00`;
+      if (startDate === "") return `${requestedDate}T07:00`;
+      return startDate;
+    };
+
+    const endDateCheck = (endDate, requestedDate) => {
+      console.log(endDate);
+      if (endDate == undefined) return `${requestedDate}T09:00`;
+      if (endDate == null) return `${requestedDate}T09:00`;
+      if (endDate === "") return `${requestedDate}T09:00`;
+      return endDate;
     };
 
     function formatPhoneNumber(phoneNumberString) {
@@ -80,7 +88,9 @@ export default function TransportManager() {
           requestNotes: doc.data().requestNotes,
           requestType: doc.data().requestType,
           requestedDate: doc.data().requestedDate,
-          scheduledDate: doc.data().scheduledDate,
+          hasTrade: doc.data().hasTrade,
+          startDate: doc.data().startDate,
+          endDate: doc.data().endDate,
           status: doc.data().status,
           statusTimestamp: doc.data().statusTimestamp,
           equipment: doc.data().equipment,
@@ -93,18 +103,17 @@ export default function TransportManager() {
           id: doc.data().id,
           title: `${doc.data().customerName}, ${doc.data().equipment[0].model}`,
           status: doc.data().status,
-          startDate: `${scheduledDateCheck(
-            doc.data().scheduledDate,
+          startDate: startDateCheck(
+            doc.data().startDate,
             doc.data().requestedDate
-          )}T07:00`,
-          endDate: `${scheduledDateCheck(
-            doc.data().scheduledDate,
-            doc.data().requestedDate
-          )}T09:00`,
+          ),
+          endDate: endDateCheck(doc.data().endDate, doc.data().requestedDate),
           location: `${doc.data().customerStreet}, ${
             doc.data().customerCity
           }, ${doc.data().customerState} ${doc.data().customerZip}`,
           phone: formatPhoneNumber(doc.data().customerPhone),
+          type: doc.data().requestType,
+          hasTrade: doc.data().hasTrade,
         }))
       );
       setTimeout(function () {
@@ -120,9 +129,7 @@ export default function TransportManager() {
 
   // Table UI:
   return (
-    <React.Fragment>
-      <CalendarView calendarRequests={calendarRequests} />
-
+    <Box>
       {loading ? (
         <HomeSkeleton />
       ) : (
@@ -162,21 +169,47 @@ export default function TransportManager() {
             </div>
           </Dialog>
 
-          <TableContainer component={Paper} style={{ borderRadius: 10 }}>
-            <Table
-              size="small"
-              aria-label="collapsible table"
-              style={{ margin: 15 }}
-              sx={{ paddingTop: 2 }}
+          <Grid
+            container
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+            spacing={1}
+          >
+            <Grid
+              item
+              xs={12}
+              sm={12}
+              md={5}
+              lg={5}
             >
-              <RequestsTableHeaderView />
-              <TableBody>
-                {requests.map((request) => (
-                  <TransportRow request={request} />
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+              <TableContainer component={Paper} style={{ borderRadius: 10 }}>
+                <Table
+                  size="small"
+                  aria-label="collapsible table"
+                  // style={{ margin: 15 }}
+                  sx={{ paddingTop: 2 }}
+                >
+                  <TransportTableHeaderView />
+                  <TableBody>
+                    {requests.map((request) => (
+                      <TransportRow request={request} />
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sm={12}
+              md={7}
+              lg={7}
+            >
+              <CalendarView calendarRequests={calendarRequests} />
+            </Grid>
+          </Grid>
           <div className="completed-link">
             <Link to={"/completed"}>
               <h3>View completed requests</h3>
@@ -184,6 +217,6 @@ export default function TransportManager() {
           </div>
         </React.Fragment>
       )}
-    </React.Fragment>
+    </Box>
   );
 }

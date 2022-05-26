@@ -580,7 +580,7 @@ export default function RequestRow({ request }) {
                 >
                   <Tooltip title="Delete Equipment">
                     <DeleteRoundedIcon
-                      color="success"
+                      color="error"
                       style={{ fontSize: 18 }}
                     />
                   </Tooltip>
