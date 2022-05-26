@@ -1,14 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-// import { makeStyles } from "@material-ui/core/styles";
-// import Box from "@material-ui/core/Box";
-// import Table from "@material-ui/core/Table";
-// import TableBody from "@material-ui/core/TableBody";
-// import TableCell from "@material-ui/core/TableCell";
-// import TableContainer from "@material-ui/core/TableContainer";
-// import TableHead from "@material-ui/core/TableHead";
-// import TableRow from "@material-ui/core/TableRow";
-// import Paper from "@material-ui/core/Paper";
 import {
   collection,
   query,
@@ -18,19 +9,28 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
-// import Button from "@mui/material/Button";
-// import { Dialog, Tooltip, Typography } from "@material-ui/core";
 import moment from "moment";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/LoanerManager.css";
-// import AddIcon from "@mui/icons-material/Add";
 import AddLoanerView from "../AddLoanerView";
-// import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { sendLoanerStatusEmail } from "../../services/email-service";
 import Spinner from "../../components/Spinner";
-import { Box, Button, Dialog, DialogTitle, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import { AddRounded, CancelOutlined } from "@mui/icons-material";
-// import { DialogTitle } from "@mui/material";
 
 // Loaner row view:
 function Row({ loaner }) {
@@ -106,7 +106,7 @@ function Row({ loaner }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={loaner.id} style={{borderBottom: "unset"}} >
+      <TableRow key={loaner.id} style={{ borderBottom: "unset" }}>
         <TableCell key={loaner.employee} component="th" scope="row">
           <p>{loaner.employee}</p>
           <small>{loaner.timestamp}</small>

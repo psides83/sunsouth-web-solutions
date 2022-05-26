@@ -1,44 +1,36 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { makeStyles } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
 import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import { MenuItem, TextField, Typography } from "@material-ui/core";
-import Button from "@mui/material/Button";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/SalesmenList.css";
 import { SalesmenTableHeaderView } from "../../components/TableHeaderViews";
-import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import TransferRequestView from "../TransferRequest";
-import Dialog from "@mui/material/Dialog";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { branches } from "../../models/branches";
-
-// Styles:
-const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      // borderBottom: 'unset',
-    },
-  },
-});
+import {
+  Box,
+  Button,
+  Dialog,
+  MenuItem,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { CancelOutlined, LocalShippingRounded } from "@mui/icons-material";
 
 // Loaner row view:
 function Row({ salesman }) {
-  const classes = useRowStyles();
   const fullName = `${salesman.firstName} ${salesman.lastName}`;
 
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={salesman.id} className={classes.root}>
+      <TableRow key={salesman.id} style={{ borderBottom: "unset" }}>
         <TableCell key="branch" component="th" scope="row">
           {salesman.branch}
         </TableCell>
@@ -175,7 +167,7 @@ export default function SalesmenList() {
                         key="tansferButton"
                         color="success"
                         variant="outlined"
-                        endIcon={<LocalShippingIcon />}
+                        endIcon={<LocalShippingRounded />}
                         onClick={handleToggleTransferRequest}
                       >
                         Requst Transfer
@@ -191,7 +183,7 @@ export default function SalesmenList() {
                             onClick={handleCloseTransferRequest}
                             color="success"
                           >
-                            <CancelOutlinedIcon />
+                            <CancelOutlined />
                           </Button>
                         </div>
 
