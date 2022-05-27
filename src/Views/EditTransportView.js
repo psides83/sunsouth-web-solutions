@@ -2,11 +2,11 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
-import { setDoc, doc } from "@firebase/firestore";
+import { setDoc, doc, deleteDoc } from "@firebase/firestore";
 import "../styles/AddRequest.css";
 import { useStateValue } from "../state-management/StateProvider";
 import moment from "moment";
-import { sendNewRequestEmail } from "../services/email-service";
+import { sendNewRequestEmail, sendTransportDeletedEmail } from "../services/email-service";
 import { states } from "../models/states";
 import { PhoneNumberMask } from "../components/phone-number-mask";
 import {
@@ -15,8 +15,8 @@ import {
   Box,
   Button,
   Checkbox,
-  Container,
   Dialog,
+  DialogTitle,
   FormControlLabel,
   FormGroup,
   Grid,
@@ -30,6 +30,7 @@ import {
 } from "@mui/material";
 import {
   CancelOutlined,
+  DeleteRounded,
   EditRounded,
   LocalShippingRounded,
   SendRounded,
@@ -66,6 +67,7 @@ export default function EditTransportView(props) {
   var [status, setStatus] = useState("");
   var [validationMessage, setValidationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
+  const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   //#endregion
 
   // Handle closing of the alerts.
@@ -76,6 +78,14 @@ export default function EditTransportView(props) {
 
     setOpenSuccess(false);
     setOpenError(false);
+  };
+
+  const handleCloseConfirmDialog = () => {
+    setIsShowingConfirmDialog(false);
+  };
+
+  const handleToggleConfirmDialog = () => {
+    setIsShowingConfirmDialog(!isShowingConfirmDialog);
   };
 
   const loadTransport = useCallback(() => {
@@ -111,13 +121,20 @@ export default function EditTransportView(props) {
     loadTransport();
   }, [loadTransport]);
 
-  // TODO update to delete request
   // Handle deleting of equipment from the request.
-  //   const handleDelete = (equipmentToDelete) => () => {
-  //     setEquipmentList((equipmentList) =>
-  //       equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
-  //     );
-  //   };
+  const deleteTransportRequest = async () => {
+    await deleteDoc(doc(
+      db,
+      "branches",
+      userProfile.branch,
+      "transport",
+      transportRequest.id
+    ));
+
+    sendTransportDeletedEmail(transportRequest, fullName, userProfile);
+    handleCloseConfirmDialog();
+    handleCloseEditTansportView();
+  };
 
   const handleHasTrade = () => {
     if (hasTrade) {
@@ -167,7 +184,7 @@ export default function EditTransportView(props) {
 
     await setDoc(requestRef, firestoreTransportRequest, { merge: true });
 
-    //  TODO update to new transport email
+    //  TODO update to edit transport email
     // sendNewRequestEmail(
     //   timestamp,
     //   equipmentList,
@@ -178,7 +195,7 @@ export default function EditTransportView(props) {
     handleCloseEditTansportView();
   };
 
-  // TODO add request rest
+  // TODO add request reset
 
   // TODO add complete form reset
 
@@ -217,6 +234,7 @@ export default function EditTransportView(props) {
             <CancelOutlined />
           </Button>
         </div>
+
         <div className="addRequestView">
           <Box
             display="flex"
@@ -241,6 +259,7 @@ export default function EditTransportView(props) {
             >
               <LocalShippingRounded color="secondary" fontSize="large" />
             </Avatar>
+
             <Typography
               key="heading"
               color="primary"
@@ -249,6 +268,7 @@ export default function EditTransportView(props) {
             >
               Transport Request
             </Typography>
+
             <form style={{ width: "100%", marginTop: "10px" }} noValidate>
               <Grid container spacing={2}>
                 <Grid item sm={12}>
@@ -258,6 +278,7 @@ export default function EditTransportView(props) {
                     ).format("DD-MMM-yyyy")}`}
                   </Typography>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     key="startDate"
@@ -275,6 +296,7 @@ export default function EditTransportView(props) {
                     label="Start Date"
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     key="endDate"
@@ -292,6 +314,7 @@ export default function EditTransportView(props) {
                     label="End Date"
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     variant="outlined"
@@ -306,6 +329,7 @@ export default function EditTransportView(props) {
                     value={customerName}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     variant="outlined"
@@ -330,6 +354,7 @@ export default function EditTransportView(props) {
                     value={customerPhone}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={12}>
                   <TextField
                     variant="outlined"
@@ -344,6 +369,7 @@ export default function EditTransportView(props) {
                     value={customerStreet}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={5}>
                   <TextField
                     variant="outlined"
@@ -358,6 +384,7 @@ export default function EditTransportView(props) {
                     value={customerCity}
                   />
                 </Grid>
+
                 <Grid item xs={12} sm={3}>
                   <TextField
                     size="small"
@@ -387,6 +414,7 @@ export default function EditTransportView(props) {
                     ))}
                   </TextField>
                 </Grid>
+
                 <Grid item xs={12} sm={4}>
                   <TextField
                     variant="outlined"
@@ -440,6 +468,7 @@ export default function EditTransportView(props) {
                     <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
                   </TextField>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <FormGroup>
                     <FormControlLabel
@@ -460,6 +489,7 @@ export default function EditTransportView(props) {
                     />
                   </FormGroup>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <TextField
                     variant="outlined"
@@ -473,6 +503,7 @@ export default function EditTransportView(props) {
                     value={workOrder}
                   />
                 </Grid>
+
                 <Grid item xs={12}>
                   <TextField
                     variant="outlined"
@@ -522,11 +553,13 @@ export default function EditTransportView(props) {
                     fullWidth
                     variant="outlined"
                     color="error"
-                    onClick={handleCloseEditTansportView}
+                    startIcon={<DeleteRounded />}
+                    onClick={handleToggleConfirmDialog}
                   >
-                    Cancel
+                    Delete
                   </Button>
                 </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <Button
                     fullWidth
@@ -541,6 +574,42 @@ export default function EditTransportView(props) {
               </Grid>
             </form>
           </Box>
+        </div>
+      </Dialog>
+
+      <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            margin: "5px 25px 25px 25px",
+          }}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+
+          <div>
+            <Typography>Are you sure you want to</Typography>
+            <Typography>delete this Transport Request?</Typography>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: "25px",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="info"
+                onClick={handleCloseConfirmDialog}
+              >
+                Cancel
+              </Button>
+              <Button variant="contained" color="error" onClick={deleteTransportRequest}>
+                Delete
+              </Button>
+            </div>
+          </div>
         </div>
       </Dialog>
     </>

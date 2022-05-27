@@ -152,7 +152,7 @@ export default function TransportManager() {
             open={openAddTransportView}
           >
             <div className="closeButtonContainer">
-              <Button onClick={handleCloseAddTansportView} color="success">
+              <Button onClick={handleCloseAddTansportView} >
                 <CancelOutlined />
               </Button>
             </div>

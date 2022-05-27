@@ -201,15 +201,6 @@ export default function TransportRow(props) {
   //   );
   // };
 
-  const deleteRequest = async () => {
-    await deleteDoc(
-      doc(db, "branches", userProfile.branch, "trasnport", request.id)
-    );
-
-    // TODO update to transport deleted email
-    // sendRequestDeletedEmail(equipment, request, fullName, userProfile);
-  };
-
   // Request row UI:
   return (
     <React.Fragment>
@@ -280,7 +271,7 @@ export default function TransportRow(props) {
                   {request.changeLog.map((change) => (
                     <TimelineItem>
                       <TimelineSeparator>
-                        <TimelineDot variant="outlined" color="success" />
+                        <TimelineDot variant="outlined" color="primary" />
                         {request.changeLog.indexOf(change) + 1 !==
                         request.changeLog.length ? (
                           <TimelineConnector />
@@ -323,75 +314,9 @@ export default function TransportRow(props) {
               openAddTransportView={openAddTransportView}
               handleToggleEditTansportView={handleToggleEditTansportView}
             />
-
-            <div className="delete-button">
-              {isEditingWorkOrder ? (
-                <IconButton
-                  style={{ fontSize: 20 }}
-                  onClick={handleToggleDeleteDialog}
-                >
-                  <Tooltip title="Delete Equipment">
-                    <DeleteRounded color="error" style={{ fontSize: 18 }} />
-                  </Tooltip>
-                </IconButton>
-              ) : null}
-            </div>
           </div>
 
-          <Dialog
-            onClose={handleCloseDeleteDialog}
-            open={isShowingDeleteDialog}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
-              }}
-            >
-              <DialogTitle>Confirm Delete</DialogTitle>
-              {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Typography>Saving</Typography>
-                  <Spinner frame={false} />
-                </div>
-              ) : (
-                <div>
-                  <Typography>Are you sure you want to delete</Typography>
-                  <Typography>delete this request?</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      onClick={handleCloseDeleteDialog}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={deleteRequest}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Dialog>
+          
         </TableCell>
       </TableRow>
 

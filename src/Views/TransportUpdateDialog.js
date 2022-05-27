@@ -80,7 +80,6 @@ function TransportUpdateDialog(props) {
       }
     );
 
-    // TODO update to transport email
     sendTransportStatusEmail(
       status,
       startDate,
@@ -228,7 +227,7 @@ function TransportUpdateDialog(props) {
                 <Grid item xs={6} sm={6}>
                   <Button
                     variant="contained"
-                    color="success"
+                    color="primary"
                     disabled={disableButton()}
                     onClick={updateStatus}
                   >

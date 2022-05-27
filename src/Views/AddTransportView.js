@@ -583,8 +583,7 @@ export default function AddTransportView(props) {
                     icon={icon}
                     label={data.model}
                     variant="outlined"
-                    color="success"
-                    // size="small"
+                    color="primary"
                     onDelete={handleDelete(data)}
                   />
                 </ListItem>

@@ -232,7 +232,7 @@ function Row({ request }) {
                   {request.changeLog.map((change) => (
                     <TimelineItem>
                       <TimelineSeparator>
-                        <TimelineDot variant="outlined" color="success" />
+                        <TimelineDot variant="outlined" color="primary" />
                         {request.changeLog.indexOf(change) + 1 !==
                         request.changeLog.length ? (
                           <TimelineConnector />

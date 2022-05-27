@@ -487,8 +487,8 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   // console.log(recipients)
 };
 
-// TODO end of emails for transport feature
-// TODO change recepients to correct var
+// TODO emails for transport feature
+// TODO change recepients to correct var when completed
 
 // Sends email when new request is submitted
 const sendNewTransportRequestEmail = async (
@@ -674,10 +674,53 @@ const sendNewTransportEquipmentEmail = async (
                     <p>Model: ${newEquipment.model}</p>
                     <p>Stock Number: ${newEquipment.stock}</p>
                     <p>Serial Number: ${newEquipment.serial}</p>
-                    <p>Work Required: ${newEquipment.work}</p>
                     <p>Additional Notes: ${newEquipment.notes}</p>
                 </section>
             <body>`;
+
+  // Sets paramaters for the email template
+  const emailData = {
+    // to: recipients,
+    to: "psides83@hotmail.com",
+    replyTo: userProfile.email,
+    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
+
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
+
+// Send email when request is deleted:
+const sendTransportDeletedEmail = async (
+  request,
+  userFullName,
+  userProfile
+) => {
+  // creates the paramaters for the email template
+  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject =
+    request.workOrder !== ""
+      ? `DELETED - ${request.requestType} request on WO# ${request.workOrder}`
+      : `DELETED - ${request.requestType} request for ${request.customerName}`;
+  const body = `<body>
+                    <p>${timestamp}</p>
+                    <p><strong>Work Order:</strong> ${request.workOrder}</p>
+                    <p><strong>Customer:</strong> ${request.customerName}</p><br/> 
+                    <p>This ${request.requestType} request has been deleted by ${userFullName}.</p> 
+                <body>`;
 
   // Sets paramaters for the email template
   const emailData = {
@@ -713,4 +756,5 @@ export {
   sendNewTransportRequestEmail,
   sendTransportStatusEmail,
   sendNewTransportEquipmentEmail,
+  sendTransportDeletedEmail,
 };

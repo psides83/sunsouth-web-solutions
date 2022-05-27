@@ -508,7 +508,7 @@ export default function RequestRow({ request }) {
                   {request.changeLog.map((change) => (
                     <TimelineItem>
                       <TimelineSeparator>
-                        <TimelineDot variant="outlined" color="success" />
+                        <TimelineDot variant="outlined" color="primary" />
                         {request.changeLog.indexOf(change) + 1 !==
                         request.changeLog.length ? (
                           <TimelineConnector />
@@ -569,7 +569,7 @@ export default function RequestRow({ request }) {
             <div className="delete-button">
               {isEditingWorkOrder ? (
                 <IconButton
-                  color="success"
+                  color="primary"
                   style={{ fontSize: 20 }}
                   onClick={handleToggleDeleteDialog}
                 >
@@ -619,7 +619,7 @@ export default function RequestRow({ request }) {
                   >
                     <Button
                       variant="outlined"
-                      color="success"
+                      color="primary"
                       onClick={handleCloseDeleteDialog}
                     >
                       Cancel
@@ -737,14 +737,14 @@ export default function RequestRow({ request }) {
                           work !== "" ? (
                             <Tooltip title="Save">
                               <CheckRounded
-                                color="success"
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
                           ) : (
                             <Tooltip title="Cancel">
                               <CloseRounded
-                                color="success"
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>

@@ -165,7 +165,7 @@ export default function SalesmenList() {
                     <div className="transferButton">
                       <Button
                         key="tansferButton"
-                        color="success"
+                        color="primary"
                         variant="outlined"
                         endIcon={<LocalShippingRounded />}
                         onClick={handleToggleTransferRequest}
@@ -181,7 +181,7 @@ export default function SalesmenList() {
                         <div className="closeButtonContainer">
                           <Button
                             onClick={handleCloseTransferRequest}
-                            color="success"
+                            color="primary"
                           >
                             <CancelOutlined />
                           </Button>

@@ -516,7 +516,7 @@ export default function AddRequestView() {
                     icon={icon}
                     label={data.model}
                     variant="outlined"
-                    color="success"
+                    color="primary"
                     // size="small"
                     onDelete={handleDelete(data)}
                   />

@@ -79,7 +79,6 @@ export default function ActiveRequestsTable() {
           <Stack direction="row"
             style={{
               width: "100%",
-              maxWidth: "1100px",
               justifyContent: "space-between",
             }}
           >
@@ -115,7 +114,7 @@ export default function ActiveRequestsTable() {
 
           <TableContainer
             component={Paper}
-            style={{ borderRadius: 10, maxWidth: "1100px" }}
+            style={{ borderRadius: 10 }}
           >
             <Table
               size="small"

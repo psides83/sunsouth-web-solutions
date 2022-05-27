@@ -333,7 +333,7 @@ export default function EquipmentRow(props) {
 
         <TableCell key="editSaveCancelbutton" align="center">
           <IconButton
-            color="success"
+            color="primary"
             style={{ fontSize: 20 }}
             onClick={editEquipment}
           >
@@ -341,27 +341,27 @@ export default function EquipmentRow(props) {
             {isEditingEquipment ? (
               equipmentHasChanges ? (
                 <Tooltip title="Save">
-                  <CheckRounded color="success" style={{ fontSize: 18 }} />
+                  <CheckRounded color="primary" style={{ fontSize: 18 }} />
                 </Tooltip>
               ) : (
                 <Tooltip title="Cancel">
-                  <CloseRounded color="success" style={{ fontSize: 18 }} />
+                  <CloseRounded color="primary" style={{ fontSize: 18 }} />
                 </Tooltip>
               )
             ) : (
               <Tooltip title="Edit Equipment">
-                <EditRounded color="success" style={{ fontSize: 18 }} />
+                <EditRounded color="primary" style={{ fontSize: 18 }} />
               </Tooltip>
             )}
           </IconButton>
           {isEditingEquipment ? (
             <IconButton
-              color="success"
+              color="primary"
               style={{ fontSize: 20 }}
               onClick={handleToggleConfirmDialog}
             >
               <Tooltip title="Delete Equipment">
-                <DeleteRounded color="success" style={{ fontSize: 18 }} />
+                <DeleteRounded color="primary" style={{ fontSize: 18 }} />
               </Tooltip>
             </IconButton>
           ) : null}
@@ -403,7 +403,7 @@ export default function EquipmentRow(props) {
                   >
                     <Button
                       variant="outlined"
-                      color="success"
+                      color="primary"
                       onClick={handleCloseConfirmDialog}
                     >
                       Cancel
