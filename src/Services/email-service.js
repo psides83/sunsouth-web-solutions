@@ -487,6 +487,9 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   // console.log(recipients)
 };
 
+// TODO end of emails for transport feature
+// TODO change recepients to correct var
+
 // Sends email when new request is submitted
 const sendNewTransportRequestEmail = async (
   timestamp,
@@ -637,7 +640,65 @@ const sendTransportStatusEmail = async (
   // console.log(recipients)
 };
 
-// TODO add emails for transport feature
+// Sends email when equipment is added to a request from the Active Requests Table
+const sendNewTransportEquipmentEmail = async (
+  request,
+  newEquipment,
+  timestamp,
+  fullName,
+  userProfile
+) => {
+
+  // creates the paramaters for the email template
+  const emailID = moment().format("yyyyMMDDHHmmss");
+  const recipients = await setRecipients(
+    roles.request,
+    userProfile,
+    request.salesman
+  );
+  const subject =
+  request.workOrder != undefined && request.workOrder != null && request.workOrder !== ""
+      ? `Equipment added to ${request.requestType} request for ${request.customerName} on WO# ${request.workOrder}`
+      : `Equipment added to ${request.requestType} request for ${request.customerName}`;
+
+  var body = `<body>
+                <section>
+                    <p>${timestamp}</p>
+                    <p><strong>Work Order:</strong> ${request.workOrder}</p>
+                    <p><strong>Customer:</strong> ${request.customerName}</p>
+                    <p>${fullName} added the following equipment to a previous request.</p>
+                </section>
+                <hr style="height:3px;border-width:0;color:gray;background-color:gray">
+                <section>
+                    <h3>Equipment</h3>
+                    <p>Model: ${newEquipment.model}</p>
+                    <p>Stock Number: ${newEquipment.stock}</p>
+                    <p>Serial Number: ${newEquipment.serial}</p>
+                    <p>Work Required: ${newEquipment.work}</p>
+                    <p>Additional Notes: ${newEquipment.notes}</p>
+                </section>
+            <body>`;
+
+  // Sets paramaters for the email template
+  const emailData = {
+    // to: recipients,
+    to: "psides83@hotmail.com",
+    replyTo: userProfile.email,
+    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    cc: userProfile.email,
+    replyTo: userProfile.email,
+    message: {
+      subject: subject,
+      html: body,
+    },
+  };
+
+  // sends the email
+  await setDoc(doc(db, "sentEmails", emailID), emailData);
+  // console.log(recipients)
+};
+
+// TODO end of emails for transport feature
 
 export {
   sendEquipmentUpdateEmail,
@@ -651,4 +712,5 @@ export {
   sendRequestDeletedEmail,
   sendNewTransportRequestEmail,
   sendTransportStatusEmail,
+  sendNewTransportEquipmentEmail,
 };
