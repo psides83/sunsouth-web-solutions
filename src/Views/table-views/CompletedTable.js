@@ -204,12 +204,9 @@ function Row({ request }) {
         <TableCell align="left">
           <Tooltip title="Update Status">
             <Button
-              color="success"
               size="small"
               sx={{ width: "115px", pt: "5px" }}
-              variant={
-                request.status === "In Progress" ? "contained" : "outlined"
-              }
+              variant="contained"
               onClick={updateStatus}
             >
               {request.status}

@@ -481,7 +481,6 @@ export default function RequestRow({ request }) {
                     </Button>
                     <Button
                       variant="contained"
-                      color="success"
                       onClick={updateStatus}
                     >
                       Update
@@ -551,17 +550,17 @@ export default function RequestRow({ request }) {
                 {isEditingWorkOrder ? (
                   workOrderHasChanges ? (
                     <Tooltip title="Save">
-                      <Check color="success" style={{ fontSize: 18 }} />
+                      <Check color="primary" style={{ fontSize: 18 }} />
                     </Tooltip>
                   ) : (
                     <Tooltip title="Cancel">
-                      <Close color="success" style={{ fontSize: 18 }} />
+                      <Close color="primary" style={{ fontSize: 18 }} />
                     </Tooltip>
                   )
                 ) : (
                   <div className="edit-button-bg">
                     <Tooltip title="Edit Work Order">
-                      <EditRounded color="success" style={{ fontSize: 16 }} />
+                      <EditRounded color="primary" style={{ fontSize: 16 }} />
                     </Tooltip>
                   </div>
                 )}

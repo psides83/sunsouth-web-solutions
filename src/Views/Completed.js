@@ -1,6 +1,6 @@
 import React from 'react';
 import "../styles/Home.css";
-import { Box } from '@mui/system';
+import { Box } from '@mui/material';
 import CompletedTable from './table-views/CompletedTable';
 
 function Completed() {
