@@ -106,7 +106,7 @@ function Row({ loaner }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={loaner.id} sx={{ '& > *': { borderBottom: 'none' } }}>
+      <TableRow key={loaner.id} sx={{ "& > *": { borderBottom: "unset" } }}>
         <TableCell key={loaner.employee} component="th" scope="row">
           <p>{loaner.employee}</p>
           <small>{loaner.timestamp}</small>
@@ -188,10 +188,7 @@ function Row({ loaner }) {
                     >
                       Cancel
                     </Button>
-                    <Button
-                      variant="contained"
-                      onClick={updateStatus}
-                    >
+                    <Button variant="contained" onClick={updateStatus}>
                       Update
                     </Button>
                   </div>
@@ -300,7 +297,7 @@ export default function LoanerManager() {
                 open={openAddLoanerView}
               >
                 <div className="closeButtonContainer">
-                  <Button onClick={handleCloseAddLoanerView} >
+                  <Button onClick={handleCloseAddLoanerView}>
                     <CancelOutlined />
                   </Button>
                 </div>

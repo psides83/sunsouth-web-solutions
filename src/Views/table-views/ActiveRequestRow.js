@@ -374,7 +374,7 @@ export default function RequestRow({ request }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: 'none' } }}>
+      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
@@ -666,7 +666,7 @@ export default function RequestRow({ request }) {
                   {isShowingAddEquipment ? (
                     <TableRow
                       key="addEquipmentRow"
-                      style={{ fontSize: 18, borderBottom: "none" }}
+                      sx={{ '& > *': { borderBottom: 'unset' } }}
                     >
                       <TableCell key="addModel" component="th" scope="row">
                         <TextField
@@ -756,7 +756,7 @@ export default function RequestRow({ request }) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
-                      sx={{ '& > *': { borderBottom: 'none' } }}
+                      sx={{ '& > *': { borderBottom: 'unset' } }}
                       style={{ fontSize: 18 }}
                     >
                       <TableCell key="addButtonCell">

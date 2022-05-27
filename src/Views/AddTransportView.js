@@ -188,7 +188,6 @@ export default function AddTransportView(props) {
       stock: stock,
       serial: serial,
       notes: notes,
-      changeLog: changeLog,
     };
 
     equipmentList.push(equipment);
