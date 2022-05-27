@@ -18,6 +18,7 @@ import { formatPhoneNumber } from "../utils/utils";
 const roles = {
   request: ["admin", "service", "parts"],
   loaner: ["admin", "service", "sales"],
+  transport: ["admin", "service"],
 };
 
 // Sets recipients based on type of send email called
@@ -500,8 +501,8 @@ const sendNewTransportRequestEmail = async (
 ) => {
   // creates the paramaters for the email template
   const emailID = moment().format("yyyyMMDDHHmmss");
-  // const recipients = await setRecipients(roles.request, userProfile, salesman);
-  const recipients = "psides@sunsouth.com";
+  const recipients = await setRecipients(roles.transport, userProfile, salesman);
+  // const recipients = "psides@sunsouth.com";
   const subject = `New equipment ${transportRequest.type} request from ${fullName}`;
   var body = `<body>
                     <section>
@@ -575,12 +576,12 @@ const sendTransportStatusEmail = async (
   // creates the paramaters for the email template
   const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
   const emailID = moment().format("yyyyMMDDHHmmss");
-  // const recipients = await setRecipients(
-  //   roles.request,
-  //   userProfile,
-  //   transportRequest.salesman
-  // );
-  const recipients = "psides@sunsouth.com";
+  const recipients = await setRecipients(
+    roles.transport,
+    userProfile,
+    transportRequest.salesman
+  );
+  // const recipients = "psides@sunsouth.com";
   const equipment = () => {
     const models = [];
     for (var i = 0; i < transportRequest.equipment.length; i++) {
@@ -607,7 +608,7 @@ const sendTransportStatusEmail = async (
                     } Date:</strong> ${moment(startDate).format(
         "DD-MMM-yyyy"
       )}</p>
-                    <p>Scheduled ${transportRequest.type} Time Window: ${moment(
+                    <p><strong>Scheduled ${transportRequest.type} Time Window:</strong> ${moment(
         startDate
       ).format("LT")} - ${moment(endDate).format("LT")}</p>
                     <p>Updated By: ${fullName}</p>
@@ -659,7 +660,7 @@ const sendNewTransportEquipmentEmail = async (
   // creates the paramaters for the email template
   const emailID = moment().format("yyyyMMDDHHmmss");
   const recipients = await setRecipients(
-    roles.request,
+    roles.transport,
     userProfile,
     request.salesman
   );
@@ -689,8 +690,8 @@ const sendNewTransportEquipmentEmail = async (
 
   // Sets paramaters for the email template
   const emailData = {
-    // to: recipients,
-    to: "psides83@hotmail.com",
+    to: recipients,
+    // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
     from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
     cc: userProfile.email,
@@ -716,7 +717,7 @@ const sendTransportDeletedEmail = async (
   const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
   const emailID = moment().format("yyyyMMDDHHmmss");
   const recipients = await setRecipients(
-    roles.request,
+    roles.transport,
     userProfile,
     request.salesman
   );
@@ -733,8 +734,8 @@ const sendTransportDeletedEmail = async (
 
   // Sets paramaters for the email template
   const emailData = {
-    // to: recipients,
-    to: "psides83@hotmail.com",
+    to: recipients,
+    // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
     from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
     cc: userProfile.email,
