@@ -1,80 +1,73 @@
-import React, { useState } from 'react'
-import { Link, useHistory } from 'react-router-dom';
-import Avatar from '@material-ui/core/Avatar';
-import Button from '@material-ui/core/Button';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import TextField from '@material-ui/core/TextField';
-import Grid from '@material-ui/core/Grid';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
-import Container from '@material-ui/core/Container';
-import { createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from "firebase/auth";
-import { auth, db } from '../services/firebase';
-import '../styles/SignUp.css'
-import MenuItem from '@mui/material/MenuItem';
-// import FormControl from '@mui/material/FormControl';
-import { setDoc, doc } from '@firebase/firestore';
-import Snackbar from '@material-ui/core/Snackbar';
-import { Alert } from '@mui/material';
-import { branches } from '../models/branches';
+import React, { useState } from "react";
+import { Link, useHistory } from "react-router-dom";
+import {
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+  updateProfile,
+} from "firebase/auth";
+import { auth, db } from "../services/firebase";
+import "../styles/SignUp.css";
+import { setDoc, doc } from "@firebase/firestore";
+import { branches } from "../models/branches";
+import {
+  Alert,
+  Avatar,
+  Button,
+  Container,
+  Grid,
+  MenuItem,
+  Snackbar,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { LockOutlined } from "@mui/icons-material";
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(8),
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
-  },
-  form: {
-    width: '100%', // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  select: {
-    '&:before': {
-        borderColor: theme.palette.secondary.main,
-    },
-    '&:after': {
-        borderColor: theme.palette.secondary.main,
-    },
-    '&:not(.Mui-disabled):hover::before': {
-        borderColor: theme.palette.secondary.main,
-    },
-  },
-}));
+// const useStyles = makeStyles((theme) => ({
+//   paper: {
+//     marginTop: theme.spacing(8),
+//     display: 'flex',
+//     flexDirection: 'column',
+//     alignItems: 'center',
+//   },
+//   avatar: {
+//     margin: theme.spacing(1),
+//     backgroundColor: theme.palette.secondary.main,
+//   },
+//   form: {
+//     width: '100%', // Fix IE 11 issue.
+//     marginTop: theme.spacing(3),
+//   },
+//   submit: {
+//     margin: theme.spacing(3, 0, 2),
+//   },
+// select: {
+
+// },
+// }));
 
 export default function SignUp() {
-  const classes = useStyles();
   const history = useHistory();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [branch, setBranch] = useState('');
-  const [role, setRole] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [branch, setBranch] = useState("");
+  const [role, setRole] = useState("");
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
-  var [validationMessage, setValidationMessage] = useState('');
+  var [validationMessage, setValidationMessage] = useState("");
 
-  const roles = ['admin', 'sales', 'service', 'parts']
+  const roles = ["admin", "sales", "service", "parts"];
 
   const register = (e) => {
-
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        // Signed in 
+        // Signed in
         const user = userCredential.user;
 
-        updateProfile(user, {displayName: `${firstName} ${lastName}`})
+        updateProfile(user, { displayName: `${firstName} ${lastName}` });
 
-        if(user) {
+        if (user) {
           const newUser = doc(db, "users", user.uid);
           const userData = {
             id: user.uid,
@@ -82,76 +75,68 @@ export default function SignUp() {
             lastName: lastName,
             email: email,
             role: role,
-            branch: branch
-          }
-          setValidationMessage("Registration successful.")
-          setOpenSuccess(true)
+            branch: branch,
+          };
+          setValidationMessage("Registration successful.");
+          setOpenSuccess(true);
           setDoc(newUser, userData, { merge: true });
           history.push("/");
         }
       })
       .catch((error) => {
-
-        setValidationMessage("User already registered with this email address.")
-        setOpenError(true)
+        setValidationMessage(
+          "User already registered with this email address."
+        );
+        setOpenError(true);
       });
   };
 
-    // Squipment submission validation.
-    const signUpValidation = async (event) => {
-      event.preventDefault()  
-  
-      if (firstName === '') {
+  // Squipment submission validation.
+  const signUpValidation = async (event) => {
+    event.preventDefault();
 
-        setValidationMessage("First name is required to register.")
-        setOpenError(true)
-        return
-      } else if (lastName === '') {
-
-        setValidationMessage("Last name is required to register.")
-        setOpenError(true)
-        return
-      } else if (branch === '') {
-
-        setValidationMessage("User must select a branch to register.")
-        setOpenError(true)
-        return
-      } else if (email.includes('@sunsouth.com') === false) {
-
-        setValidationMessage("User must register with a SunSouth company email.")
-        setOpenError(true)
-        return
-      } else if (password.length < 8) {
-
-        setValidationMessage("Password must be at least 8 characters.")
-        setOpenError(true)
-        return
-      } else {
-        register()
-      }
+    if (firstName === "") {
+      setValidationMessage("First name is required to register.");
+      setOpenError(true);
+      return;
+    } else if (lastName === "") {
+      setValidationMessage("Last name is required to register.");
+      setOpenError(true);
+      return;
+    } else if (branch === "") {
+      setValidationMessage("User must select a branch to register.");
+      setOpenError(true);
+      return;
+    } else if (email.includes("@sunsouth.com") === false) {
+      setValidationMessage("User must register with a SunSouth company email.");
+      setOpenError(true);
+      return;
+    } else if (password.length < 8) {
+      setValidationMessage("Password must be at least 8 characters.");
+      setOpenError(true);
+      return;
+    } else {
+      register();
     }
+  };
 
-    // Forgot password.
-    const forgotPassword = async () => {
+  // Forgot password.
+  const forgotPassword = async () => {
+    await sendPasswordResetEmail(auth, email)
+      .then(() => {
+        // Password reset email sent!
+        setValidationMessage("An email has been sent to reset your password");
+        setOpenSuccess(true);
+      })
+      .catch((error) => {
+        setValidationMessage("An email has been sent to reset your password");
+        setOpenSuccess(true);
+      });
+  };
 
-      await sendPasswordResetEmail(auth, email)
-              .then(() => {
-                // Password reset email sent!
-                setValidationMessage("An email has been sent to reset your password")
-                setOpenSuccess(true)
-              })
-              .catch((error) => {
-                
-                setValidationMessage("An email has been sent to reset your password")
-                setOpenSuccess(true)
-              });
-      }
-
-    
-
-    // Handle closing of the alerts.
+  // Handle closing of the alerts.
   const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
 
@@ -161,16 +146,33 @@ export default function SignUp() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <div className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
+      <div
+        style={{
+          marginTop: (theme) => theme.spacing(8),
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Avatar
+          sx={{
+            margin: (theme) => theme.spacing(1),
+            backgroundColor: (theme) => theme.palette.secondary.main,
+          }}
+        >
+          <LockOutlined />
         </Avatar>
         <Typography component="h1" variant="h5">
           Sign up
         </Typography>
-        <form className={classes.form} noValidate>
-          <Grid container spacing={2}>
+        <form
+          style={{
+            width: "100%", // Fix IE 11 issue.
+            marginTop: (theme) => theme.spacing(1),
+          }}
+          noValidate
+        >
+          <Grid container spacing={2} sx={{marginTop: 1}}>
             <Grid item xs={12} sm={6}>
               <TextField
                 autoComplete="fname"
@@ -182,7 +184,7 @@ export default function SignUp() {
                 id="firstName"
                 label="First Name"
                 autoFocus
-                onChange={e=> setFirstName(e.target.value)}
+                onChange={(e) => setFirstName(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -195,26 +197,36 @@ export default function SignUp() {
                 label="Last Name"
                 name="lastName"
                 autoComplete="lname"
-                onChange={e=> setLastName(e.target.value)}
+                onChange={(e) => setLastName(e.target.value)}
               />
             </Grid>
             <Grid item xs={12} sm={5}>
               <TextField
-                  size="small"
-                  variant="outlined"
-                  required
-                  fullWidth
-                  labelId="demo-simple-select-label"
-                  id="role"
-                  className={classes.select}
-                  value={role}
-                  label="Role"
-                  onChange={e=> setRole(e.target.value)}
-                  select
-                >
-                  {roles.map(role => (
-                    <MenuItem value={role}>{role}</MenuItem>
-                  ))}
+                size="small"
+                variant="outlined"
+                required
+                fullWidth
+                labelId="demo-simple-select-label"
+                id="role"
+                sx={{
+                  "&:before": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                  "&:after": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                  "&:not(.Mui-disabled):hover::before": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                }}
+                value={role}
+                label="Role"
+                onChange={(e) => setRole(e.target.value)}
+                select
+              >
+                {roles.map((role) => (
+                  <MenuItem value={role}>{role}</MenuItem>
+                ))}
               </TextField>
             </Grid>
 
@@ -226,13 +238,23 @@ export default function SignUp() {
                 fullWidth
                 labelId="demo-simple-select-label"
                 id="branch"
-                className={classes.select}
+                sx={{
+                  "&:before": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                  "&:after": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                  "&:not(.Mui-disabled):hover::before": {
+                    borderColor: (theme) => theme.palette.secondary.main,
+                  },
+                }}
                 value={branch}
                 label="Branch"
-                onChange={e=> setBranch(e.target.value)}
+                onChange={(e) => setBranch(e.target.value)}
                 select
               >
-                {branches.map(branch => (
+                {branches.map((branch) => (
                   <MenuItem value={branch}>{branch}</MenuItem>
                 ))}
               </TextField>
@@ -249,8 +271,8 @@ export default function SignUp() {
                 name="email"
                 autoComplete="email"
                 type="text"
-                value={email} 
-                onChange={e=> setEmail(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -264,20 +286,36 @@ export default function SignUp() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                value={password} 
-                onChange={e=> setPassword(e.target.value)}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </Grid>
           </Grid>
 
-          <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
-            <Alert  onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          <Snackbar
+            open={openSuccess}
+            autoHideDuration={3000}
+            onClose={handleClose}
+          >
+            <Alert
+              onClose={handleClose}
+              severity="success"
+              sx={{ width: "100%" }}
+            >
               {validationMessage}
             </Alert>
           </Snackbar>
 
-          <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
-            <Alert  onClose={handleClose} severity="error" sx={{ width: '100%' }}>
+          <Snackbar
+            open={openError}
+            autoHideDuration={3000}
+            onClose={handleClose}
+          >
+            <Alert
+              onClose={handleClose}
+              severity="error"
+              sx={{ width: "100%" }}
+            >
               {validationMessage}
             </Alert>
           </Snackbar>
@@ -287,7 +325,7 @@ export default function SignUp() {
             fullWidth
             variant="contained"
             color="primary"
-            className={classes.submit}
+            style={{marginTop: "10px"}}
             onClick={signUpValidation}
           >
             Sign Up
@@ -295,8 +333,8 @@ export default function SignUp() {
           <Grid container justifyContent="space-between">
             <Grid item>
               <Link onClick={forgotPassword} variant="body2">
-               Forgot password?
-              </Link>  
+                Forgot password?
+              </Link>
             </Grid>
             <Grid item>
               <Link to="/signIn" variant="body2">
