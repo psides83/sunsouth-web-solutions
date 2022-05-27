@@ -13,6 +13,7 @@ import {
   sendNewEquipmentEmail,
   sendStatusEmail,
   sendRequestDeletedEmail,
+  sendNewTransportEquipmentEmail,
 } from "../../services/email-service";
 import EquipmentRow from "./EquipmentRows";
 import { Link } from "react-router-dom";
@@ -71,7 +72,6 @@ export default function TransportRow(props) {
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
-  var [work, setWork] = useState("");
   var [notes, setNotes] = useState("");
   var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
@@ -116,189 +116,121 @@ export default function TransportRow(props) {
     setIsShowingDeleteDialog(!isShowingConfirmDialog);
   };
 
-  // Fetches equipment from firestore:
-  // const fetchEquipment = useCallback(() => {
-  //   const equipmentQuery = query(
-  //     collection(
-  //       db,
-  //       "branches",
-  //       userProfile?.branch,
-  //       "requests",
-  //       request.id,
-  //       "equipment"
-  //     ),
-  //     orderBy("timestamp", "asc")
-  //   );
-
-  //   onSnapshot(equipmentQuery, (querySnapshot) => {
-  //     setEquipment(
-  //       querySnapshot.docs.map((doc) => ({
-  //         requestID: doc.data().requestID,
-  //         model: doc.data().model.toString().toUpperCase(),
-  //         stock: doc.data().stock,
-  //         serial: doc.data().serial.toString().toUpperCase(),
-  //         work: doc.data().work,
-  //         notes: doc.data().notes,
-  //         changeLog: doc.data().changeLog,
-  //       }))
-  //     );
-  //   });
-  // }, [request.id, userProfile.branch]);
-
-  useEffect(() => {
-    // Checks for changes in workOrder value and updates state
-    if (currentWorkOrder !== workOrder) {
-      setWorkOrderHasChanges(true);
-    } else {
-      setWorkOrderHasChanges(false);
-    }
-
-    // Fetch equipment data from firestore
-    // fetchEquipment();
-  }, [
-    // fetchEquipment,
-    currentWorkOrder,
-    workOrder,
-    isShowingAddEquipment,
-    setWorkOrderHasChanges,
-  ]);
-
   // Handles adding or editing the work order number for the request:
-  const editWorkOrder = async () => {
-    if (isEditingWorkOrder) {
-      if (workOrderHasChanges) {
-        const workOrderStatus =
-          request.workOrder === ""
-            ? `Added WO # ${workOrder}`
-            : `WO # updated from ${request.workOrder} to ${workOrder}`;
+  // const editWorkOrder = async () => {
+  //   if (isEditingWorkOrder) {
+  //     if (workOrderHasChanges) {
+  //       const workOrderStatus =
+  //         request.workOrder === ""
+  //           ? `Added WO # ${workOrder}`
+  //           : `WO # updated from ${request.workOrder} to ${workOrder}`;
 
-        const changeLogEntry = {
-          user: fullName,
-          change: workOrderStatus,
-          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-        };
-
-        if (request.workOrder !== workOrder) {
-          request.changeLog.push(changeLogEntry);
-        }
-
-        await setDoc(
-          doc(db, "branches", userProfile.branch, "transport", request.id),
-          { workOrder: workOrder, changeLog: request.changeLog },
-          { merge: true }
-        );
-
-        // TODO upadate to transport WO email
-        // sendWorkOrderEmail(
-        //   request.equipment,
-        //   request,
-        //   workOrder,
-        //   fullName,
-        //   model,
-        //   userProfile
-        // );
-        setIsEditingWorkOrder(false);
-      } else {
-        console.log("no changes to equipment");
-        setIsEditingWorkOrder(false);
-      }
-    } else {
-      setWorkOrder(request.workOrder);
-      setCurrentWorkOrder(request.workOrder);
-      setIsEditingWorkOrder(true);
-    }
-  };
-
-  // TODO update to add equipment to the request rather than a seperate "equipment" collection
-  // Handles adding equipment to the request:
-  // const addEquipment = async () => {
-  //   const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-
-  //   if (isShowingAddEquipment) {
-  //     if (model !== "" && stock !== "" && serial !== "" && work !== "") {
-  //       const changeLog = [
-  //         {
-  //           user: fullName,
-  //           change: `request created`,
-  //           timestamp: timestamp,
-  //         },
-  //       ];
-
-  //       const newEquipment = {
-  //         requestID: request.id,
-  //         timestamp: timestamp,
-  //         model: model,
-  //         stock: stock,
-  //         serial: serial,
-  //         work: work,
-  //         notes: notes,
-  //         changeLog: changeLog,
-  //       };
-
-  //       // Sets the added equipment to firestore:
-  //       const equipmentRef = doc(
-  //         db,
-  //         "branches",
-  //         userProfile.branch,
-  //         "requests",
-  //         request.id,
-  //         "equipment",
-  //         newEquipment.stock
-  //       );
-  //       await setDoc(equipmentRef, newEquipment, { merge: true });
-
-  //       // Append the equipment addition to the request's changealog
   //       const changeLogEntry = {
   //         user: fullName,
-  //         change: `Equipment model ${model} added to the request`,
+  //         change: workOrderStatus,
   //         timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
   //       };
 
-  //       request.changeLog.push(changeLogEntry);
+  //       if (request.workOrder !== workOrder) {
+  //         request.changeLog.push(changeLogEntry);
+  //       }
 
-  //       const requestRef = doc(
-  //         db,
-  //         "branches",
-  //         userProfile.branch,
-  //         "requests",
-  //         request.id
-  //       );
   //       await setDoc(
-  //         requestRef,
-  //         { changeLog: request.changeLog },
+  //         doc(db, "branches", userProfile.branch, "transport", request.id),
+  //         { workOrder: workOrder, changeLog: request.changeLog },
   //         { merge: true }
   //       );
 
-  //       // TODO update to a transport email
-  //       // Send email about addition of equipment
-  //       // sendNewEquipmentEmail(
+  //       // TODO upadate to transport WO email
+  //       // sendWorkOrderEmail(
+  //       //   request.equipment,
   //       //   request,
-  //       //   equipment,
-  //       //   timestamp,
+  //       //   workOrder,
   //       //   fullName,
   //       //   model,
-  //       //   stock,
-  //       //   serial,
-  //       //   work,
-  //       //   notes,
   //       //   userProfile
   //       // );
-
-  //       // Hides add equipment TextFields
-  //       setIsShowingAddEquipment(false);
-  //       setEquipment([]);
-  //       setModel("");
-  //       setStock("");
-  //       setSerial("");
-  //       setWork("");
-  //       setNotes("");
+  //       setIsEditingWorkOrder(false);
   //     } else {
-  //       setIsShowingAddEquipment(false);
+  //       console.log("no changes to equipment");
+  //       setIsEditingWorkOrder(false);
   //     }
   //   } else {
-  //     setIsShowingAddEquipment(true);
+  //     setWorkOrder(request.workOrder);
+  //     setCurrentWorkOrder(request.workOrder);
+  //     setIsEditingWorkOrder(true);
   //   }
   // };
+
+  const resetEquipmentFields = async () => {
+    setModel("");
+    setStock("");
+    setSerial("");
+    setNotes("");
+  }
+
+  // Handles adding equipment to the request:
+  const addEquipment = async (e) => {
+    e.preventDefault()
+
+
+    if (isShowingAddEquipment) {
+      if (model !== "" && stock !== "" && serial !== "") {
+        const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+        const id = moment().format("yyyyMMDDHHmmss");
+
+        const newEquipment = {
+          id: id,
+          model: model,
+          stock: stock,
+          serial: serial,
+          notes: notes,
+        };
+
+        request.equipment.push(newEquipment);
+
+        // Append the equipment addition to the request's changealog
+        const changeLogEntry = {
+          user: fullName,
+          change: `Equipment model ${model} added to the request`,
+          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
+        };
+
+        request.changeLog.push(changeLogEntry);
+
+        // Sets the added equipment to firestore:
+        const docRef = doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "transport",
+          request.id
+        );
+        await setDoc(
+          docRef,
+          { equipment: request.equipment, changeLog: request.changeLog },
+          { merge: true }
+        );
+
+        // Send email about addition of equipment
+        sendNewTransportEquipmentEmail(
+          request,
+          newEquipment,
+          timestamp,
+          fullName,
+          userProfile
+        );
+
+        // Hides add equipment TextFields
+        setIsShowingAddEquipment(false);
+        await resetEquipmentFields();
+      } else {
+        setIsShowingAddEquipment(false);
+      }
+    } else {
+      setIsShowingAddEquipment(true);
+    }
+  };
 
   // TODO build a transport PDF and update this to transport PDF
   // Sets data for the pdf into a fire store documetnt for the current
@@ -328,10 +260,16 @@ export default function TransportRow(props) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.equipment.id} sx={{ '& > *': { borderBottom: '0' } }}>
+      <TableRow
+        key={request.equipment.id}
+        sx={{ '& > *': { borderBottom: 'unset' } }}
+      >
         <TableCell key="expand">
-          <Stack alignItems="center">
+          <Stack alignItems="start">
             <Typography variant="h6">{request.requestType}</Typography>
+            <Typography component="p" variant="caption">
+              WO#: {request.workOrder}
+            </Typography>
             <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
               <IconButton
                 aria-label="expand row"
@@ -359,27 +297,6 @@ export default function TransportRow(props) {
               : ""}
           </Typography>
         </TableCell>
-
-        {/* <TableCell key="salesman" component="th" scope="row">
-          <p>{request.salesman}</p>
-          <small>{request.timestamp}</small>
-        </TableCell> */}
-
-        {/* <TableCell key="workOrder" align="left">
-          {" "}
-          {isEditingWorkOrder ? (
-            <TextField
-              variant="outlined"
-              label="Work Order"
-              inputProps={{ style: { fontSize: 14 } }}
-              size="small"
-              onChange={(e) => setWorkOrder(e.target.value)}
-              value={workOrder}
-            ></TextField>
-          ) : (
-            request.workOrder
-          )}
-        </TableCell> */}
 
         <TableCell key="status" align="left">
           <TransportUpdateDialog
@@ -447,19 +364,16 @@ export default function TransportRow(props) {
               </Link>
             </div> */}
 
-            <div className="editIcon">
-              <IconButton onClick={handleToggleEditTansportView}>
-                <div className="edit-button-bg">
-                  <Tooltip title="Edit Work Order">
-                    <EditRounded color="primary" style={{ fontSize: 16 }} />
-                  </Tooltip>
-                </div>
-              </IconButton>
-            </div>
+            <EditTransportView
+              transportRequest={request}
+              handleCloseEditTansportView={handleCloseEditTansportView}
+              openAddTransportView={openAddTransportView}
+              handleToggleEditTansportView={handleToggleEditTansportView}
+            />
+
             <div className="delete-button">
               {isEditingWorkOrder ? (
                 <IconButton
-                  color="success"
                   style={{ fontSize: 20 }}
                   onClick={handleToggleDeleteDialog}
                 >
@@ -470,23 +384,6 @@ export default function TransportRow(props) {
               ) : null}
             </div>
           </div>
-
-          <Dialog
-            onClose={handleCloseEditTansportView}
-            open={openAddTransportView}
-          >
-            <div className="closeButtonContainer">
-              <Button onClick={handleCloseEditTansportView} color="success">
-                <CancelOutlined />
-              </Button>
-            </div>
-            <div className="addRequestView">
-              <EditTransportView
-                transportRequest={request}
-                handleCloseEditTansportView={handleCloseEditTansportView}
-              />
-            </div>
-          </Dialog>
 
           <Dialog
             onClose={handleCloseDeleteDialog}
@@ -565,7 +462,7 @@ export default function TransportRow(props) {
                   {" "}
                   {request.equipment.map((item) => (
                     <TransportEquipmentRow
-                      key={item?.stock}
+                      key={item?.id}
                       request={request}
                       item={item}
                     />
@@ -575,8 +472,7 @@ export default function TransportRow(props) {
                   {isShowingAddEquipment ? (
                     <TableRow
                       key="addEquipmentRow"
-                      sx={{ '& > *': { borderBottom: '0' } }}
-                      style={{ fontSize: 18 }}
+                      sx={{ '& > *': { borderBottom: 'unset' } }}
                     >
                       <TableCell key="addModel" component="th" scope="row">
                         <TextField
@@ -625,16 +521,12 @@ export default function TransportRow(props) {
                         ></TextField>
                       </TableCell>
 
-                      <TableCell key="saveAddButton" align="center">
+                      <TableCell key="saveAddButton" align="center" >
                         <IconButton
                           style={{ fontSize: 20 }}
-                          // onClick={addEquipment}
+                          onClick={addEquipment}
                         >
-                          {" "}
-                          {model !== "" &&
-                          stock !== "" &&
-                          serial !== "" &&
-                          work !== "" ? (
+                          {model !== "" && stock !== "" && serial !== "" ? (
                             <Tooltip title="Save">
                               <CheckRounded
                                 color="primary"
@@ -644,7 +536,7 @@ export default function TransportRow(props) {
                           ) : (
                             <Tooltip title="Cancel">
                               <CloseRounded
-                                color="primary"
+                                color="error"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
@@ -656,15 +548,14 @@ export default function TransportRow(props) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
-                      sx={{ '& > *': { borderBottom: '0' } }}
-                      style={{ fontSize: 18 }}
+                      sx={{ '& > *': { borderBottom: 'unset' } }}
                     >
                       <TableCell key="addButtonCell">
                         <Tooltip title="Add Equipment">
                           <Button
                             startIcon={[<AddRounded />, <AgricultureRounded />]}
                             // TODO ucomment once this function is fixed
-                            // onClick={addEquipment}
+                            onClick={addEquipment}
                           ></Button>
                         </Tooltip>
                       </TableCell>

@@ -42,7 +42,6 @@ export default function TransportManager() {
     setOpenAddTransportView(!openAddTransportView);
   };
 
-  // TODO update with transport collection instead of pdi colletion
   // Fetch requests from firestore:
   const fetch = useCallback(async () => {
     if (userProfile == null || userProfile == undefined)
