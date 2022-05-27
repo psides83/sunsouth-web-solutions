@@ -112,6 +112,8 @@ export default function AddTransportView(props) {
       statusTimestamp: timestamp,
       workOrder: "",
       requestedDate: requestedDate,
+      startDate: "",
+      endDate: "",
       name: name,
       phone: phone,
       street: street,
@@ -440,11 +442,10 @@ export default function AddTransportView(props) {
               label="Phone Number"
               name="phone"
               InputProps={{
+                maxlength: "10",
                 inputComponent: PhoneNumberMask,
               }}
-              onChange={(e) =>
-                setPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
-              }
+              onChange={(e) => setPhone(e.target.value)}
               value={phone}
             />
           </Grid>

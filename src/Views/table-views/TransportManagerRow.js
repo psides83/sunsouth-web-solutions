@@ -75,16 +75,8 @@ export default function TransportRow(props) {
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
-  const [openAddTransportView, setOpenAddTransportView] = useState(false);
+  
   // #endregion
-
-  const handleCloseEditTansportView = () => {
-    setOpenAddTransportView(false);
-  };
-
-  const handleToggleEditTansportView = () => {
-    setOpenAddTransportView(!openAddTransportView);
-  };
 
   const handleCloseChangeLog = () => {
     setOpenChangeLog(false);
@@ -305,9 +297,6 @@ export default function TransportRow(props) {
 
             <EditTransportView
               transportRequest={request}
-              handleCloseEditTansportView={handleCloseEditTansportView}
-              openAddTransportView={openAddTransportView}
-              handleToggleEditTansportView={handleToggleEditTansportView}
             />
           </div>
 
@@ -324,10 +313,10 @@ export default function TransportRow(props) {
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box margin={1}>
               <Typography variant="caption" gutterBottom component="div">
-                {`Request ID: ${request.id} Work Order: ${request.workOrder}`}
+                {`Request ID: ${request.id}`}
               </Typography>
               <Typography variant="caption" gutterBottom component="div">
-                {`Salesman: ${request.salesman}`}
+                {`Created By: ${request.salesman}`}
               </Typography>
               <Table size="small" aria-label="equipment">
                 <TransportEquipmentTableHeaderView />

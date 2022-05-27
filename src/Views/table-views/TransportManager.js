@@ -104,7 +104,7 @@ export default function TransportManager() {
           location: `${doc.data().street}, ${
             doc.data().city
           }, ${doc.data().state} ${doc.data().zip}`,
-          phone: formatPhoneNumber(doc.data().phone),
+          phone: doc.data().phone,
           type: doc.data().type,
           hasTrade: doc.data().hasTrade,
         }))

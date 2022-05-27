@@ -6,7 +6,10 @@ import { setDoc, doc, deleteDoc } from "@firebase/firestore";
 import "../styles/AddRequest.css";
 import { useStateValue } from "../state-management/StateProvider";
 import moment from "moment";
-import { sendNewRequestEmail, sendTransportDeletedEmail } from "../services/email-service";
+import {
+  sendNewRequestEmail,
+  sendTransportDeletedEmail,
+} from "../services/email-service";
 import { states } from "../models/states";
 import { PhoneNumberMask } from "../components/phone-number-mask";
 import {
@@ -42,12 +45,7 @@ const ListItem = styled("li")(({ theme }) => ({
 
 export default function EditTransportView(props) {
   //#region State Properties
-  const {
-    transportRequest,
-    handleCloseEditTansportView,
-    openAddTransportView,
-    handleToggleEditTansportView,
-  } = props;
+  const { transportRequest } = props;
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -65,9 +63,16 @@ export default function EditTransportView(props) {
   var [startDate, setStartDate] = useState("");
   var [endDate, setEndDate] = useState("");
   var [status, setStatus] = useState("");
+  var [change, setChange] = useState([]);
+  const [importedData, setImportedData] = useState({});
+  const [dataHasChanges, setDataHasChanges] = useState(false);
   var [validationMessage, setValidationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
+  const [openEditTransportView, setOpenEditTransportView] = useState(false);
+  // TODO setup loading and success and add progress circle on submit button
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   //#endregion
 
   // Handle closing of the alerts.
@@ -78,6 +83,15 @@ export default function EditTransportView(props) {
 
     setOpenSuccess(false);
     setOpenError(false);
+  };
+
+  const handleCloseEditTansportView = () => {
+    setOpenEditTransportView(false);
+  };
+
+  const handleToggleEditTansportView = () => {
+    setDataHasChanges(false);
+    setOpenEditTransportView(!openEditTransportView);
   };
 
   const handleCloseConfirmDialog = () => {
@@ -115,7 +129,23 @@ export default function EditTransportView(props) {
     }
     setHasTrade(transportRequest.hasTrade);
     setStatus(transportRequest.status);
-  }, [transportRequest]);
+
+    setImportedData({
+      workOrder: workOrder,
+      name: name,
+      phone: phone,
+      street: street,
+      city: city,
+      state: state,
+      zip: zip,
+      type: type,
+      status: status,
+      notes: notes,
+      startDate: startDate,
+      endDate: endDate,
+      hasTrade: hasTrade,
+    });
+  }, [openEditTransportView]);
 
   useEffect(() => {
     loadTransport();
@@ -123,13 +153,9 @@ export default function EditTransportView(props) {
 
   // Handle deleting of equipment from the request.
   const deleteTransportRequest = async () => {
-    await deleteDoc(doc(
-      db,
-      "branches",
-      userProfile.branch,
-      "transport",
-      transportRequest.id
-    ));
+    await deleteDoc(
+      doc(db, "branches", userProfile.branch, "transport", transportRequest.id)
+    );
 
     sendTransportDeletedEmail(transportRequest, fullName, userProfile);
     handleCloseConfirmDialog();
@@ -142,22 +168,128 @@ export default function EditTransportView(props) {
     } else {
       setHasTrade(true);
     }
+
+    if (hasTrade !== importedData.type) {
+      setDataHasChanges(true);
+    } else if (hasTrade === importedData.type) {
+      setDataHasChanges(false);
+    }
+  };
+
+  const logChanges = () => {
+    if (name !== importedData.name) {
+      console.log(importedData);
+      setChange(
+        change.push(`Customer edited from ${importedData.name} to ${name}`)
+      );
+    }
+    console.log(change);
+
+    if (phone !== importedData.phone) {
+      setChange(
+        change.push(
+          `Phone # for ${name} edited from ${importedData.phone} to ${phone}`
+        )
+      );
+    }
+
+    if (street !== importedData.street) {
+      setChange(
+        change.push(
+          `Address Street edited from ${importedData.street} to ${street}`
+        )
+      );
+    }
+
+    if (city !== importedData.city) {
+      setChange(
+        change.push(`City edited from ${importedData.city} to ${city}`)
+      );
+    }
+
+    if (state !== importedData.state) {
+      setChange(
+        change.push(`State edited from ${importedData.state} to ${state}`)
+      );
+    }
+
+    if (zip !== importedData.zip) {
+      setChange(
+        change.push(`Zip Code edited from ${importedData.zip} to ${zip}`)
+      );
+    }
+
+    if (workOrder !== importedData.workOrder) {
+      setChange(
+        change.push(
+          `Work Order # for ${name} edited from ${
+            importedData.workOrder === "" ? "BLANK" : importedData.workOrder
+          } to ${workOrder === "" ? "BLANK" : workOrder}`
+        )
+      );
+    }
+
+    if (type !== importedData.type) {
+      setChange(
+        change.push(`Request Type edited from ${importedData.type} to ${type}`)
+      );
+    }
+
+    if (status !== importedData.status) {
+      setChange(
+        change.push(`Status edited from ${importedData.status} to ${status}`)
+      );
+    }
+
+    if (notes !== importedData.notes) {
+      setChange(
+        change.push(
+          `Notes edited from ${
+            importedData.notes === "" ? "BLANK" : importedData.notes
+          } to ${notes === "" ? "BLANK" : notes}`
+        )
+      );
+    }
+
+    if (startDate !== importedData.startDate) {
+      setChange(
+        change.push(
+          `Start Date edited from ${importedData.startDate} to ${startDate}`
+        )
+      );
+    }
+
+    if (endDate !== importedData.endDate) {
+      setChange(
+        change.push(
+          `End Date edited from ${importedData.endDate} to ${endDate}`
+        )
+      );
+    }
   };
 
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection.
   const setRequestToFirestore = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-    // const id = moment().format("yyyyMMDDHHmmss");
-    const salesman = `${userProfile?.firstName} ${userProfile?.lastName}`;
-    const changeLog = [
+    const id = moment().format("yyyyMMDDHHmmss");
+    logChanges();
+    var changeString = change.toString().replace(/,/g, ", ");
+    if (changeString[0] === ",") {
+      changeString = changeString.substring(1).trim();
+    }
+
+    const changeLogEntry = 
       {
+        id: id,
         user: fullName,
-        change: `request edited`,
+        change: changeString,
         timestamp: timestamp,
-      },
-    ];
+      };
+
+    transportRequest.changeLog.push(changeLogEntry)
 
     const firestoreTransportRequest = {
+      workOrder: workOrder,
       status: status,
       statusTimestamp: timestamp,
       startDate: startDate,
@@ -171,7 +303,7 @@ export default function EditTransportView(props) {
       type: type,
       hasTrade: hasTrade,
       notes: notes,
-      changeLog: changeLog,
+      changeLog: transportRequest.changeLog,
     };
 
     const requestRef = doc(
@@ -193,13 +325,27 @@ export default function EditTransportView(props) {
     //   salesman
     // );
     handleCloseEditTansportView();
+    resetForm();
   };
 
-  // TODO add request reset
+  const resetForm = () => {
+    setWorkOrder("");
+    setName("");
+    setPhone("");
+    setStreet("");
+    setCity("");
+    setState("");
+    setZip("");
+    setType("");
+    setNotes("");
+    setRequestedDate("");
+    setStartDate("");
+    setEndDate("");
+    setHasTrade(false);
+    setStatus("");
+  };
 
-  // TODO add complete form reset
-
-  // Handle lead name input and capitolize each word
+  // Handle name input and capitolize each word
   const handleNameInput = (e) => {
     const names = e.target.value;
 
@@ -208,11 +354,146 @@ export default function EditTransportView(props) {
     );
 
     setName(finalName);
+    if (finalName !== importedData.name) {
+      setDataHasChanges(true);
+    } else if (finalName === importedData.name) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle street input and capitolize each word
+  const handleStreetInput = (e) => {
+    const words = e.target.value;
+
+    const finalStreet = words.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+      letter.toUpperCase()
+    );
+
+    setStreet(finalStreet);
+    if (finalStreet !== importedData.street) {
+      setDataHasChanges(true);
+    } else if (finalStreet === importedData.street) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle city input and capitolize each word
+  const handleCityInput = (e) => {
+    const words = e.target.value;
+
+    const finalCity = words.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+      letter.toUpperCase()
+    );
+
+    setCity(finalCity);
+    if (finalCity !== importedData.city) {
+      setDataHasChanges(true);
+    } else if (finalCity === importedData.city) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle state input and capitolize each word
+  const handleStateInput = (e) => {
+    setState(e.target.value);
+
+    if (e.target.value !== importedData.state) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.state) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle zip input and capitolize each word
+  const handleZipInput = (e) => {
+    setZip(e.target.value);
+
+    if (e.target.value !== importedData.zip) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.zip) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle phone input and capitolize each word
+  const handlePhoneInput = (e) => {
+    setPhone(e.target.value);
+
+    if (e.target.value !== importedData.phone) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.phone) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle status input and capitolize each word
+  const handleStatusInput = (e) => {
+    setStatus(e.target.value);
+
+    if (e.target.value !== importedData.status) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.status) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle type input and capitolize each word
+  const handleTypeInput = (e) => {
+    setType(e.target.value);
+
+    if (e.target.value !== importedData.type) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.type) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle workOrder input and capitolize each word
+  const handleWorkOrderInput = (e) => {
+    setWorkOrder(e.target.value);
+
+    if (e.target.value !== importedData.workOrder) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.workOrder) {
+      setDataHasChanges(false);
+    }
+  };
+
+  // Handle workOrder input and capitolize each word
+  const handleNotesInput = (e) => {
+    setNotes(e.target.value);
+
+    if (e.target.value !== importedData.notes) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.notes) {
+      setDataHasChanges(false);
+    }
+  };
+
+  const handleStartDateInput = (e) => {
+    if (e.target.value < moment().format()) return setStartDate("");
+
+    setStartDate(e.target.value);
+    if (e.target.value !== importedData.startDate) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.startDate) {
+      setDataHasChanges(false);
+    }
+
+    if (e.target.value > endDate) {
+      setEndDate("");
+    }
   };
 
   const handleEndDateInput = (e) => {
     if (e.target.value < startDate) return setEndDate("");
-    return setEndDate(e.target.value);
+
+    setEndDate(e.target.value);
+    if (e.target.value !== importedData.endDate) {
+      setDataHasChanges(true);
+    } else if (e.target.value === importedData.endDate) {
+      setDataHasChanges(false);
+    }
   };
 
   // UI view of the submission form
@@ -228,7 +509,10 @@ export default function EditTransportView(props) {
         </IconButton>
       </div>
 
-      <Dialog onClose={handleCloseEditTansportView} open={openAddTransportView}>
+      <Dialog
+        onClose={handleCloseEditTansportView}
+        open={openEditTransportView}
+      >
         <div className="closeButtonContainer">
           <Button onClick={handleCloseEditTansportView}>
             <CancelOutlined />
@@ -273,13 +557,13 @@ export default function EditTransportView(props) {
               <Grid container spacing={2}>
                 <Grid item sm={12}>
                   <Typography>
-                    {`${type} Date Requested: ${moment(
-                      requestedDate
-                    ).format("DD-MMM-yyyy")}`}
+                    {`${type} Date Requested: ${moment(requestedDate).format(
+                      "DD-MMM-yyyy"
+                    )}`}
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     key="startDate"
                     name="startDate"
@@ -288,7 +572,7 @@ export default function EditTransportView(props) {
                     fullWidth
                     size="small"
                     id="startDate"
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={handleStartDateInput}
                     value={startDate}
                     InputLabelProps={{
                       shrink: true,
@@ -297,7 +581,7 @@ export default function EditTransportView(props) {
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     key="endDate"
                     name="endDate"
@@ -321,7 +605,6 @@ export default function EditTransportView(props) {
                     required
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="name"
                     label="Customer Name"
                     autoFocus
@@ -337,20 +620,13 @@ export default function EditTransportView(props) {
                     fullWidth
                     size="small"
                     InputProps={{
+                      maxlength: "10",
                       inputComponent: PhoneNumberMask,
-                      style: { fontSize: 14 },
                     }}
                     id="phone"
                     label="Phone Number"
                     name="phone"
-                    // InputProps={{
-                    //     inputComponent: PhoneNumberMask,
-                    //   }}
-                    onChange={(e) =>
-                      setPhone(
-                        e.target.value.replace(/[^0-9\-()" "]/g, "")
-                      )
-                    }
+                    onChange={handlePhoneInput}
                     value={phone}
                   />
                 </Grid>
@@ -361,11 +637,10 @@ export default function EditTransportView(props) {
                     required
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="street"
                     label="Street"
                     name="street"
-                    onChange={(e) => setStreet(e.target.value)}
+                    onChange={handleStreetInput}
                     value={street}
                   />
                 </Grid>
@@ -376,11 +651,10 @@ export default function EditTransportView(props) {
                     required
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="city"
                     label="City"
                     name="city"
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={handleCityInput}
                     value={city}
                   />
                 </Grid>
@@ -406,7 +680,7 @@ export default function EditTransportView(props) {
                     }}
                     value={state}
                     label="State"
-                    onChange={(e) => setState(e.target.value)}
+                    onChange={handleStateInput}
                     select
                   >
                     {states.map((state) => (
@@ -421,11 +695,11 @@ export default function EditTransportView(props) {
                     required
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
+                    inputProps={{ maxlength: "5" }}
                     id="zip"
                     label="Zip"
                     name="zip"
-                    onChange={(e) => setZip(e.target.value)}
+                    onChange={handleZipInput}
                     value={zip}
                   />
                 </Grid>
@@ -435,11 +709,10 @@ export default function EditTransportView(props) {
                     variant="outlined"
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="status"
                     label="Status Status"
                     name="status"
-                    onChange={(e) => setStatus(e.target.value)}
+                    onChange={handleStatusInput}
                     value={status}
                     select
                   >
@@ -456,11 +729,10 @@ export default function EditTransportView(props) {
                     required
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="type"
                     label="Request Type"
                     name="type"
-                    onChange={(e) => setType(e.target.value)}
+                    onChange={handleTypeInput}
                     value={type}
                     select
                   >
@@ -495,11 +767,11 @@ export default function EditTransportView(props) {
                     variant="outlined"
                     fullWidth
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="workOrder"
                     label="Work Order"
                     name="workOrder"
-                    onChange={(e) => setWorkOrder(e.target.value)}
+                    inputProps={{ maxlength: "6" }}
+                    onChange={handleWorkOrderInput}
                     value={workOrder}
                   />
                 </Grid>
@@ -510,13 +782,12 @@ export default function EditTransportView(props) {
                     fullWidth
                     multiline
                     size="small"
-                    inputProps={{ style: { fontSize: 14 } }}
                     id="notes"
                     label="Addtional Notes"
                     name="notes"
                     type="text"
                     value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    onChange={handleNotesInput}
                   />
                 </Grid>
 
@@ -565,10 +836,15 @@ export default function EditTransportView(props) {
                     fullWidth
                     variant="contained"
                     color="primary"
-                    endIcon={<SendRounded color="secondary" />}
+                    endIcon={
+                      <SendRounded color={!dataHasChanges ? "" : "secondary"} />
+                    }
+                    disabled={!dataHasChanges || loading}
                     onClick={setRequestToFirestore}
                   >
-                    <Typography color="secondary">Submit</Typography>
+                    <Typography color={!dataHasChanges ? "" : "secondary"}>
+                      Submit
+                    </Typography>
                   </Button>
                 </Grid>
               </Grid>
@@ -605,7 +881,11 @@ export default function EditTransportView(props) {
               >
                 Cancel
               </Button>
-              <Button variant="contained" color="error" onClick={deleteTransportRequest}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={deleteTransportRequest}
+              >
                 Delete
               </Button>
             </div>
