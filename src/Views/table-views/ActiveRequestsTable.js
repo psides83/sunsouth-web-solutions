@@ -1,22 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableContainer from "@material-ui/core/TableContainer";
-import Paper from "@material-ui/core/Paper";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import Button from "@mui/material/Button";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/Table.css";
 import { Link } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
-import Dialog from "@mui/material/Dialog";
 import AddRequestView from "../AddRequestView";
 import { RequestsTableHeaderView } from "../../components/TableHeaderViews";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import RequestRow from "./ActiveRequestRow";
-import { Typography } from "@material-ui/core";
+import {
+  Box,
+  Button,
+  Dialog,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableContainer,
+  Typography,
+} from "@mui/material";
+import { AddRounded, CancelOutlined } from "@mui/icons-material";
 
 // Whole table view:
 export default function ActiveRequestsTable() {
@@ -72,8 +75,14 @@ export default function ActiveRequestsTable() {
       {loading ? (
         <HomeSkeleton />
       ) : (
-        <React.Fragment>
-          <div className="tableHead">
+        <Box display="flex" flexDirection="column" alignItems="center" >
+          <Stack direction="row"
+            style={{
+              width: "100%",
+              maxWidth: "1100px",
+              justifyContent: "space-between",
+            }}
+          >
             <Typography
               variant="h4"
               color="primary"
@@ -83,21 +92,20 @@ export default function ActiveRequestsTable() {
             </Typography>
 
             <Button
-              color="success"
               size="small"
               variant="outlined"
-              startIcon={<AddIcon />}
+              startIcon={<AddRounded />}
               onClick={handleToggleAddRequestView}
               sx={{ mx: 4, mb: 1, mt: 1 }}
             >
               Submit Request
             </Button>
-          </div>
+          </Stack>
 
           <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
             <div className="closeButtonContainer">
               <Button onClick={handleCloseAddRequestView} color="success">
-                <CancelOutlinedIcon />
+                <CancelOutlined />
               </Button>
             </div>
             <div className="addRequestView">
@@ -105,7 +113,10 @@ export default function ActiveRequestsTable() {
             </div>
           </Dialog>
 
-          <TableContainer component={Paper} style={{ borderRadius: 10 }}>
+          <TableContainer
+            component={Paper}
+            style={{ borderRadius: 10, maxWidth: "1100px" }}
+          >
             <Table
               size="small"
               aria-label="collapsible table"
@@ -125,7 +136,7 @@ export default function ActiveRequestsTable() {
               <h3>View completed requests</h3>
             </Link>
           </div>
-        </React.Fragment>
+        </Box>
       )}
     </React.Fragment>
   );

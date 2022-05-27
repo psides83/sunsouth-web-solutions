@@ -1,7 +1,7 @@
 import React from 'react';
 import "../styles/Home.css";
 import ActiveRequestsTable from '../views/table-views/ActiveRequestsTable'
-import { Box } from '@mui/system';
+import { Box } from '@mui/material';
 
 function Home() {
     
@@ -9,7 +9,7 @@ function Home() {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: "5"}}>
             <Box sx={{ width: '100%', mt: 5, mx:5 }}>
                 <Box sx={{ flexGrow: 1, my: 5 }}>
-                    <ActiveRequestsTable/>
+                    <ActiveRequestsTable />
                 </Box>
                 {/* <Box sx={{ flexGrow: 1 }}>
                     <ActiveRequestsTable status="Requested"/>

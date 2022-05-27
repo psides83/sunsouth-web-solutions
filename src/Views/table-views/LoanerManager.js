@@ -1,14 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { makeStyles } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import Paper from "@material-ui/core/Paper";
 import {
   collection,
   query,
@@ -18,32 +9,33 @@ import {
   doc,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import Button from "@mui/material/Button";
-import { Dialog, Tooltip, Typography } from "@material-ui/core";
 import moment from "moment";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/LoanerManager.css";
-import AddIcon from "@mui/icons-material/Add";
 import AddLoanerView from "../AddLoanerView";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import { sendLoanerStatusEmail } from "../../services/email-service";
 import Spinner from "../../components/Spinner";
-import { DialogTitle } from "@mui/material";
-
-// Styles:
-const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      // borderBottom: 'unset',
-    },
-  },
-});
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogTitle,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { AddRounded, CancelOutlined } from "@mui/icons-material";
 
 // Loaner row view:
 function Row({ loaner }) {
   // #region State Properties
   const [{ userProfile }] = useStateValue();
-  const classes = useRowStyles();
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
@@ -114,7 +106,7 @@ function Row({ loaner }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={loaner.id} className={classes.root}>
+      <TableRow key={loaner.id} sx={{ '& > *': { borderBottom: 'unset' } }}>
         <TableCell key={loaner.employee} component="th" scope="row">
           <p>{loaner.employee}</p>
           <small>{loaner.timestamp}</small>
@@ -140,7 +132,6 @@ function Row({ loaner }) {
         <TableCell key={loaner.status} align="left">
           <Tooltip title="Update Status">
             <Button
-              color="success"
               size="small"
               variant="outlined"
               onClick={handleToggleConfirmDialog}
@@ -199,7 +190,6 @@ function Row({ loaner }) {
                     </Button>
                     <Button
                       variant="contained"
-                      color="success"
                       onClick={updateStatus}
                     >
                       Update
@@ -295,10 +285,9 @@ export default function LoanerManager() {
                 </Typography>
                 <Button
                   onClick={handleToggleAddLoanerView}
-                  color="success"
                   size="small"
                   variant="outlined"
-                  startIcon={<AddIcon />}
+                  startIcon={<AddRounded />}
                   sx={{ mx: 4, mb: 1, mt: 1 }}
                 >
                   Add Loaner
@@ -311,8 +300,8 @@ export default function LoanerManager() {
                 open={openAddLoanerView}
               >
                 <div className="closeButtonContainer">
-                  <Button onClick={handleCloseAddLoanerView} color="success">
-                    <CancelOutlinedIcon />
+                  <Button onClick={handleCloseAddLoanerView} >
+                    <CancelOutlined />
                   </Button>
                 </div>
                 <div className="addLoaner">

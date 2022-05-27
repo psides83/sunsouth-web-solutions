@@ -1,88 +1,37 @@
 //Imports
 import React, { useState } from "react";
-import Button from "@material-ui/core/Button";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Grid from "@material-ui/core/Grid";
-import Box from "@material-ui/core/Box";
-import Typography from "@material-ui/core/Typography";
-import { makeStyles } from "@material-ui/core/styles";
-import Container from "@material-ui/core/Container";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
-import SendRoundedIcon from "@mui/icons-material/SendRounded";
-import { Avatar, FormGroup } from "@material-ui/core";
-import { Alert, MenuItem, Stack } from "@mui/material";
 import "../styles/AddRequest.css";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { useStateValue } from "../state-management/StateProvider";
 import moment from "moment";
-import { styled } from "@mui/material/styles";
-import Chip from "@mui/material/Chip";
-import Snackbar from "@material-ui/core/Snackbar";
-import {
-  sendNewRequestEmail,
-  sendNewTransportRequestEmail,
-} from "../services/email-service";
-import {
-  Agriculture,
-  AgricultureRounded,
-  LocalShippingRounded,
-} from "@mui/icons-material";
+import { sendNewTransportRequestEmail } from "../services/email-service";
 import { states } from "../models/states";
 import { PhoneNumberMask } from "../components/phone-number-mask";
-
-// Sets useStyles for customizing Material UI components.
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    marginTop: theme.spacing(4),
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.primary.main,
-  },
-  img: {
-    padding: 1,
-  },
-  icon: {
-    color: theme.palette.secondary.main,
-  },
-  title: {
-    color: theme.palette.primary.main,
-  },
-  form: {
-    width: "100%", // Fix IE 11 issue.
-    marginTop: theme.spacing(3),
-  },
-  addEquipment: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  submitIcon: {
-    color: theme.palette.secondary.main,
-  },
-  select: {
-    "&:before": {
-      borderColor: theme.palette.secondary.main,
-    },
-    "&:after": {
-      borderColor: theme.palette.secondary.main,
-    },
-    "&:not(.Mui-disabled):hover::before": {
-      borderColor: theme.palette.secondary.main,
-    },
-  },
-}));
+import {
+  Alert,
+  Avatar,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  FormControlLabel,
+  FormGroup,
+  Grid,
+  MenuItem,
+  Snackbar,
+  Stack,
+  styled,
+  TextField,
+  Typography,
+} from "@mui/material";
+import {
+  AddCircleOutline,
+  AgricultureRounded,
+  LocalShippingRounded,
+  SendRounded,
+} from "@mui/icons-material";
 
 const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
@@ -90,9 +39,8 @@ const ListItem = styled("li")(({ theme }) => ({
 
 export default function AddTransportView(props) {
   //#region State Properties
-  const classes = useStyles();
   const [{ userProfile }] = useStateValue();
-  const {handleCloseAddTansportView} = props;
+  const { handleCloseAddTansportView } = props;
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [customerName, setCustomerName] = useState("");
@@ -392,263 +340,289 @@ export default function AddTransportView(props) {
 
   // UI view of the submission form
   return (
-    <Container component="main" maxWidth="xs" sx={{ margin: 20 }}>
-      <CssBaseline />
-      <Box className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <LocalShippingRounded className={classes.icon} fontSize="large" />
-        </Avatar>
-        <Typography component="h1" variant="h" className={classes.title}>
-          Transport Request
-        </Typography>
-        <form className={classes.form} noValidate>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                key="date"
-                name="date"
-                variant="outlined"
-                type="date"
-                required
-                fullWidth
-                size="small"
-                id="date"
-                autoFocus
-                onChange={(e) => setRequestedDate(e.target.value)}
-                value={requestedDate}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-                label="Date"
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="customerName"
-                label="Customer Name"
-                autoFocus
-                onChange={handleNameInput}
-                value={customerName}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="phone"
-                label="Phone Number"
-                name="phone"
-                InputProps={{
-                  inputComponent: PhoneNumberMask,
-                }}
-                onChange={(e) =>
-                  setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
-                }
-                value={customerPhone}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="street"
-                label="Street"
-                name="street"
-                onChange={(e) => setCustomerStreet(e.target.value)}
-                value={customerStreet}
-              />
-            </Grid>
-            <Grid item xs={12} sm={5}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="city"
-                label="City"
-                name="city"
-                onChange={(e) => setCustomerCity(e.target.value)}
-                value={customerCity}
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                size="small"
-                variant="outlined"
-                required
-                fullWidth
-                labelId="demo-simple-select-label"
-                id="state"
-                className={classes.select}
-                value={customerState}
-                label="State"
-                onChange={(e) => setCustomerState(e.target.value)}
-                select
-              >
-                {states.map((state) => (
-                  <MenuItem value={state}>{state}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="zip"
-                label="Zip"
-                name="zip"
-                onChange={(e) => setCustomerZip(e.target.value)}
-                value={customerZip}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="type"
-                label="Request Type"
-                name="type"
-                onChange={(e) => setRequestType(e.target.value)}
-                value={requestType}
-                select
-              >
-                <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
-                <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={hasTrade}
-                      size="small"
-                      onChange={handleHasTrade}
-                      color="primary"
-                      value={hasTrade}
-                    />
-                  }
-                  label={
-                    <Typography style={{ fontSize: 14 }}>
-                      Trade to return?
-                    </Typography>
-                  }
-                />
-              </FormGroup>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                multiline
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="notes"
-                label="Addtional Notes"
-                name="notes"
-                type="text"
-                value={requestNotes}
-                onChange={(e) => setRequestNotes(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-          <Stack mb={1}>
-            <Typography component="h1" variant="h6">
-              {heading}
-            </Typography>
-
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "flex-start",
-                alignContent: "center",
-                alignItems: "center",
-                flexWrap: "wrap",
-                listStyle: "none",
-                p: 0.5,
-                m: 0,
+    <Box
+      display="flex"
+      sx={{
+        flexDirection: "column",
+        alignItems: "center",
+        maxWidth: "380px",
+        padding: (theme) => theme.spacing(3),
+        paddingLeft: (theme) => theme.spacing(4),
+        paddingRight: (theme) => theme.spacing(4),
+        paddingBottom: (theme) => theme.spacing(3),
+      }}
+    >
+      <Avatar
+        key="avatar"
+        style={{
+          width: 64,
+          height: 64,
+          margin: "10px",
+          backgroundColor: "#367C2B",
+        }}
+      >
+        <LocalShippingRounded color="secondary" fontSize="large" />
+      </Avatar>
+      <Typography
+        key="heading"
+        color="primary"
+        variant="h5"
+        style={{ fontWeight: "bold" }}
+      >
+        Transport Request
+      </Typography>
+      <form style={{ width: "100%", marginTop: "10px" }} noValidate>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              key="date"
+              name="date"
+              variant="outlined"
+              type="date"
+              required
+              fullWidth
+              size="small"
+              id="date"
+              autoFocus
+              onChange={(e) => setRequestedDate(e.target.value)}
+              value={requestedDate}
+              InputLabelProps={{
+                shrink: true,
               }}
-              component="ul"
+              label="Date"
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="customerName"
+              label="Customer Name"
+              autoFocus
+              onChange={handleNameInput}
+              value={customerName}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="phone"
+              label="Phone Number"
+              name="phone"
+              InputProps={{
+                inputComponent: PhoneNumberMask,
+              }}
+              onChange={(e) =>
+                setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
+              }
+              value={customerPhone}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="street"
+              label="Street"
+              name="street"
+              onChange={(e) => setCustomerStreet(e.target.value)}
+              value={customerStreet}
+            />
+          </Grid>
+          <Grid item xs={12} sm={5}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="city"
+              label="City"
+              name="city"
+              onChange={(e) => setCustomerCity(e.target.value)}
+              value={customerCity}
+            />
+          </Grid>
+          <Grid item xs={12} sm={3}>
+            <TextField
+              size="small"
+              variant="outlined"
+              required
+              fullWidth
+              labelId="demo-simple-select-label"
+              id="state"
+              sx={{
+                "&:before": {
+                  borderColor: (theme) => theme.palette.secondary.main,
+                },
+                "&:after": {
+                  borderColor: (theme) => theme.palette.secondary.main,
+                },
+                "&:not(.Mui-disabled):hover::before": {
+                  borderColor: (theme) => theme.palette.secondary.main,
+                },
+              }}
+              value={customerState}
+              label="State"
+              onChange={(e) => setCustomerState(e.target.value)}
+              select
             >
-              {equipmentList.map((data) => {
-                let icon = <AgricultureRounded />;
+              {states.map((state) => (
+                <MenuItem value={state}>{state}</MenuItem>
+              ))}
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="zip"
+              label="Zip"
+              name="zip"
+              onChange={(e) => setCustomerZip(e.target.value)}
+              value={customerZip}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              id="type"
+              label="Request Type"
+              name="type"
+              onChange={(e) => setRequestType(e.target.value)}
+              value={requestType}
+              select
+            >
+              <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+              <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
+            </TextField>
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={hasTrade}
+                    size="small"
+                    onChange={handleHasTrade}
+                    color="primary"
+                    value={hasTrade}
+                  />
+                }
+                label={
+                  <Typography style={{ fontSize: 14 }}>
+                    Trade to return?
+                  </Typography>
+                }
+              />
+            </FormGroup>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              variant="outlined"
+              fullWidth
+              multiline
+              size="small"
+              inputProps={{ style: { fontSize: 14 } }}
+              id="notes"
+              label="Addtional Notes"
+              name="notes"
+              type="text"
+              value={requestNotes}
+              onChange={(e) => setRequestNotes(e.target.value)}
+            />
+          </Grid>
+        </Grid>
+        <Stack mb={1}>
+          <Typography component="h1" variant="h6">
+            {heading}
+          </Typography>
 
-                return (
-                  <ListItem key={data.id}>
-                    <Chip
-                      icon={icon}
-                      label={data.model}
-                      variant="outlined"
-                      color="success"
-                      // size="small"
-                      onDelete={handleDelete(data)}
-                    />
-                  </ListItem>
-                );
-              })}
-            </Box>
-          </Stack>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="model"
-                label="Model"
-                autoFocus
-                onChange={(e) => setModel(e.target.value.toUpperCase())}
-                value={model}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="stock"
-                label="Stock"
-                name="stock"
-                onChange={(e) => setStock(e.target.value)}
-                value={stock}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                required
-                id="serial"
-                label="Serial"
-                onChange={(e) => setSerial(e.target.value.toUpperCase())}
-                value={serial}
-              ></TextField>
-            </Grid>
-            {/* <Grid item xs={12}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              listStyle: "none",
+              p: 0.5,
+              m: 0,
+            }}
+            component="ul"
+          >
+            {equipmentList.map((data) => {
+              let icon = <AgricultureRounded />;
+
+              return (
+                <ListItem key={data.id}>
+                  <Chip
+                    icon={icon}
+                    label={data.model}
+                    variant="outlined"
+                    color="success"
+                    // size="small"
+                    onDelete={handleDelete(data)}
+                  />
+                </ListItem>
+              );
+            })}
+          </Box>
+        </Stack>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              inputProps={{ style: { fontSize: 14 } }}
+              id="model"
+              label="Model"
+              autoFocus
+              onChange={(e) => setModel(e.target.value.toUpperCase())}
+              value={model}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              variant="outlined"
+              required
+              fullWidth
+              size="small"
+              inputProps={{ style: { fontSize: 14 } }}
+              id="stock"
+              label="Stock"
+              name="stock"
+              onChange={(e) => setStock(e.target.value)}
+              value={stock}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              variant="outlined"
+              fullWidth
+              size="small"
+              inputProps={{ style: { fontSize: 14 } }}
+              required
+              id="serial"
+              label="Serial"
+              onChange={(e) => setSerial(e.target.value.toUpperCase())}
+              value={serial}
+            ></TextField>
+          </Grid>
+          {/* <Grid item xs={12}>
               <div className="checkBoxes">
                 <FormGroup>
                   <Typography variant="h6" style={{ fontSize: 18 }}>
@@ -705,80 +679,72 @@ export default function AddTransportView(props) {
                 </FormGroup>
               </div>
             </Grid> */}
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                fullWidth
-                size="small"
-                inputProps={{ style: { fontSize: 14 } }}
-                id="notes"
-                label="Addtional Notes"
-                name="notes"
-                type="text"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </Grid>
-          </Grid>
-
-          <Snackbar
-            open={openSuccess}
-            autoHideDuration={3000}
-            onClose={handleClose}
-          >
-            <Alert
-              onClose={handleClose}
-              severity="success"
-              sx={{ width: "100%" }}
-            >
-              {validationMessage}
-            </Alert>
-          </Snackbar>
-
-          <Snackbar
-            open={openError}
-            autoHideDuration={3000}
-            onClose={handleClose}
-          >
-            <Alert
-              onClose={handleClose}
-              severity="error"
-              sx={{ width: "100%" }}
-            >
-              {validationMessage}
-            </Alert>
-          </Snackbar>
-
-          <Grid container justifyContent="space-between">
-            <Button
+          <Grid item xs={12}>
+            <TextField
               variant="outlined"
-              color="primary"
-              disabled={equipmentSubmitIsDisabled()}
-              startIcon={<AddCircleOutlineIcon />}
-              className={classes.addEquipment}
-              onClick={equipmentSubmitValidation}
-            >
-              Add More Equipment
-            </Button>
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={submitIsDisabled()}
-              endIcon={
-                <SendRoundedIcon
-                  className={submitIsDisabled() ? null : classes.submitIcon}
-                />
-              }
-              className={classes.submit}
-              onClick={requestSubmitValidation}
-            >
-              <p className={submitIsDisabled() ? null : classes.submitIcon}>
-                Submit
-              </p>
-            </Button>
+              fullWidth
+              size="small"
+              inputProps={{ style: { fontSize: 14 } }}
+              id="notes"
+              label="Addtional Notes"
+              name="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </Grid>
-        </form>
-      </Box>
-    </Container>
+        </Grid>
+
+        <Snackbar
+          open={openSuccess}
+          autoHideDuration={3000}
+          onClose={handleClose}
+        >
+          <Alert
+            onClose={handleClose}
+            severity="success"
+            sx={{ width: "100%" }}
+          >
+            {validationMessage}
+          </Alert>
+        </Snackbar>
+
+        <Snackbar
+          open={openError}
+          autoHideDuration={3000}
+          onClose={handleClose}
+        >
+          <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+            {validationMessage}
+          </Alert>
+        </Snackbar>
+
+{/* TODO fix buttons */}
+        <Grid container justifyContent="space-between">
+          <Button
+            variant="outlined"
+            color="primary"
+            disabled={equipmentSubmitIsDisabled()}
+            startIcon={<AddCircleOutline />}
+            onClick={equipmentSubmitValidation}
+          >
+            Add More Equipment
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={submitIsDisabled()}
+            endIcon={
+              <SendRounded color={submitIsDisabled() ? "" : "secondary"} />
+            }
+            onClick={requestSubmitValidation}
+          >
+            <Typography color={submitIsDisabled() ? "" : "secondary"}>
+              Submit
+            </Typography>
+          </Button>
+        </Grid>
+      </form>
+    </Box>
   );
 }

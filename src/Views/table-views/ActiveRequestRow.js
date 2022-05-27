@@ -1,15 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { makeStyles } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
-import Collapse from "@material-ui/core/Collapse";
-import IconButton from "@material-ui/core/IconButton";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
 import {
   collection,
   query,
@@ -20,23 +10,8 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import Button from "@mui/material/Button";
-import { TableFooter, TextField, Tooltip, Typography } from "@material-ui/core";
 import moment from "moment";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import "../../styles/Table.css";
-import CheckIcon from "@mui/icons-material/Check";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import DialogTitle from "@mui/material/DialogTitle";
-import Dialog from "@mui/material/Dialog";
-import Timeline from "@mui/lab/Timeline";
-import TimelineItem from "@mui/lab/TimelineItem";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
-import TimelineConnector from "@mui/lab/TimelineConnector";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
 import { EquipmentTableHeaderView } from "../../components/TableHeaderViews";
 import {
   sendWorkOrderEmail,
@@ -44,28 +19,53 @@ import {
   sendStatusEmail,
   sendRequestDeletedEmail,
 } from "../../services/email-service";
-import AgricultureIcon from "@mui/icons-material/Agriculture";
-import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import EquipmentRow from "./EquipmentRows";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/Spinner";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-
-// Styles:
-const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      borderBottom: "unset",
-    },
-  },
-});
+import {
+  Box,
+  Button,
+  Collapse,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  AddRounded,
+  AgricultureRounded,
+  Check,
+  CheckRounded,
+  Close,
+  CloseRounded,
+  DeleteRounded,
+  EditRounded,
+  HistoryOutlined,
+  KeyboardArrowDown,
+  KeyboardArrowUp,
+  PrintOutlined,
+} from "@mui/icons-material";
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator,
+} from "@mui/lab";
 
 // Request row view:
 export default function RequestRow({ request }) {
   //#region State Properties
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
-  const classes = useRowStyles();
   var [workOrder, setWorkOrder] = useState("");
   var [currentWorkOrder, setCurrentWorkOrder] = useState("");
   var [equipment, setEquipment] = useState([]);
@@ -374,7 +374,7 @@ export default function RequestRow({ request }) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} className={classes.root}>
+      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: '0' } }}>
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
@@ -382,13 +382,13 @@ export default function RequestRow({ request }) {
               size="small"
               onClick={() => setOpen(!open)}
             >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
             </IconButton>
           </Tooltip>
         </TableCell>
 
         <TableCell key="model" align="left">
-          <strong className="model">{equipment[0]?.model}</strong>
+          <Typography style={{fontWeight: "bold"}}>{equipment[0]?.model}</Typography>
           <p>
             <small>
               {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
@@ -396,9 +396,9 @@ export default function RequestRow({ request }) {
           </p>
         </TableCell>
 
-        <TableCell key="salesman" component="th" scope="row">
-          <p>{request.salesman}</p>
-          <small>{request.timestamp}</small>
+        <TableCell key="salesman" align="left" scope="row">
+          <Typography component="p">{request.salesman}</Typography>
+          <Typography variant="caption">{request.timestamp}</Typography>
         </TableCell>
 
         <TableCell key="workOrder" align="left">
@@ -420,7 +420,6 @@ export default function RequestRow({ request }) {
         <TableCell key="status" align="left">
           <Tooltip title="Update Status">
             <Button
-              color="success"
               size="small"
               sx={{ width: "115px", pt: "5px" }}
               variant={
@@ -431,9 +430,9 @@ export default function RequestRow({ request }) {
               {request.status}
             </Button>
           </Tooltip>
-          <p>
-            <small>{request.statusTimestamp}</small>
-          </p>
+          <Typography component="p" variant="caption">
+            {request.statusTimestamp}
+          </Typography>
 
           <Dialog
             onClose={handleCloseConfirmDialog}
@@ -482,7 +481,6 @@ export default function RequestRow({ request }) {
                     </Button>
                     <Button
                       variant="contained"
-                      color="success"
                       onClick={updateStatus}
                     >
                       Update
@@ -499,7 +497,7 @@ export default function RequestRow({ request }) {
             <div>
               <IconButton aria-label="show" onClick={handleToggleChangeLog}>
                 <Tooltip title="Show Changes">
-                  <HistoryOutlinedIcon />
+                  <HistoryOutlined />
                 </Tooltip>
               </IconButton>
 
@@ -540,32 +538,29 @@ export default function RequestRow({ request }) {
               >
                 <IconButton aria-label="show">
                   <Tooltip title="Print">
-                    <PrintOutlinedIcon />
+                    <PrintOutlined />
                   </Tooltip>
                 </IconButton>
               </Link>
             </div>
 
             <div className="editIcon">
-              <IconButton className={classes.icon} onClick={editWorkOrder}>
+              <IconButton onClick={editWorkOrder}>
                 {" "}
                 {isEditingWorkOrder ? (
                   workOrderHasChanges ? (
                     <Tooltip title="Save">
-                      <CheckIcon color="success" style={{ fontSize: 18 }} />
+                      <Check color="primary" style={{ fontSize: 18 }} />
                     </Tooltip>
                   ) : (
                     <Tooltip title="Cancel">
-                      <CloseIcon color="success" style={{ fontSize: 18 }} />
+                      <Close color="primary" style={{ fontSize: 18 }} />
                     </Tooltip>
                   )
                 ) : (
                   <div className="edit-button-bg">
                     <Tooltip title="Edit Work Order">
-                      <EditRoundedIcon
-                        color="success"
-                        style={{ fontSize: 16 }}
-                      />
+                      <EditRounded color="primary" style={{ fontSize: 16 }} />
                     </Tooltip>
                   </div>
                 )}
@@ -579,10 +574,7 @@ export default function RequestRow({ request }) {
                   onClick={handleToggleDeleteDialog}
                 >
                   <Tooltip title="Delete Equipment">
-                    <DeleteRoundedIcon
-                      color="error"
-                      style={{ fontSize: 18 }}
-                    />
+                    <DeleteRounded color="error" style={{ fontSize: 18 }} />
                   </Tooltip>
                 </IconButton>
               ) : null}
@@ -665,7 +657,6 @@ export default function RequestRow({ request }) {
                   {equipment.map((item) => (
                     <EquipmentRow
                       key={item?.stock}
-                      classes={classes}
                       request={request}
                       item={item}
                     />
@@ -675,15 +666,12 @@ export default function RequestRow({ request }) {
                   {isShowingAddEquipment ? (
                     <TableRow
                       key="addEquipmentRow"
-                      style={{ fontSize: 18 }}
-                      className={classes.root}
-                      sx={{ "& > *": { borderBottom: "unset" } }}
+                      style={{ fontSize: 18, borderBottom: "unset" }}
                     >
                       <TableCell key="addModel" component="th" scope="row">
                         <TextField
                           variant="outlined"
                           label="Model"
-                          inputProps={{ style: { fontSize: 14 } }}
                           size="small"
                           onChange={(e) =>
                             setModel(e.target.value.toUpperCase())
@@ -698,7 +686,6 @@ export default function RequestRow({ request }) {
                           <TextField
                             variant="outlined"
                             label="Stock"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) => setStock(e.target.value)}
                             value={stock}
@@ -709,7 +696,6 @@ export default function RequestRow({ request }) {
                           <TextField
                             variant="outlined"
                             label="Serial"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) =>
                               setSerial(e.target.value.toUpperCase())
@@ -723,7 +709,6 @@ export default function RequestRow({ request }) {
                         <TextField
                           variant="outlined"
                           label="Work"
-                          inputProps={{ style: { fontSize: 14 } }}
                           size="small"
                           onChange={(e) => setWork(e.target.value)}
                           value={work}
@@ -734,8 +719,6 @@ export default function RequestRow({ request }) {
                         <TextField
                           variant="outlined"
                           label="Notes"
-                          inputProps={{ style: { fontSize: 14 } }}
-                          style={{ fontSize: 18 }}
                           size="small"
                           onChange={(e) => setNotes(e.target.value)}
                           value={notes}
@@ -753,14 +736,14 @@ export default function RequestRow({ request }) {
                           serial !== "" &&
                           work !== "" ? (
                             <Tooltip title="Save">
-                              <CheckIcon
+                              <CheckRounded
                                 color="success"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
                           ) : (
                             <Tooltip title="Cancel">
-                              <CloseIcon
+                              <CloseRounded
                                 color="success"
                                 style={{ fontSize: 18 }}
                               />
@@ -773,15 +756,13 @@ export default function RequestRow({ request }) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
+                      sx={{ '& > *': { borderBottom: '0' } }}
                       style={{ fontSize: 18 }}
-                      className={classes.root}
-                      sx={{ "& > *": { borderBottom: "unset" } }}
                     >
                       <TableCell key="addButtonCell">
                         <Tooltip title="Add Equipment">
                           <Button
-                            startIcon={[<AddIcon />, <AgricultureIcon />]}
-                            color="success"
+                            startIcon={[<AddRounded />, <AgricultureRounded />]}
                             onClick={addEquipment}
                           ></Button>
                         </Tooltip>

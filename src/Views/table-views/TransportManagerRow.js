@@ -1,69 +1,62 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { makeStyles } from "@material-ui/core/styles";
-import Box from "@material-ui/core/Box";
-import Collapse from "@material-ui/core/Collapse";
-import IconButton from "@material-ui/core/IconButton";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
-import KeyboardArrowDownIcon from "@material-ui/icons/KeyboardArrowDown";
-import KeyboardArrowUpIcon from "@material-ui/icons/KeyboardArrowUp";
-import {
-  collection,
-  query,
-  orderBy,
-  onSnapshot,
-  setDoc,
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
+import { setDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import Button from "@mui/material/Button";
-import { TableFooter, TextField, Tooltip, Typography } from "@material-ui/core";
 import moment from "moment";
-import EditRoundedIcon from "@mui/icons-material/EditRounded";
 import "../../styles/Table.css";
-import CheckIcon from "@mui/icons-material/Check";
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import DialogTitle from "@mui/material/DialogTitle";
-import Dialog from "@mui/material/Dialog";
-import Timeline from "@mui/lab/Timeline";
-import TimelineItem from "@mui/lab/TimelineItem";
-import TimelineSeparator from "@mui/lab/TimelineSeparator";
-import TimelineConnector from "@mui/lab/TimelineConnector";
-import TimelineContent from "@mui/lab/TimelineContent";
-import TimelineDot from "@mui/lab/TimelineDot";
-import HistoryOutlinedIcon from "@mui/icons-material/HistoryOutlined";
-import { EquipmentTableHeaderView, TransportEquipmentTableHeaderView } from "../../components/TableHeaderViews";
-import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
+import {
+  EquipmentTableHeaderView,
+  TransportEquipmentTableHeaderView,
+} from "../../components/TableHeaderViews";
 import {
   sendWorkOrderEmail,
   sendNewEquipmentEmail,
   sendStatusEmail,
   sendRequestDeletedEmail,
 } from "../../services/email-service";
-import AgricultureIcon from "@mui/icons-material/Agriculture";
-import PrintOutlinedIcon from "@mui/icons-material/PrintOutlined";
 import EquipmentRow from "./EquipmentRows";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/Spinner";
-import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import TransportEquipmentRow from "./TransportEquipmentRows";
 import TransportUpdateDialog from "../TransportUpdateDialog";
 import EditTransportView from "../EditTransportView";
-import { Stack } from "@mui/material";
-
-// Styles:
-const useRowStyles = makeStyles({
-  root: {
-    "& > *": {
-      borderBottom: "unset",
-    },
-  },
-});
+import {
+  Box,
+  Button,
+  Collapse,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableFooter,
+  TableRow,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import {
+  AddRounded,
+  AgricultureRounded,
+  CancelOutlined,
+  CheckRounded,
+  CloseRounded,
+  DeleteRounded,
+  EditRounded,
+  HistoryOutlined,
+  KeyboardArrowDownRounded,
+  KeyboardArrowUpRounded,
+} from "@mui/icons-material";
+import {
+  Timeline,
+  TimelineConnector,
+  TimelineContent,
+  TimelineDot,
+  TimelineItem,
+  TimelineSeparator,
+} from "@mui/lab";
 
 // TODO update for transport
 // Request row view:
@@ -72,7 +65,6 @@ export default function TransportRow(props) {
   const { request } = props;
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
-  const classes = useRowStyles();
   var [workOrder, setWorkOrder] = useState("");
   var [currentWorkOrder, setCurrentWorkOrder] = useState("");
   var [equipment, setEquipment] = useState([]);
@@ -336,32 +328,36 @@ export default function TransportRow(props) {
   // Request row UI:
   return (
     <React.Fragment>
-      <TableRow key={request.equipment.id} className={classes.root}>
+      <TableRow key={request.equipment.id} sx={{ '& > *': { borderBottom: '0' } }}>
         <TableCell key="expand">
-          <Stack alignItems="center" >
-          <Typography variant="h6">{request.requestType}</Typography>
-          <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </Tooltip>
+          <Stack alignItems="center">
+            <Typography variant="h6">{request.requestType}</Typography>
+            <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
+              <IconButton
+                aria-label="expand row"
+                size="small"
+                onClick={() => setOpen(!open)}
+              >
+                {open ? (
+                  <KeyboardArrowUpRounded />
+                ) : (
+                  <KeyboardArrowDownRounded />
+                )}
+              </IconButton>
+            </Tooltip>
           </Stack>
         </TableCell>
 
         <TableCell key="model" align="left">
-          <Typography style={{fontWeight: "bold"}}>
+          <Typography style={{ fontWeight: "bold" }}>
             {request.customerName}
           </Typography>
-          <Typography variant="body2" >{request.equipment[0]?.model}</Typography>
-            <Typography variant="caption">
-              {request.equipment?.length > 1
-                ? `and ${request.equipment?.length - 1} more`
-                : ""}
-            </Typography>
+          <Typography variant="body2">{request.equipment[0]?.model}</Typography>
+          <Typography variant="caption">
+            {request.equipment?.length > 1
+              ? `and ${request.equipment?.length - 1} more`
+              : ""}
+          </Typography>
         </TableCell>
 
         {/* <TableCell key="salesman" component="th" scope="row">
@@ -396,7 +392,6 @@ export default function TransportRow(props) {
             isShowingSpinner={isShowingSpinner}
             setIsShowingSpinner={setIsShowingSpinner}
           />
-          
         </TableCell>
 
         <TableCell key="buttons" align="right">
@@ -404,7 +399,7 @@ export default function TransportRow(props) {
             <div>
               <IconButton aria-label="show" onClick={handleToggleChangeLog}>
                 <Tooltip title="Show Changes">
-                  <HistoryOutlinedIcon />
+                  <HistoryOutlined />
                 </Tooltip>
               </IconButton>
 
@@ -453,13 +448,10 @@ export default function TransportRow(props) {
             </div> */}
 
             <div className="editIcon">
-              <IconButton
-                className={classes.icon}
-                onClick={handleToggleEditTansportView}
-              >
+              <IconButton onClick={handleToggleEditTansportView}>
                 <div className="edit-button-bg">
                   <Tooltip title="Edit Work Order">
-                    <EditRoundedIcon color="success" style={{ fontSize: 16 }} />
+                    <EditRounded color="primary" style={{ fontSize: 16 }} />
                   </Tooltip>
                 </div>
               </IconButton>
@@ -472,7 +464,7 @@ export default function TransportRow(props) {
                   onClick={handleToggleDeleteDialog}
                 >
                   <Tooltip title="Delete Equipment">
-                    <DeleteRoundedIcon color="error" style={{ fontSize: 18 }} />
+                    <DeleteRounded color="error" style={{ fontSize: 18 }} />
                   </Tooltip>
                 </IconButton>
               ) : null}
@@ -485,11 +477,14 @@ export default function TransportRow(props) {
           >
             <div className="closeButtonContainer">
               <Button onClick={handleCloseEditTansportView} color="success">
-                <CancelOutlinedIcon />
+                <CancelOutlined />
               </Button>
             </div>
             <div className="addRequestView">
-              <EditTransportView transportRequest={request} handleCloseEditTansportView={handleCloseEditTansportView} />
+              <EditTransportView
+                transportRequest={request}
+                handleCloseEditTansportView={handleCloseEditTansportView}
+              />
             </div>
           </Dialog>
 
@@ -531,7 +526,6 @@ export default function TransportRow(props) {
                   >
                     <Button
                       variant="outlined"
-                      color="success"
                       onClick={handleCloseDeleteDialog}
                     >
                       Cancel
@@ -572,7 +566,6 @@ export default function TransportRow(props) {
                   {request.equipment.map((item) => (
                     <TransportEquipmentRow
                       key={item?.stock}
-                      classes={classes}
                       request={request}
                       item={item}
                     />
@@ -582,15 +575,13 @@ export default function TransportRow(props) {
                   {isShowingAddEquipment ? (
                     <TableRow
                       key="addEquipmentRow"
+                      sx={{ '& > *': { borderBottom: '0' } }}
                       style={{ fontSize: 18 }}
-                      className={classes.root}
-                      sx={{ "& > *": { borderBottom: "unset" } }}
                     >
                       <TableCell key="addModel" component="th" scope="row">
                         <TextField
                           variant="outlined"
                           label="Model"
-                          inputProps={{ style: { fontSize: 14 } }}
                           size="small"
                           onChange={(e) =>
                             setModel(e.target.value.toUpperCase())
@@ -605,7 +596,6 @@ export default function TransportRow(props) {
                           <TextField
                             variant="outlined"
                             label="Stock"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) => setStock(e.target.value)}
                             value={stock}
@@ -616,7 +606,6 @@ export default function TransportRow(props) {
                           <TextField
                             variant="outlined"
                             label="Serial"
-                            inputProps={{ style: { fontSize: 14 } }}
                             size="small"
                             onChange={(e) =>
                               setSerial(e.target.value.toUpperCase())
@@ -630,8 +619,6 @@ export default function TransportRow(props) {
                         <TextField
                           variant="outlined"
                           label="Notes"
-                          inputProps={{ style: { fontSize: 14 } }}
-                          style={{ fontSize: 18 }}
                           size="small"
                           onChange={(e) => setNotes(e.target.value)}
                           value={notes}
@@ -649,15 +636,15 @@ export default function TransportRow(props) {
                           serial !== "" &&
                           work !== "" ? (
                             <Tooltip title="Save">
-                              <CheckIcon
-                                color="success"
+                              <CheckRounded
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
                           ) : (
                             <Tooltip title="Cancel">
-                              <CloseIcon
-                                color="success"
+                              <CloseRounded
+                                color="primary"
                                 style={{ fontSize: 18 }}
                               />
                             </Tooltip>
@@ -669,15 +656,13 @@ export default function TransportRow(props) {
                   {!isShowingAddEquipment ? (
                     <TableRow
                       key="addButtonRow"
+                      sx={{ '& > *': { borderBottom: '0' } }}
                       style={{ fontSize: 18 }}
-                      className={classes.root}
-                      sx={{ "& > *": { borderBottom: "unset" } }}
                     >
                       <TableCell key="addButtonCell">
                         <Tooltip title="Add Equipment">
                           <Button
-                            startIcon={[<AddIcon />, <AgricultureIcon />]}
-                            color="success"
+                            startIcon={[<AddRounded />, <AgricultureRounded />]}
                             // TODO ucomment once this function is fixed
                             // onClick={addEquipment}
                           ></Button>

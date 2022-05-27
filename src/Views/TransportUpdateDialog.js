@@ -1,16 +1,19 @@
 import React, { useState } from "react";
 import { setDoc, doc } from "firebase/firestore";
-import Button from "@mui/material/Button";
+import {
+  Button,
+  Dialog,
+  DialogTitle,
+  Grid,
+  Stack,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import Spinner from "..//components/Spinner";
-import TextField from "@material-ui/core/TextField";
-import Grid from "@material-ui/core/Grid";
-import { Tooltip, Typography } from "@material-ui/core";
-import DialogTitle from "@mui/material/DialogTitle";
-import Dialog from "@mui/material/Dialog";
 import moment from "moment";
 import { db } from "../services/firebase";
 import { sendTransportStatusEmail } from "../services/email-service";
-import { Stack } from "@mui/material";
 
 function TransportUpdateDialog(props) {
   const {
@@ -125,22 +128,19 @@ function TransportUpdateDialog(props) {
 
   return (
     <>
-        <Tooltip title="Update Status">
-          <Button
-            color="success"
-            size="small"
-            sx={{ width: "115px", pt: "5px" }}
-            variant={
-              request.status === "In Progress" ? "contained" : "outlined"
-            }
-            onClick={handleToggleConfirmDialog}
-          >
-            {request.status}
-          </Button>
-        </Tooltip>
-        <p>
-          <small>{request.statusTimestamp}</small>
-        </p>
+      <Tooltip title="Update Status">
+        <Button
+          size="small"
+          sx={{ width: "115px", pt: "5px" }}
+          variant={request.status === "Requested" ? "outlined" : "contained"}
+          onClick={handleToggleConfirmDialog}
+        >
+          {request.status}
+        </Button>
+      </Tooltip>
+      <p>
+        <small>{request.statusTimestamp}</small>
+      </p>
 
       <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
         <div
