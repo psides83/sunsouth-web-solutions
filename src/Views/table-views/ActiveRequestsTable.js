@@ -104,7 +104,7 @@ export default function ActiveRequestsTable() {
 
           <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
             <div className="closeButtonContainer">
-              <Button onClick={handleCloseAddRequestView} color="success">
+              <Button onClick={handleCloseAddRequestView} >
                 <CancelOutlined />
               </Button>
             </div>

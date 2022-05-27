@@ -59,7 +59,6 @@ import {
   TimelineSeparator,
 } from "@mui/lab";
 
-// TODO update for transport
 // Request row view:
 export default function TransportRow(props) {
   //#region State Properties
@@ -115,52 +114,6 @@ export default function TransportRow(props) {
   const handleToggleDeleteDialog = () => {
     setIsShowingDeleteDialog(!isShowingConfirmDialog);
   };
-
-  // Handles adding or editing the work order number for the request:
-  // const editWorkOrder = async () => {
-  //   if (isEditingWorkOrder) {
-  //     if (workOrderHasChanges) {
-  //       const workOrderStatus =
-  //         request.workOrder === ""
-  //           ? `Added WO # ${workOrder}`
-  //           : `WO # updated from ${request.workOrder} to ${workOrder}`;
-
-  //       const changeLogEntry = {
-  //         user: fullName,
-  //         change: workOrderStatus,
-  //         timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-  //       };
-
-  //       if (request.workOrder !== workOrder) {
-  //         request.changeLog.push(changeLogEntry);
-  //       }
-
-  //       await setDoc(
-  //         doc(db, "branches", userProfile.branch, "transport", request.id),
-  //         { workOrder: workOrder, changeLog: request.changeLog },
-  //         { merge: true }
-  //       );
-
-  //       // TODO upadate to transport WO email
-  //       // sendWorkOrderEmail(
-  //       //   request.equipment,
-  //       //   request,
-  //       //   workOrder,
-  //       //   fullName,
-  //       //   model,
-  //       //   userProfile
-  //       // );
-  //       setIsEditingWorkOrder(false);
-  //     } else {
-  //       console.log("no changes to equipment");
-  //       setIsEditingWorkOrder(false);
-  //     }
-  //   } else {
-  //     setWorkOrder(request.workOrder);
-  //     setCurrentWorkOrder(request.workOrder);
-  //     setIsEditingWorkOrder(true);
-  //   }
-  // };
 
   const resetEquipmentFields = async () => {
     setModel("");

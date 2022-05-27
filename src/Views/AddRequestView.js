@@ -460,7 +460,7 @@ export default function AddRequestView() {
       sx={{
         flexDirection: "column",
         alignItems: "center",
-        maxWidth: "380px",
+        maxWidth: "400px",
         padding: (theme) => theme.spacing(3),
         paddingLeft: (theme) => theme.spacing(4),
         paddingRight: (theme) => theme.spacing(4),
@@ -478,6 +478,7 @@ export default function AddRequestView() {
       >
         <AgricultureRounded color="secondary" fontSize="large" />
       </Avatar>
+
       <Typography
         key="heading"
         color="primary"
@@ -486,6 +487,7 @@ export default function AddRequestView() {
       >
         Submit PDI/Setup Request
       </Typography>
+
       <form style={{ width: "100%", marginTop: "10px" }} noValidate>
         <Stack mb={1}>
           <Typography component="h1" variant="h6">
@@ -537,6 +539,7 @@ export default function AddRequestView() {
               value={model}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -551,6 +554,7 @@ export default function AddRequestView() {
               value={stock}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               variant="outlined"
@@ -564,12 +568,14 @@ export default function AddRequestView() {
               value={serial}
             ></TextField>
           </Grid>
+
           <Grid item xs={12}>
             <div className="checkBoxes">
               <FormGroup>
                 <Typography variant="h6" style={{ fontSize: 18 }}>
                   Work Required*
                 </Typography>
+
                 {workOptions.map((option) => (
                   <FormControlLabel
                     control={
@@ -614,11 +620,12 @@ export default function AddRequestView() {
                     id="other"
                     value={other}
                     onChange={enableOther}
-                  ></TextField>
+                  />
                 </Stack>
               </FormGroup>
             </div>
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               variant="outlined"
@@ -632,6 +639,32 @@ export default function AddRequestView() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+          </Grid>
+
+          <Grid item xs={12} sm={8}>
+            <Button
+              fullWidth
+              size="small"
+              variant="outlined"
+              color="primary"
+              startIcon={<AddCircleOutline />}
+              onClick={equipmentSubmitValidation}
+            >
+              Add Equipment
+            </Button>
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <Button
+              fullWidth
+              size="small"
+              variant="contained"
+              color="primary"
+              endIcon={<SendRounded color="secondary" />}
+              onClick={requestSubmitValidation}
+            >
+              <Typography color="secondary">Submit</Typography>
+            </Button>
           </Grid>
         </Grid>
 
@@ -658,25 +691,6 @@ export default function AddRequestView() {
             {validationMessage}
           </Alert>
         </Snackbar>
-{/* TODO fix buttons */}
-        <Grid container justifyContent="space-between">
-          <Button
-            variant="outlined"
-            color="primary"
-            startIcon={<AddCircleOutline />}
-            onClick={equipmentSubmitValidation}
-          >
-            Add More Equipment
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            endIcon={<SendRounded color="secondary" />}
-            onClick={requestSubmitValidation}
-          >
-            <Typography color="secondary">Submit</Typography>
-          </Button>
-        </Grid>
       </form>
     </Box>
   );
