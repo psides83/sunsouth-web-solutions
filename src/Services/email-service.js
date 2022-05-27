@@ -507,26 +507,24 @@ const sendNewTransportRequestEmail = async (
                     <section>
                         <p>${timestamp}</p>
                         <p>${fullName} is requesting ${
-    transportRequest.requestType
+    transportRequest.type
   } of equipment ${
-    transportRequest.requestType === "Delivery" ? "to" : "from"
+    transportRequest.type === "Delivery" ? "to" : "from"
   } the customer below.</p>
                     </section>
                     <section>
-                        <h3>${
-                          transportRequest.requestType
-                        } Date Requested: ${moment(
+                        <h3>${transportRequest.type} Date Requested: ${moment(
     transportRequest.requestedDate
   ).format("DD-MMM-yyyy")}</h3>
-                        <p>Customer: ${transportRequest.customerName}</p>
+                        <p>Customer: ${transportRequest.name}</p>
                         <p>Phone: ${formatPhoneNumber(
-                          transportRequest.customerPhone
+                          transportRequest.phone
                         )}</p>
                         <p>Address:</p>
-                        <p>${transportRequest.customerStreet}</p>
-                        <p>${transportRequest.customerCity}, ${
-    transportRequest.customerState
-  } ${transportRequest.customerZip}</p>
+                        <p>${transportRequest.street}</p>
+                        <p>${transportRequest.city}, ${
+    transportRequest.state
+  } ${transportRequest.zip}</p>
                     </section>
                     `;
 
@@ -591,19 +589,25 @@ const sendTransportStatusEmail = async (
 
     return models.toString().replace(/,/g, ", ");
   };
-  const subject = `UPDATED - ${transportRequest.requestType} status updated to ${status} for customer ${transportRequest.customerName}`;
+  const subject = `UPDATED - ${transportRequest.type} status updated to ${status} for customer ${transportRequest.name}`;
   const body = () => {
     if (status === "Scheduled") {
       return `<body>
                     <p>${timestamp}</p>
-                    <p><strong>Work Order:</strong> ${transportRequest.workOrder}</p>
-                    <p><strong>Customer:</strong> ${transportRequest.customerName}</p>
+                    <p><strong>Work Order:</strong> ${
+                      transportRequest.workOrder
+                    }</p>
+                    <p><strong>Customer:</strong> ${transportRequest.name}</p>
                     <p><strong>Equipment:</strong> ${equipment()}</p>
-                    <p><strong>${transportRequest.requestType} Status:</strong> ${status}</p>
-                    <p><strong>Scheduled ${transportRequest.requestType} Date:</strong> ${moment(
-        startDate
-      ).format("DD-MMM-yyyy")}</p>
-                    <p>Scheduled ${transportRequest.requestType} Time Window: ${moment(
+                    <p><strong>${
+                      transportRequest.type
+                    } Status:</strong> ${status}</p>
+                    <p><strong>Scheduled ${
+                      transportRequest.type
+                    } Date:</strong> ${moment(startDate).format(
+        "DD-MMM-yyyy"
+      )}</p>
+                    <p>Scheduled ${transportRequest.type} Time Window: ${moment(
         startDate
       ).format("LT")} - ${moment(endDate).format("LT")}</p>
                     <p>Updated By: ${fullName}</p>
@@ -613,10 +617,14 @@ const sendTransportStatusEmail = async (
     if (status === "In Progress" || status === "Completed") {
       return `<body>
                   <p>${timestamp}</p>
-                  <p><strong>Work Order:</strong> ${transportRequest.workOrder}</p>
-                  <p><strong>Customer:</strong> ${transportRequest.customerName}</p>
+                  <p><strong>Work Order:</strong> ${
+                    transportRequest.workOrder
+                  }</p>
+                  <p><strong>Customer:</strong> ${transportRequest.name}</p>
                   <p><strong>Equipment:</strong> ${equipment()}</p>
-                  <p><strong>${transportRequest.requestType} Status:</strong> ${status}</p>
+                  <p><strong>${
+                    transportRequest.type
+                  } Status:</strong> ${status}</p>
                   <p><strong>Updated By:</strong> ${fullName}</p>
               <body>`;
     }
@@ -648,7 +656,6 @@ const sendNewTransportEquipmentEmail = async (
   fullName,
   userProfile
 ) => {
-
   // creates the paramaters for the email template
   const emailID = moment().format("yyyyMMDDHHmmss");
   const recipients = await setRecipients(
@@ -657,15 +664,17 @@ const sendNewTransportEquipmentEmail = async (
     request.salesman
   );
   const subject =
-  request.workOrder != undefined && request.workOrder != null && request.workOrder !== ""
-      ? `Equipment added to ${request.requestType} request for ${request.customerName} on WO# ${request.workOrder}`
-      : `Equipment added to ${request.requestType} request for ${request.customerName}`;
+    request.workOrder != undefined &&
+    request.workOrder != null &&
+    request.workOrder !== ""
+      ? `Equipment added to ${request.type} request for ${request.name} on WO# ${request.workOrder}`
+      : `Equipment added to ${request.type} request for ${request.name}`;
 
   var body = `<body>
                 <section>
                     <p>${timestamp}</p>
                     <p><strong>Work Order:</strong> ${request.workOrder}</p>
-                    <p><strong>Customer:</strong> ${request.customerName}</p>
+                    <p><strong>Customer:</strong> ${request.name}</p>
                     <p>${fullName} added the following equipment to a previous request.</p>
                 </section>
                 <hr style="height:3px;border-width:0;color:gray;background-color:gray">
@@ -713,13 +722,13 @@ const sendTransportDeletedEmail = async (
   );
   const subject =
     request.workOrder !== ""
-      ? `DELETED - ${request.requestType} request on WO# ${request.workOrder}`
-      : `DELETED - ${request.requestType} request for ${request.customerName}`;
+      ? `DELETED - ${request.type} request on WO# ${request.workOrder}`
+      : `DELETED - ${request.type} request for ${request.name}`;
   const body = `<body>
                     <p>${timestamp}</p>
                     <p><strong>Work Order:</strong> ${request.workOrder}</p>
-                    <p><strong>Customer:</strong> ${request.customerName}</p><br/> 
-                    <p>This ${request.requestType} request has been deleted by ${userFullName}.</p> 
+                    <p><strong>Customer:</strong> ${request.name}</p><br/> 
+                    <p>This ${request.type} request has been deleted by ${userFullName}.</p> 
                 <body>`;
 
   // Sets paramaters for the email template

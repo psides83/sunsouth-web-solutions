@@ -52,15 +52,15 @@ export default function EditTransportView(props) {
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [workOrder, setWorkOrder] = useState("");
-  var [customerName, setCustomerName] = useState("");
-  var [customerPhone, setCustomerPhone] = useState("");
-  var [customerStreet, setCustomerStreet] = useState("");
-  var [customerCity, setCustomerCity] = useState("");
-  var [customerState, setCustomerState] = useState("AL");
-  var [customerZip, setCustomerZip] = useState("");
+  var [name, setName] = useState("");
+  var [phone, setPhone] = useState("");
+  var [street, setStreet] = useState("");
+  var [city, setCity] = useState("");
+  var [state, setState] = useState("AL");
+  var [zip, setZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
-  var [requestType, setRequestType] = useState("");
-  var [requestNotes, setRequestNotes] = useState("");
+  var [type, setType] = useState("");
+  var [notes, setNotes] = useState("");
   var [hasTrade, setHasTrade] = useState(false);
   var [startDate, setStartDate] = useState("");
   var [endDate, setEndDate] = useState("");
@@ -90,14 +90,14 @@ export default function EditTransportView(props) {
 
   const loadTransport = useCallback(() => {
     setWorkOrder(transportRequest.workOrder);
-    setCustomerName(transportRequest.customerName);
-    setCustomerPhone(transportRequest.customerPhone);
-    setCustomerStreet(transportRequest.customerStreet);
-    setCustomerCity(transportRequest.customerCity);
-    setCustomerState(transportRequest.customerState);
-    setCustomerZip(transportRequest.customerZip);
-    setRequestType(transportRequest.requestType);
-    setRequestNotes(transportRequest.requestNotes);
+    setName(transportRequest.name);
+    setPhone(transportRequest.phone);
+    setStreet(transportRequest.street);
+    setCity(transportRequest.city);
+    setState(transportRequest.state);
+    setZip(transportRequest.zip);
+    setType(transportRequest.type);
+    setNotes(transportRequest.notes);
     setRequestedDate(transportRequest.requestedDate);
     if (
       transportRequest.startDate != undefined ||
@@ -162,15 +162,15 @@ export default function EditTransportView(props) {
       statusTimestamp: timestamp,
       startDate: startDate,
       endDate: endDate,
-      customerName: customerName,
-      customerPhone: customerPhone,
-      customerStreet: customerStreet,
-      customerCity: customerCity,
-      customerState: customerState,
-      customerZip: customerZip,
-      requestType: requestType,
+      name: name,
+      phone: phone,
+      street: street,
+      city: city,
+      state: state,
+      zip: zip,
+      type: type,
       hasTrade: hasTrade,
-      requestNotes: requestNotes,
+      notes: notes,
       changeLog: changeLog,
     };
 
@@ -207,7 +207,7 @@ export default function EditTransportView(props) {
       letter.toUpperCase()
     );
 
-    setCustomerName(finalName);
+    setName(finalName);
   };
 
   const handleEndDateInput = (e) => {
@@ -273,7 +273,7 @@ export default function EditTransportView(props) {
               <Grid container spacing={2}>
                 <Grid item sm={12}>
                   <Typography>
-                    {`${requestType} Date Requested: ${moment(
+                    {`${type} Date Requested: ${moment(
                       requestedDate
                     ).format("DD-MMM-yyyy")}`}
                   </Typography>
@@ -322,11 +322,11 @@ export default function EditTransportView(props) {
                     fullWidth
                     size="small"
                     inputProps={{ style: { fontSize: 14 } }}
-                    id="customerName"
+                    id="name"
                     label="Customer Name"
                     autoFocus
                     onChange={handleNameInput}
-                    value={customerName}
+                    value={name}
                   />
                 </Grid>
 
@@ -347,11 +347,11 @@ export default function EditTransportView(props) {
                     //     inputComponent: PhoneNumberMask,
                     //   }}
                     onChange={(e) =>
-                      setCustomerPhone(
+                      setPhone(
                         e.target.value.replace(/[^0-9\-()" "]/g, "")
                       )
                     }
-                    value={customerPhone}
+                    value={phone}
                   />
                 </Grid>
 
@@ -365,8 +365,8 @@ export default function EditTransportView(props) {
                     id="street"
                     label="Street"
                     name="street"
-                    onChange={(e) => setCustomerStreet(e.target.value)}
-                    value={customerStreet}
+                    onChange={(e) => setStreet(e.target.value)}
+                    value={street}
                   />
                 </Grid>
 
@@ -380,8 +380,8 @@ export default function EditTransportView(props) {
                     id="city"
                     label="City"
                     name="city"
-                    onChange={(e) => setCustomerCity(e.target.value)}
-                    value={customerCity}
+                    onChange={(e) => setCity(e.target.value)}
+                    value={city}
                   />
                 </Grid>
 
@@ -404,9 +404,9 @@ export default function EditTransportView(props) {
                         borderColor: (theme) => theme.palette.secondary.main,
                       },
                     }}
-                    value={customerState}
+                    value={state}
                     label="State"
-                    onChange={(e) => setCustomerState(e.target.value)}
+                    onChange={(e) => setState(e.target.value)}
                     select
                   >
                     {states.map((state) => (
@@ -425,8 +425,8 @@ export default function EditTransportView(props) {
                     id="zip"
                     label="Zip"
                     name="zip"
-                    onChange={(e) => setCustomerZip(e.target.value)}
-                    value={customerZip}
+                    onChange={(e) => setZip(e.target.value)}
+                    value={zip}
                   />
                 </Grid>
 
@@ -460,8 +460,8 @@ export default function EditTransportView(props) {
                     id="type"
                     label="Request Type"
                     name="type"
-                    onChange={(e) => setRequestType(e.target.value)}
-                    value={requestType}
+                    onChange={(e) => setType(e.target.value)}
+                    value={type}
                     select
                   >
                     <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
@@ -515,8 +515,8 @@ export default function EditTransportView(props) {
                     label="Addtional Notes"
                     name="notes"
                     type="text"
-                    value={requestNotes}
-                    onChange={(e) => setRequestNotes(e.target.value)}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
                   />
                 </Grid>
 

@@ -1,11 +1,7 @@
 import React, { useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
 import "../../styles/Table.css";
-import {
-  TableCell,
-  TableRow,
-  Typography,
-} from "@mui/material";
+import { TableCell, TableRow, Typography } from "@mui/material";
 import TransportEquipmentForm from "../EditTransportEquipmentView";
 
 // Equipment row view:

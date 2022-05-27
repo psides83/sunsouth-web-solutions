@@ -43,14 +43,14 @@ export default function AddTransportView(props) {
   const { handleCloseAddTansportView } = props;
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
-  var [customerName, setCustomerName] = useState("");
-  var [customerPhone, setCustomerPhone] = useState("");
-  var [customerStreet, setCustomerStreet] = useState("");
-  var [customerCity, setCustomerCity] = useState("");
-  var [customerState, setCustomerState] = useState("AL");
-  var [customerZip, setCustomerZip] = useState("");
+  var [name, setName] = useState("");
+  var [phone, setPhone] = useState("");
+  var [street, setStreet] = useState("");
+  var [city, setCity] = useState("");
+  var [state, setState] = useState("AL");
+  var [zip, setZip] = useState("");
   var [requestedDate, setRequestedDate] = useState("");
-  var [requestType, setRequestType] = useState("Delivery");
+  var [type, setType] = useState("Delivery");
   var [requestNotes, setRequestNotes] = useState("");
   var [hasTrade, setHasTrade] = useState(false);
   var [model, setModel] = useState("");
@@ -112,15 +112,15 @@ export default function AddTransportView(props) {
       statusTimestamp: timestamp,
       workOrder: "",
       requestedDate: requestedDate,
-      customerName: customerName,
-      customerPhone: customerPhone,
-      customerStreet: customerStreet,
-      customerCity: customerCity,
-      customerState: customerState,
-      customerZip: customerZip,
-      requestType: requestType,
+      name: name,
+      phone: phone,
+      street: street,
+      city: city,
+      state: state,
+      zip: zip,
+      type: type,
       hasTrade: hasTrade,
-      requestNotes: requestNotes,
+      notes: requestNotes,
       equipment: equipmentList,
       changeLog: changeLog,
     };
@@ -159,14 +159,14 @@ export default function AddTransportView(props) {
 
   // reset transport form
   const resetTransportForm = () => {
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerStreet("");
-    setCustomerCity("");
-    setCustomerState("");
-    setCustomerZip("");
+    setName("");
+    setPhone("");
+    setStreet("");
+    setCity("");
+    setState("");
+    setZip("");
     setRequestedDate("");
-    setRequestType("");
+    setType("");
     setHasTrade(false);
     setRequestNotes("");
   };
@@ -241,13 +241,13 @@ export default function AddTransportView(props) {
 
     if (
       requestedDate === "" ||
-      customerName === "" ||
-      customerPhone === "" ||
-      customerStreet === "" ||
-      customerCity === "" ||
-      customerState === "" ||
-      customerZip === "" ||
-      requestType === ""
+      name === "" ||
+      phone === "" ||
+      street === "" ||
+      city === "" ||
+      state === "" ||
+      zip === "" ||
+      type === ""
     )
       return true;
 
@@ -326,7 +326,7 @@ export default function AddTransportView(props) {
     }
   };
 
-  // Handle lead name input and capitolize each word
+  // Handle name input and capitolize each word
   const handleNameInput = (e) => {
     const names = e.target.value;
 
@@ -334,7 +334,29 @@ export default function AddTransportView(props) {
       letter.toUpperCase()
     );
 
-    setCustomerName(finalName);
+    setName(finalName);
+  };
+
+  // Handle street input and capitolize each word
+  const handleStreetInput = (e) => {
+    const words = e.target.value;
+
+    const finalStreet = words.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+      letter.toUpperCase()
+    );
+
+    setStreet(finalStreet);
+  };
+
+  // Handle street input and capitolize each word
+  const handleCityInput = (e) => {
+    const words = e.target.value;
+
+    const finalCity = words.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+      letter.toUpperCase()
+    );
+
+    setCity(finalCity);
   };
 
   // UI view of the submission form
@@ -400,11 +422,11 @@ export default function AddTransportView(props) {
               required
               fullWidth
               size="small"
-              id="customerName"
+              id="name"
               label="Customer Name"
               autoFocus
               onChange={handleNameInput}
-              value={customerName}
+              value={name}
             />
           </Grid>
 
@@ -421,9 +443,9 @@ export default function AddTransportView(props) {
                 inputComponent: PhoneNumberMask,
               }}
               onChange={(e) =>
-                setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
+                setPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
               }
-              value={customerPhone}
+              value={phone}
             />
           </Grid>
 
@@ -436,8 +458,8 @@ export default function AddTransportView(props) {
               id="street"
               label="Street"
               name="street"
-              onChange={(e) => setCustomerStreet(e.target.value)}
-              value={customerStreet}
+              onChange={handleStreetInput}
+              value={street}
             />
           </Grid>
 
@@ -450,8 +472,8 @@ export default function AddTransportView(props) {
               id="city"
               label="City"
               name="city"
-              onChange={(e) => setCustomerCity(e.target.value)}
-              value={customerCity}
+              onChange={handleCityInput}
+              value={city}
             />
           </Grid>
 
@@ -474,9 +496,9 @@ export default function AddTransportView(props) {
                   borderColor: (theme) => theme.palette.secondary.main,
                 },
               }}
-              value={customerState}
+              value={state}
               label="State"
-              onChange={(e) => setCustomerState(e.target.value)}
+              onChange={(e) => setState(e.target.value)}
               select
             >
               {states.map((state) => (
@@ -494,8 +516,8 @@ export default function AddTransportView(props) {
               id="zip"
               label="Zip"
               name="zip"
-              onChange={(e) => setCustomerZip(e.target.value)}
-              value={customerZip}
+              onChange={(e) => setZip(e.target.value)}
+              value={zip}
             />
           </Grid>
 
@@ -508,8 +530,8 @@ export default function AddTransportView(props) {
               id="type"
               label="Request Type"
               name="type"
-              onChange={(e) => setRequestType(e.target.value)}
-              value={requestType}
+              onChange={(e) => setType(e.target.value)}
+              value={type}
               select
             >
               <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>

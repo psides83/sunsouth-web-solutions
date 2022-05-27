@@ -65,16 +65,11 @@ export default function TransportRow(props) {
   const { request } = props;
   const [{ user, userProfile }, dispatch] = useStateValue();
   const [open, setOpen] = useState(false);
-  var [workOrder, setWorkOrder] = useState("");
-  var [currentWorkOrder, setCurrentWorkOrder] = useState("");
-  var [equipment, setEquipment] = useState([]);
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
   var [notes, setNotes] = useState("");
-  var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
   var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
-  var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
   const [openChangeLog, setOpenChangeLog] = useState(false);
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
@@ -210,7 +205,7 @@ export default function TransportRow(props) {
       >
         <TableCell key="expand">
           <Stack alignItems="start">
-            <Typography variant="h6">{request.requestType}</Typography>
+            <Typography variant="h6">{request.type}</Typography>
             <Typography component="p" variant="caption">
               WO#: {request.workOrder}
             </Typography>
@@ -232,7 +227,7 @@ export default function TransportRow(props) {
 
         <TableCell key="model" align="left">
           <Typography style={{ fontWeight: "bold" }}>
-            {request.customerName}
+            {request.name}
           </Typography>
           <Typography variant="body2">{request.equipment[0]?.model}</Typography>
           <Typography variant="caption">
@@ -432,7 +427,6 @@ export default function TransportRow(props) {
                         <Tooltip title="Add Equipment">
                           <Button
                             startIcon={[<AddRounded />, <AgricultureRounded />]}
-                            // TODO ucomment once this function is fixed
                             onClick={addEquipment}
                           ></Button>
                         </Tooltip>

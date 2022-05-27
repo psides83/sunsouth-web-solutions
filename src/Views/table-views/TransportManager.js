@@ -6,7 +6,6 @@ import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/Table.css";
 import { Link } from "react-router-dom";
 import AddTransportView from "../AddTransportView";
-import { TransportTableHeaderView } from "../../components/TableHeaderViews";
 import TransportRow from "./TransportManagerRow";
 import CalendarView from "../CalendarView";
 import { formatPhoneNumber } from "../../utils/utils";
@@ -73,14 +72,14 @@ export default function TransportManager() {
           salesman: doc.data().salesman,
           timestamp: doc.data().timestamp,
           workOrder: doc.data().workOrder,
-          customerName: doc.data().customerName,
-          customerPhone: doc.data().customerPhone,
-          customerStreet: doc.data().customerStreet,
-          customerCity: doc.data().customerCity,
-          customerState: doc.data().customerState,
-          customerZip: doc.data().customerZip,
-          requestNotes: doc.data().requestNotes,
-          requestType: doc.data().requestType,
+          name: doc.data().name,
+          phone: doc.data().phone,
+          street: doc.data().street,
+          city: doc.data().city,
+          state: doc.data().state,
+          zip: doc.data().zip,
+          notes: doc.data().notes,
+          type: doc.data().type,
           requestedDate: doc.data().requestedDate,
           hasTrade: doc.data().hasTrade,
           startDate: doc.data().startDate,
@@ -95,18 +94,18 @@ export default function TransportManager() {
       setCalendarRequests(
         querySnapshot.docs.map((doc) => ({
           id: doc.data().id,
-          title: `${doc.data().customerName}, ${doc.data().equipment[0].model}`,
+          title: `${doc.data().name}, ${doc.data().equipment[0].model}`,
           status: doc.data().status,
           startDate: startDateCheck(
             doc.data().startDate,
             doc.data().requestedDate
           ),
           endDate: endDateCheck(doc.data().endDate, doc.data().requestedDate),
-          location: `${doc.data().customerStreet}, ${
-            doc.data().customerCity
-          }, ${doc.data().customerState} ${doc.data().customerZip}`,
-          phone: formatPhoneNumber(doc.data().customerPhone),
-          type: doc.data().requestType,
+          location: `${doc.data().street}, ${
+            doc.data().city
+          }, ${doc.data().state} ${doc.data().zip}`,
+          phone: formatPhoneNumber(doc.data().phone),
+          type: doc.data().type,
           hasTrade: doc.data().hasTrade,
         }))
       );
