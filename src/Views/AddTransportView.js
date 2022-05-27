@@ -362,6 +362,7 @@ export default function AddTransportView(props) {
       >
         <LocalShippingRounded color="secondary" fontSize="large" />
       </Avatar>
+
       <Typography
         key="heading"
         color="primary"
@@ -370,6 +371,7 @@ export default function AddTransportView(props) {
       >
         Transport Request
       </Typography>
+
       <form style={{ width: "100%", marginTop: "10px" }} noValidate>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -391,6 +393,7 @@ export default function AddTransportView(props) {
               label="Date"
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -404,6 +407,7 @@ export default function AddTransportView(props) {
               value={customerName}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -422,6 +426,7 @@ export default function AddTransportView(props) {
               value={customerPhone}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -435,6 +440,7 @@ export default function AddTransportView(props) {
               value={customerStreet}
             />
           </Grid>
+
           <Grid item xs={12} sm={5}>
             <TextField
               variant="outlined"
@@ -448,6 +454,7 @@ export default function AddTransportView(props) {
               value={customerCity}
             />
           </Grid>
+
           <Grid item xs={12} sm={3}>
             <TextField
               size="small"
@@ -477,6 +484,7 @@ export default function AddTransportView(props) {
               ))}
             </TextField>
           </Grid>
+
           <Grid item xs={12} sm={4}>
             <TextField
               variant="outlined"
@@ -490,6 +498,7 @@ export default function AddTransportView(props) {
               value={customerZip}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -504,9 +513,11 @@ export default function AddTransportView(props) {
               select
             >
               <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+
               <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
             </TextField>
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <FormGroup>
               <FormControlLabel
@@ -527,6 +538,7 @@ export default function AddTransportView(props) {
               />
             </FormGroup>
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               variant="outlined"
@@ -543,6 +555,7 @@ export default function AddTransportView(props) {
             />
           </Grid>
         </Grid>
+
         <Stack mb={1}>
           <Typography component="h1" variant="h6">
             {heading}
@@ -579,6 +592,7 @@ export default function AddTransportView(props) {
             })}
           </Box>
         </Stack>
+
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -594,6 +608,7 @@ export default function AddTransportView(props) {
               value={model}
             />
           </Grid>
+
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -608,6 +623,7 @@ export default function AddTransportView(props) {
               value={stock}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               variant="outlined"
@@ -621,63 +637,7 @@ export default function AddTransportView(props) {
               value={serial}
             ></TextField>
           </Grid>
-          {/* <Grid item xs={12}>
-              <div className="checkBoxes">
-                <FormGroup>
-                  <Typography variant="h6" style={{ fontSize: 18 }}>
-                    Work Required*
-                  </Typography>
-                  {workOptions.map((option) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id={option.id}
-                          checked={option.checkedState}
-                          size="small"
-                          onChange={handleChange}
-                          color="primary"
-                          value={option.work}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          {option.work}
-                        </Typography>
-                      }
-                    />
-                  ))}
-                  <Stack direction="row">
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          id="8"
-                          checked={checked8}
-                          size="small"
-                          onChange={handleChange}
-                          disabled={otherDisabled}
-                          color="primary"
-                          value={other}
-                        />
-                      }
-                      label={
-                        <Typography style={{ fontSize: 14 }}>
-                          Other:{" "}
-                        </Typography>
-                      }
-                    />
 
-                    <TextField
-                      fullWidth
-                      size="small"
-                      inputProps={{ style: { fontSize: 14 } }}
-                      id="other"
-                      value={other}
-                      onChange={enableOther}
-                    ></TextField>
-                  </Stack>
-                </FormGroup>
-              </div>
-            </Grid> */}
           <Grid item xs={12}>
             <TextField
               variant="outlined"
@@ -691,6 +651,38 @@ export default function AddTransportView(props) {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
+          </Grid>
+
+          <Grid item xs={12} sm={8}>
+            <Button
+              fullWidth
+              size="small"
+              variant="outlined"
+              color="primary"
+              disabled={equipmentSubmitIsDisabled()}
+              startIcon={<AddCircleOutline />}
+              onClick={equipmentSubmitValidation}
+            >
+              Add Equipment
+            </Button>
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <Button
+              fullWidth
+              size="small"
+              variant="contained"
+              color="primary"
+              disabled={submitIsDisabled()}
+              endIcon={
+                <SendRounded color={submitIsDisabled() ? "" : "secondary"} />
+              }
+              onClick={requestSubmitValidation}
+            >
+              <Typography color={submitIsDisabled() ? "" : "secondary"}>
+                Submit
+              </Typography>
+            </Button>
           </Grid>
         </Grid>
 
@@ -717,32 +709,6 @@ export default function AddTransportView(props) {
             {validationMessage}
           </Alert>
         </Snackbar>
-
-{/* TODO fix buttons */}
-        <Grid container justifyContent="space-between">
-          <Button
-            variant="outlined"
-            color="primary"
-            disabled={equipmentSubmitIsDisabled()}
-            startIcon={<AddCircleOutline />}
-            onClick={equipmentSubmitValidation}
-          >
-            Add More Equipment
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            disabled={submitIsDisabled()}
-            endIcon={
-              <SendRounded color={submitIsDisabled() ? "" : "secondary"} />
-            }
-            onClick={requestSubmitValidation}
-          >
-            <Typography color={submitIsDisabled() ? "" : "secondary"}>
-              Submit
-            </Typography>
-          </Button>
-        </Grid>
       </form>
     </Box>
   );
