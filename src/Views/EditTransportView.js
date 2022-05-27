@@ -16,16 +16,24 @@ import {
   Button,
   Checkbox,
   Container,
+  Dialog,
   FormControlLabel,
   FormGroup,
   Grid,
+  IconButton,
   MenuItem,
   Snackbar,
   styled,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { LocalShippingRounded, SendRounded } from "@mui/icons-material";
+import {
+  CancelOutlined,
+  EditRounded,
+  LocalShippingRounded,
+  SendRounded,
+} from "@mui/icons-material";
 
 const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
@@ -33,7 +41,12 @@ const ListItem = styled("li")(({ theme }) => ({
 
 export default function EditTransportView(props) {
   //#region State Properties
-  const { transportRequest, handleCloseEditTansportView } = props;
+  const {
+    transportRequest,
+    handleCloseEditTansportView,
+    openAddTransportView,
+    handleToggleEditTansportView,
+  } = props;
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
@@ -187,315 +200,349 @@ export default function EditTransportView(props) {
 
   // UI view of the submission form
   return (
-    <Box
-      display="flex"
-      sx={{
-        flexDirection: "column",
-        alignItems: "center",
-        maxWidth: "380px",
-        padding: (theme) => theme.spacing(3),
-        paddingLeft: (theme) => theme.spacing(4),
-        paddingRight: (theme) => theme.spacing(4),
-        paddingBottom: (theme) => theme.spacing(3),
-      }}
-    >
-      <Avatar
-        key="avatar"
-        style={{
-          width: 64,
-          height: 64,
-          margin: "10px",
-          backgroundColor: "#367C2B",
-        }}
-      >
-        <LocalShippingRounded color="secondary" fontSize="large" />
-      </Avatar>
-      <Typography
-        key="heading"
-        color="primary"
-        variant="h5"
-        style={{ fontWeight: "bold" }}
-      >
-        Transport Request
-      </Typography>
-      <form style={{ width: "100%", marginTop: "10px" }} noValidate>
-        <Grid container spacing={2}>
-          <Grid item sm={12}>
-            <Typography>
-              {`${requestType} Date Requested: ${moment(requestedDate).format(
-                "DD-MMM-yyyy"
-              )}`}
+    <>
+      <div className="editIcon">
+        <IconButton onClick={handleToggleEditTansportView}>
+          <div className="edit-button-bg">
+            <Tooltip title="Edit Work Order">
+              <EditRounded color="primary" style={{ fontSize: 16 }} />
+            </Tooltip>
+          </div>
+        </IconButton>
+      </div>
+
+      <Dialog onClose={handleCloseEditTansportView} open={openAddTransportView}>
+        <div className="closeButtonContainer">
+          <Button onClick={handleCloseEditTansportView}>
+            <CancelOutlined />
+          </Button>
+        </div>
+        <div className="addRequestView">
+          <Box
+            display="flex"
+            sx={{
+              flexDirection: "column",
+              alignItems: "center",
+              maxWidth: "380px",
+              padding: (theme) => theme.spacing(3),
+              paddingLeft: (theme) => theme.spacing(4),
+              paddingRight: (theme) => theme.spacing(4),
+              paddingBottom: (theme) => theme.spacing(3),
+            }}
+          >
+            <Avatar
+              key="avatar"
+              style={{
+                width: 64,
+                height: 64,
+                margin: "10px",
+                backgroundColor: "#367C2B",
+              }}
+            >
+              <LocalShippingRounded color="secondary" fontSize="large" />
+            </Avatar>
+            <Typography
+              key="heading"
+              color="primary"
+              variant="h5"
+              style={{ fontWeight: "bold" }}
+            >
+              Transport Request
             </Typography>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              key="startDate"
-              name="startDate"
-              variant="outlined"
-              type="datetime-local"
-              fullWidth
-              size="small"
-              id="startDate"
-              onChange={(e) => setStartDate(e.target.value)}
-              value={startDate}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              label="Start Date"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              key="endDate"
-              name="endDate"
-              variant="outlined"
-              type="datetime-local"
-              fullWidth
-              size="small"
-              id="endDate"
-              onChange={handleEndDateInput}
-              value={endDate}
-              InputLabelProps={{
-                shrink: true,
-              }}
-              label="End Date"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="customerName"
-              label="Customer Name"
-              autoFocus
-              onChange={handleNameInput}
-              value={customerName}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              InputProps={{ inputComponent: PhoneNumberMask, style: { fontSize: 14 } }}
-              id="phone"
-              label="Phone Number"
-              name="phone"
-              // InputProps={{
-              //     inputComponent: PhoneNumberMask,
-              //   }}
-              onChange={(e) =>
-                setCustomerPhone(e.target.value.replace(/[^0-9\-()" "]/g, ""))
-              }
-              value={customerPhone}
-            />
-          </Grid>
-          <Grid item xs={12} sm={12}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="street"
-              label="Street"
-              name="street"
-              onChange={(e) => setCustomerStreet(e.target.value)}
-              value={customerStreet}
-            />
-          </Grid>
-          <Grid item xs={12} sm={5}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="city"
-              label="City"
-              name="city"
-              onChange={(e) => setCustomerCity(e.target.value)}
-              value={customerCity}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3}>
-            <TextField
-              size="small"
-              variant="outlined"
-              required
-              fullWidth
-              labelId="demo-simple-select-label"
-              id="state"
-              sx={{
-                "&:before": {
-                  borderColor: (theme) => theme.palette.secondary.main,
-                },
-                "&:after": {
-                  borderColor: (theme) => theme.palette.secondary.main,
-                },
-                "&:not(.Mui-disabled):hover::before": {
-                  borderColor: (theme) => theme.palette.secondary.main,
-                },
-              }}
-              value={customerState}
-              label="State"
-              onChange={(e) => setCustomerState(e.target.value)}
-              select
-            >
-              {states.map((state) => (
-                <MenuItem value={state}>{state}</MenuItem>
-              ))}
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="zip"
-              label="Zip"
-              name="zip"
-              onChange={(e) => setCustomerZip(e.target.value)}
-              value={customerZip}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="status"
-              label="Status Status"
-              name="status"
-              onChange={(e) => setStatus(e.target.value)}
-              value={status}
-              select
-            >
-              <MenuItem value={"Requested"}>{"Requested"}</MenuItem>
-              <MenuItem value={"Scheduled"}>{"Scheduled"}</MenuItem>
-              <MenuItem value={"In Progress"}>{"In Progress"}</MenuItem>
-              <MenuItem value={"Completed"}>{"Completed"}</MenuItem>
-            </TextField>
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="type"
-              label="Request Type"
-              name="type"
-              onChange={(e) => setRequestType(e.target.value)}
-              value={requestType}
-              select
-            >
-              <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
-              <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
-            </TextField>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={hasTrade}
-                    size="small"
-                    onChange={handleHasTrade}
-                    color="primary"
-                    value={hasTrade}
-                  />
-                }
-                label={
-                  <Typography style={{ fontSize: 14 }}>
-                    Trade to return?
+            <form style={{ width: "100%", marginTop: "10px" }} noValidate>
+              <Grid container spacing={2}>
+                <Grid item sm={12}>
+                  <Typography>
+                    {`${requestType} Date Requested: ${moment(
+                      requestedDate
+                    ).format("DD-MMM-yyyy")}`}
                   </Typography>
-                }
-              />
-            </FormGroup>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="workOrder"
-              label="Work Order"
-              name="workOrder"
-              onChange={(e) => setWorkOrder(e.target.value)}
-              value={workOrder}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              variant="outlined"
-              fullWidth
-              multiline
-              size="small"
-              inputProps={{ style: { fontSize: 14 } }}
-              id="notes"
-              label="Addtional Notes"
-              name="notes"
-              type="text"
-              value={requestNotes}
-              onChange={(e) => setRequestNotes(e.target.value)}
-            />
-          </Grid>
-        </Grid>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    key="startDate"
+                    name="startDate"
+                    variant="outlined"
+                    type="datetime-local"
+                    fullWidth
+                    size="small"
+                    id="startDate"
+                    onChange={(e) => setStartDate(e.target.value)}
+                    value={startDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    label="Start Date"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    key="endDate"
+                    name="endDate"
+                    variant="outlined"
+                    type="datetime-local"
+                    fullWidth
+                    size="small"
+                    id="endDate"
+                    onChange={handleEndDateInput}
+                    value={endDate}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    label="End Date"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="customerName"
+                    label="Customer Name"
+                    autoFocus
+                    onChange={handleNameInput}
+                    value={customerName}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    InputProps={{
+                      inputComponent: PhoneNumberMask,
+                      style: { fontSize: 14 },
+                    }}
+                    id="phone"
+                    label="Phone Number"
+                    name="phone"
+                    // InputProps={{
+                    //     inputComponent: PhoneNumberMask,
+                    //   }}
+                    onChange={(e) =>
+                      setCustomerPhone(
+                        e.target.value.replace(/[^0-9\-()" "]/g, "")
+                      )
+                    }
+                    value={customerPhone}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="street"
+                    label="Street"
+                    name="street"
+                    onChange={(e) => setCustomerStreet(e.target.value)}
+                    value={customerStreet}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={5}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="city"
+                    label="City"
+                    name="city"
+                    onChange={(e) => setCustomerCity(e.target.value)}
+                    value={customerCity}
+                  />
+                </Grid>
+                <Grid item xs={12} sm={3}>
+                  <TextField
+                    size="small"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    labelId="demo-simple-select-label"
+                    id="state"
+                    sx={{
+                      "&:before": {
+                        borderColor: (theme) => theme.palette.secondary.main,
+                      },
+                      "&:after": {
+                        borderColor: (theme) => theme.palette.secondary.main,
+                      },
+                      "&:not(.Mui-disabled):hover::before": {
+                        borderColor: (theme) => theme.palette.secondary.main,
+                      },
+                    }}
+                    value={customerState}
+                    label="State"
+                    onChange={(e) => setCustomerState(e.target.value)}
+                    select
+                  >
+                    {states.map((state) => (
+                      <MenuItem value={state}>{state}</MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={4}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="zip"
+                    label="Zip"
+                    name="zip"
+                    onChange={(e) => setCustomerZip(e.target.value)}
+                    value={customerZip}
+                  />
+                </Grid>
 
-        <Snackbar
-          open={openSuccess}
-          autoHideDuration={3000}
-          onClose={handleClose}
-        >
-          <Alert
-            onClose={handleClose}
-            severity="success"
-            sx={{ width: "100%" }}
-          >
-            {validationMessage}
-          </Alert>
-        </Snackbar>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="status"
+                    label="Status Status"
+                    name="status"
+                    onChange={(e) => setStatus(e.target.value)}
+                    value={status}
+                    select
+                  >
+                    <MenuItem value={"Requested"}>{"Requested"}</MenuItem>
+                    <MenuItem value={"Scheduled"}>{"Scheduled"}</MenuItem>
+                    <MenuItem value={"In Progress"}>{"In Progress"}</MenuItem>
+                    <MenuItem value={"Completed"}>{"Completed"}</MenuItem>
+                  </TextField>
+                </Grid>
 
-        <Snackbar
-          open={openError}
-          autoHideDuration={3000}
-          onClose={handleClose}
-        >
-          <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-            {validationMessage}
-          </Alert>
-        </Snackbar>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="type"
+                    label="Request Type"
+                    name="type"
+                    onChange={(e) => setRequestType(e.target.value)}
+                    value={requestType}
+                    select
+                  >
+                    <MenuItem value={"Delivery"}>{"Delivery"}</MenuItem>
+                    <MenuItem value={"Pick Up"}>{"Pick Up"}</MenuItem>
+                  </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormGroup>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={hasTrade}
+                          size="small"
+                          onChange={handleHasTrade}
+                          color="primary"
+                          value={hasTrade}
+                        />
+                      }
+                      label={
+                        <Typography style={{ fontSize: 14 }}>
+                          Trade to return?
+                        </Typography>
+                      }
+                    />
+                  </FormGroup>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="workOrder"
+                    label="Work Order"
+                    name="workOrder"
+                    onChange={(e) => setWorkOrder(e.target.value)}
+                    value={workOrder}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    size="small"
+                    inputProps={{ style: { fontSize: 14 } }}
+                    id="notes"
+                    label="Addtional Notes"
+                    name="notes"
+                    type="text"
+                    value={requestNotes}
+                    onChange={(e) => setRequestNotes(e.target.value)}
+                  />
+                </Grid>
 
-        <Grid container justifyContent="space-between">
-          <Button
-            variant="outlined"
-            color="error"
-            onClick={handleCloseEditTansportView}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            endIcon={<SendRounded color="secondary" />}
-            onClick={setRequestToFirestore}
-          >
-            <Typography color="secondary">Submit</Typography>
-          </Button>
-        </Grid>
-      </form>
-    </Box>
+                <Snackbar
+                  open={openSuccess}
+                  autoHideDuration={3000}
+                  onClose={handleClose}
+                >
+                  <Alert
+                    onClose={handleClose}
+                    severity="success"
+                    sx={{ width: "100%" }}
+                  >
+                    {validationMessage}
+                  </Alert>
+                </Snackbar>
+
+                <Snackbar
+                  open={openError}
+                  autoHideDuration={3000}
+                  onClose={handleClose}
+                >
+                  <Alert
+                    onClose={handleClose}
+                    severity="error"
+                    sx={{ width: "100%" }}
+                  >
+                    {validationMessage}
+                  </Alert>
+                </Snackbar>
+
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="error"
+                    onClick={handleCloseEditTansportView}
+                  >
+                    Cancel
+                  </Button>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    endIcon={<SendRounded color="secondary" />}
+                    onClick={setRequestToFirestore}
+                  >
+                    <Typography color="secondary">Submit</Typography>
+                  </Button>
+                </Grid>
+              </Grid>
+            </form>
+          </Box>
+        </div>
+      </Dialog>
+    </>
   );
 }
