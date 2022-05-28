@@ -21,7 +21,6 @@ import {
 } from "@devexpress/dx-react-scheduler-material-ui";
 import moment from "moment";
 import { Grid, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import { PhoneRounded, RestorePage, Room } from "@mui/icons-material";
 
 const currentDate = moment().format();
@@ -102,7 +101,7 @@ export default function CalendarView(props) {
         borderRadius: "10px",
       }}
     >
-      <Scheduler height={600} data={calendarRequests}>
+      <Scheduler height={700} data={calendarRequests}>
         {/* <EditingState onCommitChanges={null} /> */}
         {/* <IntegratedEditing /> */}
         <ViewState
@@ -122,8 +121,7 @@ export default function CalendarView(props) {
           contentComponent={Content}
           showCloseButton
         />
-        <AllDayPanel />
-        <AppointmentForm readOnly />
+        {/* <AppointmentForm readOnly /> */}
       </Scheduler>
     </Paper>
   );
