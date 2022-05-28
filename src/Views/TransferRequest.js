@@ -14,52 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import { AgricultureRounded, SendRounded } from "@mui/icons-material";
-// import { styled } from '@mui/material/styles';
 
-// Sets useStyles for customizing Material UI components.
-// const useStyles = makeStyles((theme) => ({
-//   paper: {
-//   },
-//   avatar: {
-//     width: 64,
-//     height: 64,
-//     margin: theme.spacing(1),
-//     backgroundColor: theme.palette.primary.main,
-//   },
-//   img: {
-//     padding: 1
-//   },
-//   icon: {
-//     color: theme.palette.secondary.main,
-//   },
-//   title: {
-//     color: theme.palette.primary.main,
-//   },
-//   form: {
-//     width: '100%', // Fix IE 11 issue.
-//     marginTop: theme.spacing(3),
-//   },
-//   addEquipment: {
-//     margin: theme.spacing(3, 0, 2),
-//   },
-//   submit: {
-//     margin: theme.spacing(3, 0, 2),
-//   },
-//   submitIcon: {
-//     color: theme.palette.secondary.main,
-//   },
-//   select: {
-//     '&:before': {
-//         borderColor: theme.palette.secondary.main,
-//     },
-//     '&:after': {
-//         borderColor: theme.palette.secondary.main,
-//     },
-//     '&:not(.Mui-disabled):hover::before': {
-//         borderColor: theme.palette.secondary.main,
-//     },
-//   },
-// }));
 
 export default function TransferRequestView({ emails }) {
   //#region State Properties
@@ -144,28 +99,8 @@ export default function TransferRequestView({ emails }) {
         >
           Submit Transfer Request
         </Typography>
-        <form className={classes.form} noValidate>
+        <form style={{ width: "100%", margin: "15px" }} noValidate>
           <Grid container spacing={2}>
-            {/* <Grid item xs={12}>
-              <TextField
-                size="small"
-                variant="outlined"
-                required
-                fullWidth
-                labelId="demo-simple-select-label"
-                id="branch"
-                className={classes.select}
-                value={branch}
-                label="Branch"
-                onChange={e=> setBranch(e.target.value)}
-                select
-              >
-                {branches.map(branch => (
-                  <MenuItem value={branch}>{branch}</MenuItem>
-                ))}
-              </TextField>
-            </Grid> */}
-
             <Grid item xs={12} sm={6}>
               <TextField
                 name="model"
@@ -194,6 +129,21 @@ export default function TransferRequestView({ emails }) {
                 onChange={(e) => setStock(e.target.value)}
                 value={stock}
               />
+            </Grid>
+            <Grid item xs={6} sm={6}></Grid>
+            <Grid item xs={6} sm={6}>
+              <Button
+                fullwidth
+                size="small"
+                variant="contained"
+                color="primary"
+                endIcon={<SendRounded color="secondary" />}
+                onClick={requestSubmitValidation}
+              >
+                <Typography component="p" color="secondary">
+                  Submit Request
+                </Typography>
+              </Button>
             </Grid>
           </Grid>
 
@@ -224,18 +174,6 @@ export default function TransferRequestView({ emails }) {
               {validationMessage}
             </Alert>
           </Snackbar>
-
-          <Grid container justifyContent="flex-end">
-            <Button
-              variant="contained"
-              color="primary"
-              endIcon={<SendRounded className={classes.submitIcon} />}
-              className={classes.submit}
-              onClick={requestSubmitValidation}
-            >
-              <p className={classes.submitIcon}>Submit Request</p>
-            </Button>
-          </Grid>
         </form>
       </Box>
     </Container>
