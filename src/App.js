@@ -19,7 +19,7 @@ import AddLoanerView from "./views/AddLoanerView";
 import LoanerManager from "./views/table-views/LoanerManager";
 import SalesmenList from "./views/table-views/SalesmenList";
 import TransportManager from "./views/table-views/TransportManager";
-import { RequestPDF } from "./components/RequestPDF";
+import { RequestPDF, TransportPDF } from "./components/RequestPDF";
 import { PDFViewer } from "@react-pdf/renderer";
 import { doc, getDoc } from "@firebase/firestore";
 
@@ -27,40 +27,27 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      // light: "#367C2B",
       main: "#367C2B",
-      // dark: "#367C2B",
     },
     secondary: {
-      // light: "#FFDE00",
       main: "#FFDE00",
-      // dark: "#FFDE00",
     },
     success: {
-      // light: "#81c784",
       main: "#66bb6a",
-      // dark: "#388e3c",
     },
     error: {
-      // light: "#e57373",
       main: "#f44336",
-      // dark: "#d32f2f",
     },
     info: {
-      // light: "#708090",
       main: "#708090",
-      // dark: "#708090",
     },
     background: {
-      // main: "#20301d",
       default: "#e3e8e8",
-      // paper: "#f2f2f2",
     },
   },
 });
 
 function App() {
-  // const history = useHistory();
   // const [{ pdfData }] = useStateValue();
   const [{ user }, dispatch] = useStateValue();
   const [loading, setLoading] = useState(true);
@@ -115,7 +102,20 @@ function App() {
       <div className="app">
         <Router>
           <Switch>
-            <Route path="/pdf">
+          <Route path="/transport-pdf">
+              {loading ? (
+                <Spinner frame />
+              ) : (
+                <PDFViewer width="100%" height="1080">
+                  <TransportPDF
+                    className="pdf"
+                    request={data?.request}
+                  />
+                </PDFViewer>
+              )}
+            </Route>
+
+            <Route path="/request-pdf">
               {loading ? (
                 <Spinner frame />
               ) : (

@@ -533,7 +533,7 @@ export default function RequestRow({ request }) {
               <Link
                 target="_blank"
                 rel="noopener noreferrer"
-                to={"pdf"}
+                to={"request-pdf"}
                 onClick={setPDFData}
               >
                 <IconButton aria-label="show">

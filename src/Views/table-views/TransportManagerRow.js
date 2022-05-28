@@ -49,6 +49,7 @@ import {
   HistoryOutlined,
   KeyboardArrowDownRounded,
   KeyboardArrowUpRounded,
+  PrintOutlined,
 } from "@mui/icons-material";
 import {
   Timeline,
@@ -174,19 +175,18 @@ export default function TransportRow(props) {
 
   // TODO build a transport PDF and update this to transport PDF
   // Sets data for the pdf into a fire store documetnt for the current
-  // const setPDFData = () => {
-  //   const requestRef = doc(db, "users", userProfile?.id, "pdf", "pdfData");
-  //   setDoc(
-  //     requestRef,
-  //     {
-  //       request: request,
-  //       equipment: equipment,
-  //     },
-  //     {
-  //       merge: true,
-  //     }
-  //   );
-  // };
+  const setPDFData = () => {
+    const requestRef = doc(db, "users", userProfile?.id, "pdf", "pdfData");
+    setDoc(
+      requestRef,
+      {
+        request: request,
+      },
+      {
+        merge: true,
+      }
+    );
+  };
 
   // Request row UI:
   return (
@@ -280,20 +280,20 @@ export default function TransportRow(props) {
             </div>
 
             {/* TODO update to transport PDF */}
-            {/* <div>
+            <div>
               <Link
                 target="_blank"
                 rel="noopener noreferrer"
-                to={"pdf"}
+                to={"transport-pdf"}
                 onClick={setPDFData}
               >
                 <IconButton aria-label="show">
                   <Tooltip title="Print">
-                    <PrintOutlinedIcon />
+                    <PrintOutlined />
                   </Tooltip>
                 </IconButton>
               </Link>
-            </div> */}
+            </div>
 
             <EditTransportView
               transportRequest={request}
