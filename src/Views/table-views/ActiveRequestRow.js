@@ -505,8 +505,8 @@ export default function RequestRow({ request }) {
                 <DialogTitle>Request Change History</DialogTitle>
                 <Timeline position="alternate">
                   {" "}
-                  {request.changeLog.map((change) => (
-                    <TimelineItem>
+                  {request.changeLog.map((change, index) => (
+                    <TimelineItem ke={index} >
                       <TimelineSeparator>
                         <TimelineDot variant="outlined" color="primary" />
                         {request.changeLog.indexOf(change) + 1 !==

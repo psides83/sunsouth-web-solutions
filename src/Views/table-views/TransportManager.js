@@ -15,23 +15,28 @@ import {
   Button,
   Dialog,
   Grid,
+  MenuItem,
   Paper,
+  Stack,
   Table,
   TableBody,
   TableContainer,
+  TextField,
   Typography,
 } from "@mui/material";
 import { AddRounded, CancelOutlined } from "@mui/icons-material";
+import TransportTable from "./TransportTable";
 
 // Whole table view:
 export default function TransportManager() {
   const [{ userProfile }] = useStateValue();
   const [requests, setRequests] = useState([]);
   const [calendarRequests, setCalendarRequests] = useState([]);
+  const [filter, setFilter] = useState("Active");
   const [loading, setLoading] = useState(true);
   const [openAddTransportView, setOpenAddTransportView] = useState(false);
 
-  console.log(moment().format("yyyy-mm-DD"));
+  console.log(moment().format("yyyy-MM-DD"));
 
   const handleCloseAddTansportView = () => {
     setOpenAddTransportView(false);
@@ -46,10 +51,19 @@ export default function TransportManager() {
     if (userProfile == null || userProfile == undefined)
       return console.log("userProfile not loaded");
 
+    // var transportQuery;
+
+    // if (filter === "Active")
     const transportQuery = query(
       collection(db, "branches", userProfile?.branch, "transport"),
-      where("status", "!=", "Completed")
+      where("status", filter !== "Completed" ? "!=" : "==", "Completed")
     );
+
+    // if (filter === "Completed")
+    //   return (transportQuery = query(
+    //     collection(db, "branches", userProfile?.branch, "transport"),
+    //     where("status", "==", "Completed")
+    //   ));
 
     const startDateCheck = (startDate, requestedDate) => {
       if (startDate == undefined) return `${requestedDate}T07:00`;
@@ -101,9 +115,9 @@ export default function TransportManager() {
             doc.data().requestedDate
           ),
           endDate: endDateCheck(doc.data().endDate, doc.data().requestedDate),
-          location: `${doc.data().street}, ${
-            doc.data().city
-          }, ${doc.data().state} ${doc.data().zip}`,
+          location: `${doc.data().street}, ${doc.data().city}, ${
+            doc.data().state
+          } ${doc.data().zip}`,
           phone: doc.data().phone,
           type: doc.data().type,
           hasTrade: doc.data().hasTrade,
@@ -113,7 +127,7 @@ export default function TransportManager() {
         setLoading(false);
       }, 1000);
     });
-  }, [userProfile]);
+  }, [userProfile, filter]);
 
   useEffect(() => {
     fetch();
@@ -126,14 +140,49 @@ export default function TransportManager() {
         <HomeSkeleton />
       ) : (
         <React.Fragment>
-          <div className="tableHead">
+          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" >
+            <Stack direction="row" alignItems="flex-end">
+
             <Typography
               variant="h4"
               color="primary"
               style={{ marginLeft: 25, marginBottom: 10, marginTop: 25 }}
-            >
+              >
               Transport Manager
             </Typography>
+
+            <TextField
+              sx={{ mx: 4, mb: 1, mt: 1 }}
+              select
+              SelectProps={{ style: { fontSize: 14 } }}
+              InputLabelProps={{ style: { fontSize: 14 } }}
+              size="small"
+              // fullWidth
+              variant="outlined"
+              labelid="filter"
+              id="filter"
+              value={filter}
+              label="Filter"
+              onChange={(e) => setFilter(e.target.value)}
+              >
+              <MenuItem
+                key={"active"}
+                style={{ fontSize: 14 }}
+                value={"Active"}
+                >
+                Active
+              </MenuItem>
+
+              <MenuItem
+                key={"completed"}
+                style={{ fontSize: 14 }}
+                value={"Completed"}
+                >
+                Completed
+              </MenuItem>
+            </TextField>
+                </Stack>
+
 
             <Button
               size="small"
@@ -144,14 +193,14 @@ export default function TransportManager() {
             >
               Submit Delivery/Pickup
             </Button>
-          </div>
+          </Stack>
 
           <Dialog
             onClose={handleCloseAddTansportView}
             open={openAddTransportView}
           >
             <div className="closeButtonContainer">
-              <Button onClick={handleCloseAddTansportView} >
+              <Button onClick={handleCloseAddTansportView}>
                 <CancelOutlined />
               </Button>
             </div>
@@ -171,31 +220,12 @@ export default function TransportManager() {
             spacing={1}
           >
             <Grid item xs={12} sm={12} md={5} lg={5}>
-              <TableContainer component={Paper} style={{ borderRadius: 10 }}>
-                <Table
-                  size="small"
-                  aria-label="collapsible table"
-                  // style={{ margin: 15 }}
-                  sx={{ paddingTop: 2 }}
-                >
-                  {/* <TransportTableHeaderView /> */}
-                  <TableBody>
-                    {requests.map((request) => (
-                      <TransportRow request={request} />
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+              <TransportTable requests={requests} />
             </Grid>
             <Grid item xs={12} sm={12} md={7} lg={7}>
               <CalendarView calendarRequests={calendarRequests} />
             </Grid>
           </Grid>
-          <div className="completed-link">
-            <Link to={"/completed"}>
-              <h3>View completed requests</h3>
-            </Link>
-          </div>
         </React.Fragment>
       )}
     </Box>

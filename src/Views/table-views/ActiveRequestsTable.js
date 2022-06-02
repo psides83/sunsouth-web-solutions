@@ -125,7 +125,7 @@ export default function ActiveRequestsTable() {
               <RequestsTableHeaderView />
               <TableBody>
                 {requests.map((request) => (
-                  <RequestRow request={request} />
+                  <RequestRow key={request.id} request={request} />
                 ))}
               </TableBody>
             </Table>

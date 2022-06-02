@@ -4,7 +4,7 @@ import { Link, useHistory } from 'react-router-dom';
 import { useStateValue } from '../state-management/StateProvider';
 import { auth, db } from '../services/firebase'
 import { onSnapshot, doc } from 'firebase/firestore';
-import { Skeleton } from '@mui/material';
+import { Skeleton, Typography } from '@mui/material';
 
 
 function Header() {
@@ -54,7 +54,14 @@ function Header() {
             <Link className="link" to="/">
                 <img src="/logo-ss-deere.png" alt=""/>
             </Link>
-                <h1 className="title">{`SunSouth ${userProfile?.branch}`}</h1>
+            <Typography
+              variant="h4"
+              noWrap
+              component="div"
+              sx={{ flexGrow: 1, display: { xs: "none", sm: "block" }, color: "white", ml: "10px", fontWeight: "bold" }}
+            >
+              {`SunSouth ${userProfile?.branch}`}
+            </Typography>
             </div>
 
             <div className="header-nav">

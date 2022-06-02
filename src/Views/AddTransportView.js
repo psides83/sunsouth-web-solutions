@@ -212,16 +212,6 @@ export default function AddTransportView(props) {
       );
       setOpenError(true);
       return;
-    } else if (
-      stock.length !== 6 ||
-      stock.match(lowerCaseLetters) ||
-      stock.match(upperCaseLetters)
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return;
     } else if (serial === "") {
       setValidationMessage(
         "Equipment must have a serial number to be added to a request"
@@ -254,30 +244,12 @@ export default function AddTransportView(props) {
       return true;
 
     if (model === "" && equipmentList.length === 0) return true;
-    if (
-      (stock.length !== 6 ||
-        stock.match(lowerCaseLetters) ||
-        stock.match(upperCaseLetters)) &&
-      equipmentList.length === 0
-    )
-      return true;
-
     if (serial === "" && equipmentList.length === 0) return true;
   };
 
   // checks form validation to activate submit buton
   const equipmentSubmitIsDisabled = () => {
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
-    if (
-      model === "" ||
-      stock.length !== 6 ||
-      stock.match(lowerCaseLetters) ||
-      stock.match(upperCaseLetters) ||
-      serial === ""
-    )
-      return true;
+    if (model === "" || serial === "") return true;
   };
 
   // Requst submission validation.
@@ -293,17 +265,6 @@ export default function AddTransportView(props) {
       );
       setOpenError(true);
       return false;
-    } else if (
-      (stock.length !== 6 ||
-        stock.match(lowerCaseLetters) ||
-        stock.match(upperCaseLetters)) &&
-      equipmentList.length === 0
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return false;
     } else if (serial === "" && equipmentList.length === 0) {
       setValidationMessage(
         "Equipment must have a serial number to be added to a request"
@@ -312,16 +273,11 @@ export default function AddTransportView(props) {
       return false;
     } else {
       console.log("eq added directly from submit");
-      if (
-        model !== "" &&
-        (stock.length === 6 ||
-          stock.match(lowerCaseLetters) === false ||
-          stock.match(upperCaseLetters) === false) &&
-        serial !== ""
-      ) {
+      if (model !== "" && serial !== "") {
         console.log("another eq added first");
         await pushEquipmentToRequest();
       }
+
       await setRequestToFirestore();
       setValidationMessage("Request successfully submitted");
       setOpenSuccess(true);
@@ -634,10 +590,9 @@ export default function AddTransportView(props) {
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
-              required
               fullWidth
               size="small"
-              inputProps={{ style: { fontSize: 14 } }}
+              inputProps={{ style: { fontSize: 14 }, maxlength: "6" }}
               id="stock"
               label="Stock"
               name="stock"
