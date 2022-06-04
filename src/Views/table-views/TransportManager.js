@@ -121,6 +121,7 @@ export default function TransportManager() {
           phone: doc.data().phone,
           type: doc.data().type,
           hasTrade: doc.data().hasTrade,
+          notes: doc.data().notes,
         }))
       );
       setTimeout(function () {
@@ -140,8 +141,8 @@ export default function TransportManager() {
         <HomeSkeleton />
       ) : (
         <React.Fragment>
-          <Stack direction="row" justifyContent="space-between" alignItems="flex-end" >
-            <Stack direction="row" alignItems="flex-end">
+          <Stack direction="row" flexWrap="wrap" justifyContent="space-between" alignItems="flex-end" >
+            <Stack direction="row" flexWrap="wrap" alignItems="flex-end">
 
             <Typography
               variant="h4"

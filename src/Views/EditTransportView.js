@@ -87,6 +87,7 @@ export default function EditTransportView(props) {
 
   const handleCloseEditTansportView = () => {
     setOpenEditTransportView(false);
+    resetForm();
   };
 
   const handleToggleEditTansportView = () => {
@@ -103,48 +104,50 @@ export default function EditTransportView(props) {
   };
 
   const loadTransport = useCallback(() => {
-    setWorkOrder(transportRequest.workOrder);
-    setName(transportRequest.name);
-    setPhone(transportRequest.phone);
-    setStreet(transportRequest.street);
-    setCity(transportRequest.city);
-    setState(transportRequest.state);
-    setZip(transportRequest.zip);
-    setType(transportRequest.type);
-    setNotes(transportRequest.notes);
-    setRequestedDate(transportRequest.requestedDate);
-    if (
-      transportRequest.startDate != undefined ||
-      transportRequest.startDate != null ||
-      transportRequest.startDate != ""
-    ) {
-      setStartDate(transportRequest.startDate);
-    }
-    if (
-      transportRequest.endDate != undefined ||
-      transportRequest.endDate != null ||
-      transportRequest.endDate != ""
-    ) {
-      setEndDate(transportRequest.endDate);
-    }
-    setHasTrade(transportRequest.hasTrade);
-    setStatus(transportRequest.status);
+    if (openEditTransportView) {
+      setWorkOrder(transportRequest.workOrder);
+      setName(transportRequest.name);
+      setPhone(transportRequest.phone);
+      setStreet(transportRequest.street);
+      setCity(transportRequest.city);
+      setState(transportRequest.state);
+      setZip(transportRequest.zip);
+      setType(transportRequest.type);
+      setNotes(transportRequest.notes);
+      setRequestedDate(transportRequest.requestedDate);
+      if (
+        transportRequest.startDate != undefined ||
+        transportRequest.startDate != null ||
+        transportRequest.startDate != ""
+      ) {
+        setStartDate(transportRequest.startDate);
+      }
+      if (
+        transportRequest.endDate != undefined ||
+        transportRequest.endDate != null ||
+        transportRequest.endDate != ""
+      ) {
+        setEndDate(transportRequest.endDate);
+      }
+      setHasTrade(transportRequest.hasTrade);
+      setStatus(transportRequest.status);
 
-    setImportedData({
-      workOrder: workOrder,
-      name: name,
-      phone: phone,
-      street: street,
-      city: city,
-      state: state,
-      zip: zip,
-      type: type,
-      status: status,
-      notes: notes,
-      startDate: startDate,
-      endDate: endDate,
-      hasTrade: hasTrade,
-    });
+      setImportedData({
+        workOrder: transportRequest.workOrder,
+        name: transportRequest.name,
+        phone: transportRequest.phone,
+        street: transportRequest.street,
+        city: transportRequest.city,
+        state: transportRequest.state,
+        zip: transportRequest.zip,
+        type: transportRequest.type,
+        status: transportRequest.status,
+        notes: transportRequest.notes,
+        startDate: transportRequest.startDate,
+        endDate: transportRequest.endDate,
+        hasTrade: transportRequest.hasTrade,
+      });
+    }
   }, [openEditTransportView]);
 
   useEffect(() => {
@@ -176,14 +179,14 @@ export default function EditTransportView(props) {
     }
   };
 
-  const logChanges = () => {
+  const logChanges = async () => {
     if (name !== importedData.name) {
       console.log(importedData);
       setChange(
-        change.push(`Customer edited from ${importedData.name} to ${name}`)
+        change?.push(`Customer edited from ${importedData.name} to ${name}`)
       );
+      console.log(change);
     }
-    console.log(change);
 
     if (phone !== importedData.phone) {
       setChange(
@@ -272,21 +275,23 @@ export default function EditTransportView(props) {
   const setRequestToFirestore = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
     const id = moment().format("yyyyMMDDHHmmss");
-    logChanges();
-    var changeString = change.toString().replace(/,/g, ", ");
-    if (changeString[0] === ",") {
-      changeString = changeString.substring(1).trim();
-    }
+    var changeString
+    await logChanges().then(() => {
+      changeString = change.toString().replace(/,/g, ", ");
+      if (changeString[0] === ",") {
+        changeString = changeString.substring(1).trim();
+      }
+      console.log(changeString)
+    });
 
-    const changeLogEntry = 
-      {
-        id: id,
-        user: fullName,
-        change: changeString,
-        timestamp: timestamp,
-      };
+    const changeLogEntry = {
+      id: id,
+      user: fullName,
+      change: changeString,
+      timestamp: timestamp,
+    };
 
-    transportRequest.changeLog.push(changeLogEntry)
+    transportRequest.changeLog.push(changeLogEntry);
 
     const firestoreTransportRequest = {
       workOrder: workOrder,
@@ -325,7 +330,6 @@ export default function EditTransportView(props) {
     //   salesman
     // );
     handleCloseEditTansportView();
-    resetForm();
   };
 
   const resetForm = () => {
@@ -343,6 +347,8 @@ export default function EditTransportView(props) {
     setEndDate("");
     setHasTrade(false);
     setStatus("");
+    setChange([]);
+    setImportedData({});
   };
 
   // Handle name input and capitolize each word

@@ -20,7 +20,7 @@ import {
   AppointmentTooltip,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import moment from "moment";
-import { Grid, Typography } from "@mui/material";
+import { Grid, Stack, Typography } from "@mui/material";
 import { PhoneRounded, RestorePage, Room } from "@mui/icons-material";
 
 const currentDate = moment().format();
@@ -34,7 +34,17 @@ const Appointment = ({ style, data, ...restProps }) => (
       borderRadius: "8px",
     }}
     data={data}
-  />
+  >
+    <Stack style={{ margin: "5px" }}>
+      <Typography variant="caption" sx={{ color: "white", fontWeight: "bold" }}>
+        {data.type} - {data.status}
+      </Typography>
+
+      <Typography variant="caption1" sx={{ color: "white" }}>
+        {data.title}
+      </Typography>
+    </Stack>
+  </Appointments.Appointment>
 );
 
 const Header = ({ children, appointmentData, ...restProps }) => (
@@ -83,6 +93,17 @@ const Content = ({ children, appointmentData, ...restProps }) => (
       </Grid>
       <Grid item xs={10}>
         <span>{appointmentData.location}</span>
+      </Grid>
+    </Grid>
+    <Grid container alignItems="center">
+      <Grid item xs={1.5} style={{ textAlign: "center" }}></Grid>
+      <Grid item xs={2} style={{ textAlign: "center" }}>
+        <strong>Notes:</strong>
+      </Grid>
+      <Grid item xs={8} style={{ textAlign: "center" }}></Grid>
+      <Grid item xs={2} style={{ textAlign: "center" }}></Grid>
+      <Grid item xs={10}>
+        {appointmentData.notes}
       </Grid>
     </Grid>
   </AppointmentTooltip.Content>

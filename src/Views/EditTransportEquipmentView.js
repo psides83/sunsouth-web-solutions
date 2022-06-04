@@ -47,7 +47,7 @@ export default function TransportEquipmentForm(props) {
   const handleCloseDialog = async () => {
     setIsShowingDialog(false);
     setIsShowingConfirmDialog(false);
-    resetRequestForm();
+    resetEquipmentForm();
   };
 
   const handleToggleDialog = () => {
@@ -66,17 +66,20 @@ export default function TransportEquipmentForm(props) {
 
   // load data from equipment
   const loadEquipmentData = useCallback(() => {
-    setModel(equipment.model);
-    setStock(equipment.stock);
-    setSerial(equipment.serial);
-    setNotes(equipment.notes);
-    setChangeLog(equipment.changeLog);
-    setImportedData({
-      model: equipment.model,
-      stock: equipment.stock,
-      serial: equipment.serial,
-      notes: equipment.notes,
-    });
+    if (isShowingDialog) {
+
+      setModel(equipment.model);
+      setStock(equipment.stock);
+      setSerial(equipment.serial);
+      setNotes(equipment.notes);
+      setChangeLog(equipment.changeLog);
+      setImportedData({
+        model: equipment.model,
+        stock: equipment.stock,
+        serial: equipment.serial,
+        notes: equipment.notes,
+      });
+    }
   }, [isShowingDialog]);
 
   useEffect(() => {
@@ -106,7 +109,6 @@ export default function TransportEquipmentForm(props) {
         )
       );
     }
-    console.log(change);
 
     if (stock !== importedData.stock) {
       setChange(
@@ -143,12 +145,15 @@ export default function TransportEquipmentForm(props) {
   const setEquipmentToFirestore = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
     const id = equipment ? equipment.id : moment().format("yyyyMMDDHHmmss");
-    logChanges();
-    var changeString = change.toString().replace(/,/g, ", ");
+    var changeString
+    logChanges().then(() => {
 
-    if (changeString[0] === ",") {
-      changeString = changeString.substring(1).trim();
-    }
+      changeString = change.toString().replace(/,/g, ", ");
+  
+      if (changeString[0] === ",") {
+        changeString = changeString.substring(1).trim();
+      }
+    })
 
     request.changeLog.push({
       id: moment().format("yyyyMMDDHHmmss"),
@@ -190,7 +195,7 @@ export default function TransportEquipmentForm(props) {
   };
 
   // Reset the request form
-  const resetRequestForm = () => {
+  const resetEquipmentForm = () => {
     setModel("");
     setStock("");
     setSerial("");

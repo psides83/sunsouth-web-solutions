@@ -549,6 +549,7 @@ const sendNewTransportRequestEmail = async (
   // Sets paramaters for the email template
   const emailData = {
     to: recipients,
+    // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
     from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
     cc: userProfile.email,
@@ -634,6 +635,7 @@ const sendTransportStatusEmail = async (
   // Sets paramaters for the email template
   const emailData = {
     to: recipients,
+    // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
     from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
     cc: userProfile.email,
