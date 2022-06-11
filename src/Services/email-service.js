@@ -113,9 +113,8 @@ const sendEquipmentUpdateEmail = async (
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -155,9 +154,8 @@ const sendWorkOrderEmail = async (
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -219,9 +217,8 @@ const sendNewEquipmentEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -260,9 +257,8 @@ const sendStatusEmail = async (
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -301,9 +297,8 @@ const sendEquipmentDeletedEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -345,9 +340,8 @@ const sendRequestDeletedEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -395,9 +389,8 @@ const sendNewRequestEmail = async (
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "PDI/Setup Requests<sunsouth.auburn@gmail.com>",
+    from: "PDI/Setup Requests<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -438,9 +431,8 @@ const sendNewLoanerEmail = async (
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+    from: "Loaned Equipment Manager<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -474,9 +466,8 @@ const sendLoanerStatusEmail = async (loaner, fullName, userProfile) => {
   const emailData = {
     to: recipients,
     replyTo: userProfile.email,
-    from: "Loaned Equipment Manager<sunsouth.auburn@gmail.com>",
+    from: "Loaned Equipment Manager<psides.solutions@outlook.com>",
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -551,9 +542,8 @@ const sendNewTransportRequestEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    from: `Equipment Transport - ${userProfile.branch}<psides.solutions@outlook.com>`,
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
@@ -637,9 +627,8 @@ const sendTransportStatusEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    from: `Equipment Transport - ${userProfile.branch}<psides.solutions@outlook.com>`,
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body(),
@@ -695,9 +684,8 @@ const sendNewTransportEquipmentEmail = async (
     to: recipients,
     // to: "psides83@hotmail.com",
     replyTo: userProfile.email,
-    from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
+    from: `Equipment Transport - ${userProfile.branch}<psides.solutions@outlook.com>`,
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,
