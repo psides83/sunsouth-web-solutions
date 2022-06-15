@@ -68,7 +68,7 @@ function TransportUpdateDialog(props) {
       request.id
     );
 
-    if (startDate != undefined && startDate != null && startDate !== "" && endDate != undefined && endDate != null && endDate !== "") {
+    if (status === "Requested") {
 
       await setDoc(
         requestRef,
