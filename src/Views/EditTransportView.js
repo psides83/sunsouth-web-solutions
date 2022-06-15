@@ -690,7 +690,7 @@ export default function EditTransportView(props) {
                     select
                   >
                     {states.map((state) => (
-                      <MenuItem value={state}>{state}</MenuItem>
+                      <MenuItem key={state} value={state}>{state}</MenuItem>
                     ))}
                   </TextField>
                 </Grid>

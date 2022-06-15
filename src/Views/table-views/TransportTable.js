@@ -15,7 +15,7 @@ function TransportTable(props) {
         {/* <TransportTableHeaderView /> */}
         <TableBody>
           {requests.map((request) => (
-            <TransportRow request={request} />
+            <TransportRow key={request.id} request={request} />
           ))}
         </TableBody>
       </Table>
