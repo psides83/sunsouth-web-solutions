@@ -35,11 +35,10 @@ function Copyright() {
 
 export default function SignIn() {
   const history = useHistory();
-  const [{ user }, dispatch] = useStateValue();
+  const [{ user, userProfile }, dispatch] = useStateValue();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
-  const [userProfile, setProfile] = useState({});
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   var [validationMessage, setValidationMessage] = useState("");
@@ -48,7 +47,6 @@ export default function SignIn() {
     try {
       onSnapshot(doc(db, "users", user?.uid), (doc) => {
         console.log("Current data: ", doc.data());
-        setProfile(doc.data());
         dispatch({
           type: "SET_USER_PROFILE",
           userProfile: doc.data(),
@@ -67,7 +65,11 @@ export default function SignIn() {
         // Signed in
         // const user = userCredential.user;
         fetchProfile();
-        history.push("/");
+        if (userProfile.role === "driver") {
+          history.push("/transport-manager");
+        } else {
+          history.push("/");
+        }
       })
       .catch((error) => {
         setValidationMessage("The email and/or password do not match");
@@ -193,7 +195,7 @@ export default function SignIn() {
             fullWidth
             variant="contained"
             color="primary"
-            style={{marginTop: "5px"}}
+            style={{ marginTop: "5px" }}
             onClick={signIn}
           >
             Sign In
