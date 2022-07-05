@@ -255,8 +255,8 @@ export default function TransportRow(props) {
                 <DialogTitle>Request Change History</DialogTitle>
                 <Timeline position="alternate">
                   {" "}
-                  {request.changeLog.map((change) => (
-                    <TimelineItem>
+                  {request.changeLog.map((change, index) => (
+                    <TimelineItem key={index} >
                       <TimelineSeparator>
                         <TimelineDot variant="outlined" color="primary" />
                         {request.changeLog.indexOf(change) + 1 !==

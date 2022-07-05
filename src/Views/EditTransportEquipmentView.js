@@ -146,14 +146,14 @@ export default function TransportEquipmentForm(props) {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
     const id = equipment ? equipment.id : moment().format("yyyyMMDDHHmmss");
     var changeString
-    logChanges().then(() => {
+    logChanges()
 
       changeString = change.toString().replace(/,/g, ", ");
   
       if (changeString[0] === ",") {
         changeString = changeString.substring(1).trim();
       }
-    })
+    
 
     request.changeLog.push({
       id: moment().format("yyyyMMDDHHmmss"),

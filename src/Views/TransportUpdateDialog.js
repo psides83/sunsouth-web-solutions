@@ -10,7 +10,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import Spinner from "..//components/Spinner";
+import Spinner from "../components/Spinner";
 import moment from "moment";
 import { db } from "../services/firebase";
 import { sendTransportStatusEmail } from "../services/email-service";
@@ -56,8 +56,10 @@ function TransportUpdateDialog(props) {
       change: `Status updated to ${status}`,
       timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
     };
+    console.log(startDate)
 
     request.changeLog.push(changeLogEntry);
+
     const requestRef = doc(
       db,
       "branches",
@@ -66,19 +68,35 @@ function TransportUpdateDialog(props) {
       request.id
     );
 
-    await setDoc(
-      requestRef,
-      {
-        status: status,
-        statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
-        startDate: startDate,
-        endDate: endDate,
-        changeLog: request.changeLog,
-      },
-      {
-        merge: true,
-      }
-    );
+    if (status === "Requested") {
+
+      await setDoc(
+        requestRef,
+        {
+          status: status,
+          statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
+          startDate: startDate,
+          endDate: endDate,
+          changeLog: request.changeLog,
+        },
+        {
+          merge: true,
+        }
+      );
+    } else {
+      await setDoc(
+        requestRef,
+        {
+          status: status,
+          statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
+          changeLog: request.changeLog,
+        },
+        {
+          merge: true,
+        }
+      );
+    }
+
 
     sendTransportStatusEmail(
       status,
