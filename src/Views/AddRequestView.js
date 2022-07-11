@@ -118,8 +118,10 @@ export default function AddRequestView() {
 
     if (event.target.value !== "") {
       setOtherState(false);
+      setChecked8(true)
     } else if (event.target.value === "") {
       setOtherState(true);
+      setChecked8(false)
     }
   };
 
@@ -327,7 +329,7 @@ export default function AddRequestView() {
       workString = workString.substring(1).trim();
     }
 
-    // console.log(workString)
+    console.log(workString)
 
     const changeLog = [
       {
@@ -576,8 +578,9 @@ export default function AddRequestView() {
                   Work Required*
                 </Typography>
 
-                {workOptions.map((option) => (
+                {workOptions.map((option, index) => (
                   <FormControlLabel
+                    key={index}
                     control={
                       <Checkbox
                         id={option.id}

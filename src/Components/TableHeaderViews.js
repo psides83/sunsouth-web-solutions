@@ -9,8 +9,8 @@ function RequestsTableHeaderView() {
         <React.Fragment>
             <TableHead>
                 <TableRow key="header">
-                    {headers.map((header) => (
-                        <TableCell style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
+                    {headers.map((header, index) => (
+                        <TableCell key={index} style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -26,8 +26,8 @@ function TransportTableHeaderView() {
         <React.Fragment>
             <TableHead>
                 <TableRow key="header">
-                    {headers.map((header) => (
-                        <TableCell style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
+                    {headers.map((header, index) => (
+                        <TableCell key={index} style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -43,8 +43,8 @@ function EquipmentTableHeaderView() {
         <React.Fragment>
             <TableHead>
                 <TableRow key="subHeader">
-                    {headers.map((header) => (
-                        <TableCell><strong>{header}</strong></TableCell>
+                    {headers.map((header, index) => (
+                        <TableCell key={index}><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -60,8 +60,8 @@ function TransportEquipmentTableHeaderView() {
         <React.Fragment>
             <TableHead>
                 <TableRow key="subHeader">
-                    {headers.map((header) => (
-                        <TableCell><strong>{header}</strong></TableCell>
+                    {headers.map((header, index) => (
+                        <TableCell key={index}><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>
@@ -77,8 +77,8 @@ function SalesmenTableHeaderView() {
         <React.Fragment>
             <TableHead>
                 <TableRow key="subHeader">
-                    {headers.map((header) => (
-                        <TableCell key={header}><strong>{header}</strong></TableCell>
+                    {headers.map((header, index) => (
+                        <TableCell key={index}><strong>{header}</strong></TableCell>
                     ))}
                 </TableRow>
             </TableHead>

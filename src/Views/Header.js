@@ -100,31 +100,14 @@ function Header() {
 
         <Link className="link" to={!user && "/signIn"}>
           <div onClick={handleAuthentication} className="header-option">
-            {showingSkeleton ? (
-              <Skeleton
-                variant="text"
-                sx={{ bgcolor: "grey.900" }}
-                width="73px"
-                height={25}
-              />
-            ) : (
+            
               <span className="header-optionLineOne">
                 {user ? fullName : ""}
               </span>
-            )}
-            {showingSkeleton ? (
-              <Skeleton
-                variant="text"
-                s
-                x={{ bgcolor: "grey.900" }}
-                width="45px"
-                height={28}
-              />
-            ) : (
+            
               <span className="header-optionLineTwo">
                 {user ? "Logout" : "Sign-in"}
               </span>
-            )}
           </div>
         </Link>
       </div>
