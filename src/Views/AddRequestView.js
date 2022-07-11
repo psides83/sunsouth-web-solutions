@@ -54,7 +54,7 @@ export default function AddRequestView() {
   var [checked7, setChecked7] = useState(false);
   var [checked8, setChecked8] = useState(false);
   var [equipmentList, setEquepmentList] = useState([]);
-  var [otherDisabled, setOtherState] = useState(true);
+  var [otherDisabled, setOtherDisabled] = useState(true);
   var [validationMessage, setValidationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
@@ -116,11 +116,14 @@ export default function AddRequestView() {
   const enableOther = (event) => {
     setOther(event.target.value);
 
+    work[7] = other
+    setWork(work)
+
     if (event.target.value !== "") {
-      setOtherState(false);
+      setOtherDisabled(false);
       setChecked8(true)
     } else if (event.target.value === "") {
-      setOtherState(true);
+      setOtherDisabled(true);
       setChecked8(false)
     }
   };
@@ -215,23 +218,17 @@ export default function AddRequestView() {
       case "8":
         if (!checked8) {
           setChecked8(true);
-          work[7] = event.target.value;
-          setWork(work);
+          // work[7] = event.target.value;
+          // setWork(work);
         } else {
           setChecked8(false);
-          work[7] = null;
-          setWork(work);
+          // work[7] = null;
+          // setWork(work);
         }
         break;
       default:
         break;
     }
-
-    var temp = [];
-
-    for (let i of work) i && temp.push(i); // copy each non-empty value to the 'temp' array
-
-    setWork(temp);
   };
 
   // Add the request to the firestore "requests" collection and the equipment to the fire store "equipment" collection.
@@ -309,6 +306,7 @@ export default function AddRequestView() {
     setSerial("");
     setNotes("");
     setOther("");
+    setOtherDisabled(true);
     setChecked1(false);
     setChecked2(false);
     setChecked3(false);
@@ -323,7 +321,11 @@ export default function AddRequestView() {
 
   // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
   const pushEquipmentToRequest = async () => {
-    var workString = work.toString().replace(/,/g, ", ");
+    var temp = [];
+
+    for (let i of work) i && temp.push(i); // copy each non-empty value to the 'temp' array
+
+    var workString = temp.toString().replace(/,/g, ", ");
 
     if (workString[0] === ",") {
       workString = workString.substring(1).trim();
