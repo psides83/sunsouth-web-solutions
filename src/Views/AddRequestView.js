@@ -53,6 +53,7 @@ export default function AddRequestView() {
   var [checked6, setChecked6] = useState(false);
   var [checked7, setChecked7] = useState(false);
   var [checked8, setChecked8] = useState(false);
+  var [checked9, setChecked9] = useState(false);
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherDisabled] = useState(true);
   var [validationMessage, setValidationMessage] = useState("");
@@ -92,7 +93,7 @@ export default function AddRequestView() {
     },
     {
       id: "4",
-      work: "Add 3rd function",
+      work: "Add loader 3rd function",
       checkedState: checked4,
     },
     {
@@ -110,21 +111,26 @@ export default function AddRequestView() {
       work: "Widen tires",
       checkedState: checked7,
     },
+    {
+      id: "8",
+      work: "Add rear remote",
+      checkedState: checked8,
+    },
   ];
 
   // Set the state of the "other" checkbox. It's disabled if the textfield is empty.
   const enableOther = (event) => {
     setOther(event.target.value);
 
-    work[7] = other
+    work[9] = other
     setWork(work)
 
     if (event.target.value !== "") {
       setOtherDisabled(false);
-      setChecked8(true)
+      setChecked9(true)
     } else if (event.target.value === "") {
       setOtherDisabled(true);
-      setChecked8(false)
+      setChecked9(false)
     }
   };
 
@@ -215,13 +221,24 @@ export default function AddRequestView() {
           setWork(work);
         }
         break;
-      case "8":
+        case "8":
         if (!checked8) {
           setChecked8(true);
+          work[7] = event.target.value;
+          setWork(work);
+        } else {
+          setChecked8(false);
+          work[7] = null;
+          setWork(work);
+        }
+        break;
+      case "9":
+        if (!checked9) {
+          setChecked9(true);
           // work[7] = event.target.value;
           // setWork(work);
         } else {
-          setChecked8(false);
+          setChecked9(false);
           // work[7] = null;
           // setWork(work);
         }
@@ -315,6 +332,7 @@ export default function AddRequestView() {
     setChecked6(false);
     setChecked7(false);
     setChecked8(false);
+    setChecked9(false);
     setWork([]);
     console.log("form reset");
   };
@@ -605,7 +623,7 @@ export default function AddRequestView() {
                     control={
                       <Checkbox
                         id="8"
-                        checked={checked8}
+                        checked={checked9}
                         size="small"
                         onChange={handleChange}
                         disabled={otherDisabled}
