@@ -17,9 +17,14 @@ import {
   Table,
   TableBody,
   TableContainer,
+  Tooltip,
   Typography,
 } from "@mui/material";
-import { AddRounded, CancelOutlined } from "@mui/icons-material";
+import {
+  AddRounded,
+  AgricultureRounded,
+  CancelOutlined,
+} from "@mui/icons-material";
 
 // Whole table view:
 export default function ActiveRequestsTable() {
@@ -75,35 +80,38 @@ export default function ActiveRequestsTable() {
       {loading ? (
         <HomeSkeleton />
       ) : (
-        <Box display="flex" flexDirection="column" alignItems="center" >
-          <Stack direction="row"
+        <Box display="flex" flexDirection="column" alignItems="center">
+          <Stack
+            direction="row"
             style={{
               width: "100%",
               justifyContent: "space-between",
             }}
           >
             <Typography
-              variant="h4"
+              variant="h5"
               color="primary"
               style={{ marginLeft: 25, marginBottom: 10 }}
             >
               Active Setup Requests
             </Typography>
 
-            <Button
-              size="small"
-              variant="outlined"
-              startIcon={<AddRounded />}
-              onClick={handleToggleAddRequestView}
-              sx={{ mx: 4, mb: 1, mt: 1 }}
-            >
-              Submit Request
-            </Button>
+            <Tooltip title="Submit Request">
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={<AddRounded />}
+                onClick={handleToggleAddRequestView}
+                sx={{ mx: 4, mb: 1, mt: 1, maxHeight: "30px", alignSelf: "flex-end" }}
+              >
+                <AgricultureRounded />
+              </Button>
+            </Tooltip>
           </Stack>
 
           <Dialog onClose={handleCloseAddRequestView} open={openAddRequestView}>
             <div className="closeButtonContainer">
-              <Button onClick={handleCloseAddRequestView} >
+              <Button onClick={handleCloseAddRequestView}>
                 <CancelOutlined />
               </Button>
             </div>
@@ -112,10 +120,7 @@ export default function ActiveRequestsTable() {
             </div>
           </Dialog>
 
-          <TableContainer
-            component={Paper}
-            style={{ borderRadius: 10 }}
-          >
+          <TableContainer component={Paper} style={{ borderRadius: 10 }}>
             <Table
               size="small"
               aria-label="collapsible table"

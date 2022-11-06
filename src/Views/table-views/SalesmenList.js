@@ -75,35 +75,42 @@ export default function SalesmenList() {
   };
 
   // Fetch loanerss from firestore:
-  const fetch = useCallback(async () => {
-    if (userProfile) {
-      const salesmenQuery = query(
-        collection(db, "salesmen"),
-        //   where('status', '!=', 'Returned')
-        orderBy("branch", "asc")
-      );
+  const fetchSalesmen = async () => {
+    // if (userProfile) {
+      const API_URL = "https://psides83.github.io/listJSON/salesmanList.json";
+      const response = await fetch(API_URL);
+      const json = await response.json();
 
-      const docSnapshot = await getDocs(salesmenQuery);
+      console.log(json)
+      setSalesmen(json)
 
-      setSalesmen(
-        docSnapshot.docs.map((doc) => ({
-          id: doc.data().id,
-          branch: doc.data().branch,
-          email: doc.data().email,
-          firstName: doc.data().firstName,
-          lastName: doc.data().lastName,
-          position: doc.data().position,
-        }))
-      );
-    }
-  }, [userProfile]);
+      // const salesmenQuery = query(
+      //   collection(db, "salesmen"),
+      //   //   where('status', '!=', 'Returned')
+      //   orderBy("branch", "asc")
+      // );
+
+      // const docSnapshot = await getDocs(salesmenQuery);
+
+      // setSalesmen(
+      //   docSnapshot.docs.map((doc) => ({
+      //     id: doc.data().id,
+      //     branch: doc.data().branch,
+      //     email: doc.data().email,
+      //     firstName: doc.data().firstName,
+      //     lastName: doc.data().lastName,
+      //     position: doc.data().position,
+      //   }))
+      // );
+    // }
+  };
 
   useEffect(() => {
-    fetch();
+    fetchSalesmen();
     setTimeout(function () {
       setLoading(false);
     }, 1000);
-  }, [fetch]);
+  }, []);
 
   const search = (salesmen) => {
     return salesmen.filter((item) => {
@@ -199,7 +206,6 @@ export default function SalesmenList() {
                       size="small"
                       fullWidth
                       variant="outlined"
-                      labelId="demo-simple-select-label"
                       id="filter"
                       // className={classes.select}
                       value={filterParam}
@@ -209,7 +215,7 @@ export default function SalesmenList() {
                     >
                       <MenuItem value="All">All</MenuItem>
                       {branches.map((branch) => (
-                        <MenuItem value={branch}>{branch}</MenuItem>
+                        <MenuItem key={branch} value={branch}>{branch}</MenuItem>
                       ))}
                     </TextField>
                   </div>
