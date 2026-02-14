@@ -1,23 +1,11 @@
-import React, { useState } from "react";
-import { useStateValue } from "../../state-management/StateProvider";
+import React from "react";
 import "../../styles/Table.css";
 import { TableCell, TableRow, Typography } from "@mui/material";
 import TransportEquipmentForm from "../EditTransportEquipmentView";
 
 // Equipment row view:
 export default function TransportEquipmentRow(props) {
-  //#region State Properties
   const { request, item } = props;
-  const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
-  // #endregion
-
-  const handleCloseConfirmDialog = () => {
-    setIsShowingConfirmDialog(false);
-  };
-
-  const handleToggleConfirmDialog = () => {
-    setIsShowingConfirmDialog(!isShowingConfirmDialog);
-  };
 
   // Equipment row UI:
   return (

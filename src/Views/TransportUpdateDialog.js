@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogTitle,
   Grid,
-  Stack,
   TextField,
   Tooltip,
   Typography,
@@ -32,7 +31,7 @@ function TransportUpdateDialog(props) {
   // Handles updating the request status:
   const updateStatus = async () => {
     setIsShowingSpinner(true);
-    var status = request.status;
+    let status = request.status;
 
     switch (status) {
       case "Requested":
@@ -56,8 +55,6 @@ function TransportUpdateDialog(props) {
       change: `Status updated to ${status}`,
       timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
     };
-    console.log(startDate)
-
     request.changeLog.push(changeLogEntry);
 
     const requestRef = doc(
@@ -68,7 +65,7 @@ function TransportUpdateDialog(props) {
       request.id
     );
 
-    if (status === "Requested") {
+    if (status === "Scheduled") {
 
       await setDoc(
         requestRef,
@@ -128,9 +125,10 @@ function TransportUpdateDialog(props) {
   const disableButton = () => {
     if (request.status !== "Requested") return false;
     console.log("requested");
-    if (startDate == undefined || startDate == null || startDate === "")
+    if (startDate === undefined || startDate === null || startDate === "")
       return true;
-    if (endDate == undefined || endDate == null || endDate === "") return true;
+    if (endDate === undefined || endDate === null || endDate === "") return true;
+    return false;
   };
 
   const handleStartDateInput = (e) => {
@@ -184,9 +182,7 @@ function TransportUpdateDialog(props) {
           ) : (
             <div>
               <Typography>{`Update the request's status from`}</Typography>
-              <Typography>{`\"${
-                request.status
-              }" to "${statusUpdateText()}"?`}</Typography>
+              <Typography>{`"${request.status}" to "${statusUpdateText()}"?`}</Typography>
               <Grid container spacing={2} style={{ marginTop: "10px" }}>
                 {request.status === "Requested" ? (
                   <>

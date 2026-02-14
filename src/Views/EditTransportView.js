@@ -1,5 +1,5 @@
 //Imports
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc, deleteDoc } from "@firebase/firestore";
@@ -7,7 +7,6 @@ import "../styles/AddRequest.css";
 import { useStateValue } from "../state-management/StateProvider";
 import moment from "moment";
 import {
-  sendNewRequestEmail,
   sendTransportDeletedEmail,
 } from "../services/email-service";
 import { states } from "../models/states";
@@ -26,7 +25,6 @@ import {
   IconButton,
   MenuItem,
   Snackbar,
-  styled,
   TextField,
   Tooltip,
   Typography,
@@ -38,10 +36,6 @@ import {
   LocalShippingRounded,
   SendRounded,
 } from "@mui/icons-material";
-
-const ListItem = styled("li")(({ theme }) => ({
-  margin: theme.spacing(0.5),
-}));
 
 export default function EditTransportView(props) {
   //#region State Properties
@@ -66,13 +60,12 @@ export default function EditTransportView(props) {
   var [change, setChange] = useState([]);
   const [importedData, setImportedData] = useState({});
   const [dataHasChanges, setDataHasChanges] = useState(false);
-  var [validationMessage, setValidationMessage] = useState("");
+  var [validationMessage] = useState("");
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [openEditTransportView, setOpenEditTransportView] = useState(false);
   // TODO setup loading and success and add progress circle on submit button
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [loading] = useState(false);
   //#endregion
 
   // Handle closing of the alerts.
@@ -103,7 +96,7 @@ export default function EditTransportView(props) {
     setIsShowingConfirmDialog(!isShowingConfirmDialog);
   };
 
-  const loadTransport = useCallback(() => {
+  useEffect(() => {
     if (openEditTransportView) {
       setWorkOrder(transportRequest.workOrder);
       setName(transportRequest.name);
@@ -116,16 +109,16 @@ export default function EditTransportView(props) {
       setNotes(transportRequest.notes);
       setRequestedDate(transportRequest.requestedDate);
       if (
-        transportRequest.startDate != undefined ||
-        transportRequest.startDate != null ||
-        transportRequest.startDate != ""
+        transportRequest.startDate !== undefined &&
+        transportRequest.startDate !== null &&
+        transportRequest.startDate !== ""
       ) {
         setStartDate(transportRequest.startDate);
       }
       if (
-        transportRequest.endDate != undefined ||
-        transportRequest.endDate != null ||
-        transportRequest.endDate != ""
+        transportRequest.endDate !== undefined &&
+        transportRequest.endDate !== null &&
+        transportRequest.endDate !== ""
       ) {
         setEndDate(transportRequest.endDate);
       }
@@ -148,11 +141,7 @@ export default function EditTransportView(props) {
         hasTrade: transportRequest.hasTrade,
       });
     }
-  }, [openEditTransportView]);
-
-  useEffect(() => {
-    loadTransport();
-  }, [loadTransport]);
+  }, [openEditTransportView, transportRequest]);
 
   // Handle deleting of equipment from the request.
   const deleteTransportRequest = async () => {

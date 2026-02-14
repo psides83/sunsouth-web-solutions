@@ -1,4 +1,3 @@
-import emailjs from "emailjs-com";
 import moment from "moment";
 import {
   collection,
@@ -412,7 +411,6 @@ const sendNewLoanerEmail = async (
   userProfile
 ) => {
   // creates the paramaters for the email template
-  const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
   const emailID = moment().format("yyyyMMDDHHmmss");
   const recipients = await setRecipients(roles.loaner, userProfile, "none");
   const subject = `${model}, ${stock} has been loaned out`;
@@ -656,8 +654,8 @@ const sendNewTransportEquipmentEmail = async (
     request.salesman
   );
   const subject =
-    request.workOrder != undefined &&
-    request.workOrder != null &&
+    request.workOrder !== undefined &&
+    request.workOrder !== null &&
     request.workOrder !== ""
       ? `Equipment added to ${request.type} request for ${request.name} on WO# ${request.workOrder}`
       : `Equipment added to ${request.type} request for ${request.name}`;
@@ -729,7 +727,6 @@ const sendTransportDeletedEmail = async (
     replyTo: userProfile.email,
     from: `Equipment Transport - ${userProfile.branch}<sunsouth.auburn@gmail.com>`,
     cc: userProfile.email,
-    replyTo: userProfile.email,
     message: {
       subject: subject,
       html: body,

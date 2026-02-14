@@ -1,89 +1,44 @@
-import React from 'react'
-import { TableHead, TableRow, TableCell } from '@mui/material';
+import React from "react";
+import { TableCell, TableHead, TableRow } from "@mui/material";
 
-// Header for the Requests Table
+function HeaderRow({ headers }) {
+  return (
+    <TableHead>
+      <TableRow>
+        {headers.map((header) => (
+          <TableCell key={header} align="left" sx={{ py: 1.25, fontSize: 14 }}>
+            {header ? <strong>{header}</strong> : null}
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
+  );
+}
+
 function RequestsTableHeaderView() {
-    const headers = ['', 'Model', 'Submitted', 'Work Order', 'Status', '']
-
-    return (
-        <React.Fragment>
-            <TableHead>
-                <TableRow key="header">
-                    {headers.map((header, index) => (
-                        <TableCell key={index} style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
-                    ))}
-                </TableRow>
-            </TableHead>
-        </React.Fragment>
-    )
+  return <HeaderRow headers={["", "Model", "Submitted", "Work Order", "Status", ""]} />;
 }
 
-// Header for the Requests Table
 function TransportTableHeaderView() {
-    const headers = ['', 'Customer', 'Status', '']
-
-    return (
-        <React.Fragment>
-            <TableHead>
-                <TableRow key="header">
-                    {headers.map((header, index) => (
-                        <TableCell key={index} style={{ fontSize: 18 }} align="left"><strong>{header}</strong></TableCell>
-                    ))}
-                </TableRow>
-            </TableHead>
-        </React.Fragment>
-    )
+  return <HeaderRow headers={["", "Customer", "Status", ""]} />;
 }
 
-// Header for the sub-table of equipment
 function EquipmentTableHeaderView() {
-    const headers = ['Model', 'ID #\'s', 'Work Require', 'Notes']
-
-    return (
-        <React.Fragment>
-            <TableHead>
-                <TableRow key="subHeader">
-                    {headers.map((header, index) => (
-                        <TableCell key={index}><strong>{header}</strong></TableCell>
-                    ))}
-                </TableRow>
-            </TableHead>
-        </React.Fragment>
-    )
+  return <HeaderRow headers={["Model", "ID #'s", "Work Order", "Work Require", "Notes"]} />;
 }
 
-// Header for the sub-table of equipment
 function TransportEquipmentTableHeaderView() {
-    const headers = ['Model', 'ID #\'s', 'Notes']
-
-    return (
-        <React.Fragment>
-            <TableHead>
-                <TableRow key="subHeader">
-                    {headers.map((header, index) => (
-                        <TableCell key={index}><strong>{header}</strong></TableCell>
-                    ))}
-                </TableRow>
-            </TableHead>
-        </React.Fragment>
-    )
+  return <HeaderRow headers={["Model", "ID #'s", "Notes"]} />;
 }
 
-// Header for the sub-table of equipment
 function SalesmenTableHeaderView() {
-    const headers = ['Branch', 'Name', 'Email' ]
-
-    return (
-        <React.Fragment>
-            <TableHead>
-                <TableRow key="subHeader">
-                    {headers.map((header, index) => (
-                        <TableCell key={index}><strong>{header}</strong></TableCell>
-                    ))}
-                </TableRow>
-            </TableHead>
-        </React.Fragment>
-    )
+  return <HeaderRow headers={["Name", "Email", "Branch"]} />;
 }
 
-export { RequestsTableHeaderView, EquipmentTableHeaderView, SalesmenTableHeaderView, TransportTableHeaderView, TransportEquipmentTableHeaderView }
+export {
+  RequestsTableHeaderView,
+  EquipmentTableHeaderView,
+  SalesmenTableHeaderView,
+  TransportTableHeaderView,
+  TransportEquipmentTableHeaderView,
+};

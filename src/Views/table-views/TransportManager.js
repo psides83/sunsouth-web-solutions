@@ -4,27 +4,21 @@ import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import HomeSkeleton from "../../components/HomeSkeleton";
 import "../../styles/Table.css";
-import { Link } from "react-router-dom";
 import AddTransportView from "../AddTransportView";
-import TransportRow from "./TransportManagerRow";
 import CalendarView from "../CalendarView";
-import { formatPhoneNumber } from "../../utils/utils";
-import moment from "moment";
 import {
   Box,
   Button,
+  Card,
+  Container,
   Dialog,
   Grid,
   MenuItem,
-  Paper,
   Stack,
-  Table,
-  TableBody,
-  TableContainer,
   TextField,
   Typography,
 } from "@mui/material";
-import { AddRounded, CancelOutlined } from "@mui/icons-material";
+import { AddRounded } from "@mui/icons-material";
 import TransportTable from "./TransportTable";
 
 // Whole table view:
@@ -36,8 +30,6 @@ export default function TransportManager() {
   const [loading, setLoading] = useState(true);
   const [openAddTransportView, setOpenAddTransportView] = useState(false);
 
-  console.log(moment().format("yyyy-MM-DD"));
-
   const handleCloseAddTansportView = () => {
     setOpenAddTransportView(false);
   };
@@ -48,7 +40,7 @@ export default function TransportManager() {
 
   // Fetch requests from firestore:
   const fetch = useCallback(async () => {
-    if (userProfile == null || userProfile == undefined)
+    if (userProfile === null || userProfile === undefined)
       return console.log("userProfile not loaded");
 
     // var transportQuery;
@@ -66,15 +58,15 @@ export default function TransportManager() {
     //   ));
 
     const startDateCheck = (startDate, requestedDate) => {
-      if (startDate == undefined) return `${requestedDate}T07:00`;
-      if (startDate == null) return `${requestedDate}T07:00`;
+      if (startDate === undefined) return `${requestedDate}T07:00`;
+      if (startDate === null) return `${requestedDate}T07:00`;
       if (startDate === "") return `${requestedDate}T07:00`;
       return startDate;
     };
 
     const endDateCheck = (endDate, requestedDate) => {
-      if (endDate == undefined) return `${requestedDate}T09:00`;
-      if (endDate == null) return `${requestedDate}T09:00`;
+      if (endDate === undefined) return `${requestedDate}T09:00`;
+      if (endDate === null) return `${requestedDate}T09:00`;
       if (endDate === "") return `${requestedDate}T09:00`;
       return endDate;
     };
@@ -136,61 +128,47 @@ export default function TransportManager() {
 
   // Table UI:
   return (
-    <Box>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
       {loading ? (
         <HomeSkeleton />
       ) : (
-        <React.Fragment>
-          <Stack direction="row" flexWrap="wrap" justifyContent="space-between" alignItems="flex-end" >
-            <Stack direction="row" flexWrap="wrap" alignItems="flex-end">
+        <Card sx={{ p: { xs: 1.5, md: 2.25 }, border: "1px solid", borderColor: "divider" }}>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={1} justifyContent="space-between" sx={{ mb: 1.5 }}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems={{ xs: "stretch", sm: "flex-end" }}>
+              <Typography variant="h5" color="primary" sx={{ fontSize: { xs: 22, sm: 26 } }}>
+                Transport Manager
+              </Typography>
 
-            <Typography
-              variant="h4"
-              color="primary"
-              style={{ marginLeft: 25, marginBottom: 10, marginTop: 25 }}
+              <TextField
+                sx={{ minWidth: { xs: "100%", sm: 170 } }}
+                select
+                SelectProps={{ style: { fontSize: 14 } }}
+                InputLabelProps={{ style: { fontSize: 14 } }}
+                size="small"
+                variant="outlined"
+                labelid="filter"
+                id="filter"
+                value={filter}
+                label="Filter"
+                onChange={(e) => setFilter(e.target.value)}
               >
-              Transport Manager
-            </Typography>
+                <MenuItem key={"active"} style={{ fontSize: 14 }} value={"Active"}>
+                  Active
+                </MenuItem>
 
-            <TextField
-              sx={{ mx: 4, mb: 1, mt: 1 }}
-              select
-              SelectProps={{ style: { fontSize: 14 } }}
-              InputLabelProps={{ style: { fontSize: 14 } }}
-              size="small"
-              // fullWidth
-              variant="outlined"
-              labelid="filter"
-              id="filter"
-              value={filter}
-              label="Filter"
-              onChange={(e) => setFilter(e.target.value)}
-              >
-              <MenuItem
-                key={"active"}
-                style={{ fontSize: 14 }}
-                value={"Active"}
-                >
-                Active
-              </MenuItem>
-
-              <MenuItem
-                key={"completed"}
-                style={{ fontSize: 14 }}
-                value={"Completed"}
-                >
-                Completed
-              </MenuItem>
-            </TextField>
-                </Stack>
+                <MenuItem key={"completed"} style={{ fontSize: 14 }} value={"Completed"}>
+                  Completed
+                </MenuItem>
+              </TextField>
+            </Stack>
 
 
             <Button
               size="small"
-              variant="outlined"
+              variant="contained"
               startIcon={<AddRounded />}
               onClick={handleToggleAddTansportView}
-              sx={{ mx: 4, mb: 1, mt: 1 }}
+              sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
             >
               Submit Delivery/Pickup
             </Button>
@@ -199,17 +177,14 @@ export default function TransportManager() {
           <Dialog
             onClose={handleCloseAddTansportView}
             open={openAddTransportView}
+            fullWidth
+            maxWidth="md"
           >
-            <div className="closeButtonContainer">
-              <Button onClick={handleCloseAddTansportView}>
-                <CancelOutlined />
-              </Button>
-            </div>
-            <div className="addRequestView">
+            <Box sx={{ display: "flex", justifyContent: "center", p: 1 }}>
               <AddTransportView
                 handleCloseAddTansportView={handleCloseAddTansportView}
               />
-            </div>
+            </Box>
           </Dialog>
 
           <Grid
@@ -218,7 +193,7 @@ export default function TransportManager() {
               display: "flex",
               justifyContent: "center",
             }}
-            spacing={1}
+            spacing={2}
           >
             <Grid item xs={12} sm={12} md={5} lg={5}>
               <TransportTable requests={requests} />
@@ -227,8 +202,11 @@ export default function TransportManager() {
               <CalendarView calendarRequests={calendarRequests} />
             </Grid>
           </Grid>
-        </React.Fragment>
+          <Typography variant="caption" color="text.secondary" sx={{ display: { xs: "block", md: "none" }, mt: 0.75 }}>
+            Swipe horizontally on the transport table for additional columns.
+          </Typography>
+        </Card>
       )}
-    </Box>
+    </Container>
   );
 }

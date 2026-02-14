@@ -1,27 +1,18 @@
-import * as React from 'react';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Skeleton from '@mui/material/Skeleton';
+import * as React from "react";
+import { Box, Skeleton, Stack } from "@mui/material";
 
-
-function Media() {
-
+export default function RowSkeleton() {
   return (
-    <Grid container wrap="nowrap">
-      <Box sx={{ width: 800, margin: 5, my: 5 }}>
-      
-          <Skeleton variant="text" width="100%" height={50} />
-      </Box>
-    </Grid>
-  );
-}
-
-export default function YouTube() {
-  return (
-    <Box sx={{ overflow: 'hidden' }}>
-      <Media />
-      <Media />
+    <Box sx={{ overflow: "hidden", px: 1.5, py: 1 }}>
+      {[1, 2].map((item) => (
+        <Stack key={item} direction="row" spacing={1} sx={{ py: 0.6 }}>
+          <Skeleton variant="circular" width={20} height={20} />
+          <Skeleton variant="text" width="24%" height={24} />
+          <Skeleton variant="text" width="30%" height={24} />
+          <Skeleton variant="text" width="20%" height={24} />
+          <Skeleton variant="rounded" width={95} height={22} />
+        </Stack>
+      ))}
     </Box>
   );
 }

@@ -1,10 +1,6 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React from "react";
 import Paper from "@mui/material/Paper";
-import {
-  ViewState,
-  EditingState,
-  IntegratedEditing,
-} from "@devexpress/dx-react-scheduler";
+import { ViewState } from "@devexpress/dx-react-scheduler";
 import {
   Scheduler,
   DayView,
@@ -13,15 +9,13 @@ import {
   Appointments,
   DateNavigator,
   ViewSwitcher,
-  AppointmentForm,
-  AllDayPanel,
   Toolbar,
   TodayButton,
   AppointmentTooltip,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import moment from "moment";
 import { Grid, Stack, Typography } from "@mui/material";
-import { PhoneRounded, RestorePage, Room } from "@mui/icons-material";
+import { PhoneRounded, Room } from "@mui/icons-material";
 
 const currentDate = moment().format();
 
@@ -112,8 +106,6 @@ const Content = ({ children, appointmentData, ...restProps }) => (
 export default function CalendarView(props) {
   const { calendarRequests } = props;
 
-  console.log(calendarRequests);
-
   return (
     <Paper
       style={{
@@ -123,8 +115,6 @@ export default function CalendarView(props) {
       }}
     >
       <Scheduler height={700} data={calendarRequests}>
-        {/* <EditingState onCommitChanges={null} /> */}
-        {/* <IntegratedEditing /> */}
         <ViewState
           defaultCurrentDate={currentDate}
           defaultCurrentViewName="Week"
@@ -142,7 +132,6 @@ export default function CalendarView(props) {
           contentComponent={Content}
           showCloseButton
         />
-        {/* <AppointmentForm readOnly /> */}
       </Scheduler>
     </Paper>
   );

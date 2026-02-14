@@ -17,7 +17,7 @@
     "@mui/styled-engine-sc": "^5.0.3",
     "@mui/styles": "^5.0.1",
     "@mui/x-data-grid": "^5.0.0-beta.4",
-    "@react-pdf/renderer": "^2.0.21",
+    "@react-pdf/renderer": "^3.1.12",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -32,7 +32,7 @@
     "react-imask": "^6.4.2",
     "react-redux": "^7.2.5",
     "react-router-dom": "^5.3.0",
-    "react-scripts": "4.0.3",
+    "react-scripts": "^5.0.1",
     "redux": "^4.1.1",
     "redux-firestore": "^0.15.0",
     "styled-components": "^5.3.1",
@@ -40,9 +40,14 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "backfill:request-search": "node scripts/backfill-request-search.js",
+    "backfill:request-search:dry-run": "node scripts/backfill-request-search.js --dry-run"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   },
   "eslintConfig": {
     "extends": [

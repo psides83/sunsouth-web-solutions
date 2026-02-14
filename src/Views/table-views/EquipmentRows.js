@@ -1,55 +1,141 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
 import { setDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
-import moment from "moment";
 import "../../styles/Table.css";
 import {
   sendEquipmentDeletedEmail,
   sendEquipmentUpdateEmail,
 } from "../../services/email-service";
-import Spinner from "../../components/Spinner";
 import {
+  Alert,
+  Box,
   Button,
   Dialog,
   DialogTitle,
   IconButton,
+  Snackbar,
+  Stack,
   TableCell,
   TableRow,
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
+import { DeleteRounded, EditRounded } from "@mui/icons-material";
+import { keyframes } from "@mui/system";
 import {
-  CheckRounded,
-  CloseRounded,
-  DeleteRounded,
-  EditRounded,
-} from "@mui/icons-material";
+  CHANGE_ACTIONS,
+  createChangeLogEntry,
+} from "../../utils/changeLog";
 
-// Equipment row view:
+const savePulse = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0.22); }
+  40% { transform: scale(1.005); box-shadow: 0 0 0 8px rgba(47, 125, 49, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0); }
+`;
+
 export default function EquipmentRow(props) {
-  //#region State Properties
-  const { request, item } = props;
+  const RETRY_ACTIONS = {
+    SAVE_EQUIPMENT: "save_equipment",
+    DELETE_EQUIPMENT: "delete_equipment",
+  };
+  const { request, item, readOnly = false } = props;
   const [{ userProfile }] = useStateValue();
-  var [model, setModel] = useState("");
-  var [stock, setStock] = useState("");
-  var [serial, setSerial] = useState("");
-  var [work, setWork] = useState("");
-  var [notes, setNotes] = useState("");
-  const [currentValues, setCurrentValues] = useState({
+  const [formValues, setFormValues] = useState({
     model: "",
     stock: "",
     serial: "",
     work: "",
     notes: "",
   });
-  var [isEditingEquipment, setIsEditingEquipment] = useState(false);
-  var [equipmentHasChanges, setEquipmentHasChanges] = useState(false);
+  const [originalValues, setOriginalValues] = useState({
+    model: "",
+    stock: "",
+    serial: "",
+    work: "",
+    notes: "",
+  });
+  const [openEditSheet, setOpenEditSheet] = useState(false);
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
-  const [isShowingSpinner, setIsShowingSpinner] = useState(false);
+  const [isEquipmentDeletePending, setIsEquipmentDeletePending] = useState(false);
+  const [equipmentDeleteSnackbarOpen, setEquipmentDeleteSnackbarOpen] = useState(false);
+  const [writeErrorSnackbarOpen, setWriteErrorSnackbarOpen] = useState(false);
+  const [writeErrorMessage, setWriteErrorMessage] = useState("");
+  const [retryAction, setRetryAction] = useState("");
+  const [showSavePulse, setShowSavePulse] = useState(false);
+  const equipmentDeleteTimeoutRef = useRef(null);
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
-  // #endregion
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
+  const equipmentHasChanges = useMemo(
+    () =>
+      originalValues.model !== formValues.model ||
+      originalValues.stock !== formValues.stock ||
+      originalValues.serial !== formValues.serial ||
+      originalValues.work !== formValues.work ||
+      originalValues.notes !== formValues.notes,
+    [originalValues, formValues]
+  );
+
+  // Dialog shortcut listeners are scoped to mounted equipment rows.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    return () => {
+      if (equipmentDeleteTimeoutRef.current) {
+        clearTimeout(equipmentDeleteTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const onShortcutSave = () => {
+      if (openEditSheet && !isShowingConfirmDialog) {
+        saveEquipment();
+      }
+    };
+
+    const onShortcutClose = () => {
+      if (isShowingConfirmDialog) {
+        handleCloseConfirmDialog();
+        return;
+      }
+
+      if (openEditSheet) {
+        handleCloseEditSheet();
+      }
+    };
+
+    window.addEventListener("request-shortcut-save", onShortcutSave);
+    window.addEventListener("request-shortcut-close", onShortcutClose);
+
+    return () => {
+      window.removeEventListener("request-shortcut-save", onShortcutSave);
+      window.removeEventListener("request-shortcut-close", onShortcutClose);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openEditSheet, isShowingConfirmDialog, formValues, originalValues]);
+
+  const handleOpenEditSheet = () => {
+    const currentValues = {
+      model: item.model,
+      stock: item.stock,
+      serial: item.serial,
+      work: item.work,
+      notes: item.notes,
+    };
+
+    setOriginalValues(currentValues);
+    setFormValues(currentValues);
+    setOpenEditSheet(true);
+  };
+
+  const handleCloseEditSheet = () => {
+    setOpenEditSheet(false);
+  };
 
   const handleCloseConfirmDialog = () => {
     setIsShowingConfirmDialog(false);
@@ -59,162 +145,123 @@ export default function EquipmentRow(props) {
     setIsShowingConfirmDialog(!isShowingConfirmDialog);
   };
 
-  // Handles editing of the equipment values.
-  // Either opens the edit textfields or sets new edits to firestore
-  const editEquipment = async () => {
-    // If isEditingEquipment is true,
-    // check for changes to the equipment values
-    if (isEditingEquipment) {
-      var changeDetails = [];
+  const handleFieldChange = (field, value) => {
+    setFormValues((previousValues) => ({
+      ...previousValues,
+      [field]: value,
+    }));
+  };
 
-      // The model has changes
-      if (currentValues.model !== model) {
-        changeDetails.push(
-          `equipment model updated from ${currentValues.model} to ${model}`
-        );
-      }
+  const saveEquipment = async () => {
+    if (!equipmentHasChanges) {
+      setOpenEditSheet(false);
+      return;
+    }
 
-      // The stock number has changes
-      if (currentValues.stock !== stock) {
-        changeDetails.push(
-          `equipment stock number updated from ${currentValues.stock} to ${stock}`
-        );
-      }
+    const changeDetails = [];
 
-      // The serial number has changes
-      if (currentValues.serial !== serial) {
-        changeDetails.push(
-          `equipment serial number updated from ${currentValues.serial} to ${serial}`
-        );
-      }
+    if (originalValues.model !== formValues.model) {
+      changeDetails.push(
+        `equipment model updated from ${originalValues.model} to ${formValues.model}`
+      );
+    }
 
-      // The work list has changes
-      if (currentValues.work !== work) {
-        changeDetails.push(
-          `equipment work required updated from ${currentValues.work} to ${work}`
-        );
-      }
+    if (originalValues.stock !== formValues.stock) {
+      changeDetails.push(
+        `equipment stock number updated from ${originalValues.stock} to ${formValues.stock}`
+      );
+    }
 
-      // The notes have changes
-      if (currentValues.notes !== notes) {
-        changeDetails.push(
-          `equipment notes from ${
-            currentValues.notes === "" ? "blank" : currentValues.notes
-          } to ${notes}`
-        );
-      }
+    if (originalValues.serial !== formValues.serial) {
+      changeDetails.push(
+        `equipment serial number updated from ${originalValues.serial} to ${formValues.serial}`
+      );
+    }
 
-      // If the eaquipmentHasChanges check is true,
-      // set the values for the changLog,
-      // append the new changeLog object to the changeLog array,
-      // then set the new equipment values to the document in Firestore
-      if (equipmentHasChanges) {
-        const changeLogEntry = {
-          user: fullName,
-          change: changeDetails,
-          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-        };
+    if (originalValues.work !== formValues.work) {
+      changeDetails.push(
+        `equipment work required updated from ${originalValues.work} to ${formValues.work}`
+      );
+    }
 
-        item.changeLog.push(changeLogEntry);
+    if (originalValues.notes !== formValues.notes) {
+      changeDetails.push(
+        `equipment notes from ${
+          originalValues.notes === "" ? "blank" : originalValues.notes
+        } to ${formValues.notes}`
+      );
+    }
 
-        await setDoc(
-          doc(
-            db,
-            "branches",
-            userProfile.branch,
-            "requests",
-            item.requestID,
-            "equipment",
-            item.stock
-          ),
-          {
-            model: model,
-            stock: stock,
-            serial: serial,
-            work: work,
-            notes: notes,
-            changeLog: item.changeLog,
-          },
-          { merge: true }
-        );
-
-        sendEquipmentUpdateEmail(
-          currentValues,
-          request,
-          userProfile,
-          fullName,
-          model,
-          stock,
-          serial,
-          work,
-          notes
-        );
-        setIsEditingEquipment(false);
-
-        // if equipmentHasChanges check is false,
-        // do noting but set the isEditingEquipment Bool to false to close the Texfields and toggle the edit button
-      } else {
-        console.log("no changes to equipment");
-        setIsEditingEquipment(false);
-      }
-
-      // If isEditingEquipment Bool is false,
-      // set firestore document values to state properties that update int he TextFields,
-      // and se tthe original values to an object so that we can check the TextField values for changes
-    } else {
-      setCurrentValues({
-        model: item.model,
-        stock: item.stock,
-        serial: item.serial,
-        work: item.work,
-        notes: item.notes,
+    try {
+      const changeLogEntry = createChangeLogEntry({
+        user: fullName,
+        actionType: CHANGE_ACTIONS.EQUIPMENT_UPDATED,
+        summary: "Equipment details updated",
+        details: changeDetails,
       });
 
-      setModel(item.model);
-      setStock(item.stock);
-      setSerial(item.serial);
-      setWork(item.work);
-      setNotes(item.notes);
-      setIsEditingEquipment(true);
+      const nextEquipmentChangeLog = [...(item.changeLog || []), changeLogEntry];
+
+      await setDoc(
+        doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          item.requestID,
+          "equipment",
+          item.stock
+        ),
+        {
+          model: formValues.model,
+          stock: formValues.stock,
+          serial: formValues.serial,
+          work: formValues.work,
+          notes: formValues.notes,
+          changeLog: nextEquipmentChangeLog,
+        },
+        { merge: true }
+      );
+
+      sendEquipmentUpdateEmail(
+        originalValues,
+        request,
+        userProfile,
+        fullName,
+        formValues.model,
+        formValues.stock,
+        formValues.serial,
+        formValues.work,
+        formValues.notes
+      );
+
+      setShowSavePulse(true);
+      setTimeout(() => {
+        setShowSavePulse(false);
+      }, 650);
+      setOpenEditSheet(false);
+    } catch (error) {
+      showWriteError(
+        "Could not save equipment changes. Please retry.",
+        RETRY_ACTIONS.SAVE_EQUIPMENT
+      );
     }
   };
 
-  useEffect(() => {
-    // Receives the changes on the equipment TextFields and
-    // sets the equipmentHasChanges Bool to true if
-    // current equipment TextField value doesn't match the original value loaded from Firestore
-    if (
-      currentValues.model !== model ||
-      currentValues.stock !== stock ||
-      currentValues.serial !== serial ||
-      currentValues.work !== work ||
-      currentValues.notes !== notes
-    ) {
-      setEquipmentHasChanges(true);
-    } else {
-      setEquipmentHasChanges(false);
-    }
-  }, [
-    currentValues,
-    model,
-    stock,
-    serial,
-    work,
-    notes,
-    setEquipmentHasChanges,
-  ]);
-
-  const deleteEquipment = async () => {
-    request.changeLog.push({
-      user: fullName,
-      timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-      change: `${item.model} ST# ${item.stock} deleted from the request`,
-    });
+  const deleteEquipmentNow = async () => {
+    const nextRequestChangeLog = [...(request.changeLog || [])];
+    nextRequestChangeLog.push(
+      createChangeLogEntry({
+        user: fullName,
+        actionType: CHANGE_ACTIONS.EQUIPMENT_DELETED,
+        summary: `${item.model} ST# ${item.stock} deleted from the request`,
+      })
+    );
 
     await setDoc(
       doc(db, "branches", userProfile.branch, "requests", item.requestID),
       {
-        changeLog: request.changeLog,
+        changeLog: nextRequestChangeLog,
       },
       { merge: true }
     );
@@ -234,194 +281,257 @@ export default function EquipmentRow(props) {
     sendEquipmentDeletedEmail(item, request, fullName, userProfile);
   };
 
-  // Equipment row UI:
+  const deleteEquipment = () => {
+    setIsShowingConfirmDialog(false);
+    setOpenEditSheet(false);
+    setIsEquipmentDeletePending(true);
+    setEquipmentDeleteSnackbarOpen(true);
+
+    equipmentDeleteTimeoutRef.current = setTimeout(async () => {
+      try {
+        await deleteEquipmentNow();
+      } catch (error) {
+        setIsEquipmentDeletePending(false);
+        showWriteError(
+          "Delete failed. Equipment row was restored. Retry?",
+          RETRY_ACTIONS.DELETE_EQUIPMENT
+        );
+      } finally {
+        setEquipmentDeleteSnackbarOpen(false);
+      }
+    }, 5000);
+  };
+
+  const undoEquipmentDelete = () => {
+    if (equipmentDeleteTimeoutRef.current) {
+      clearTimeout(equipmentDeleteTimeoutRef.current);
+      equipmentDeleteTimeoutRef.current = null;
+    }
+    setIsEquipmentDeletePending(false);
+    setEquipmentDeleteSnackbarOpen(false);
+  };
+
+  const showWriteError = (message, action) => {
+    setWriteErrorMessage(message);
+    setRetryAction(action);
+    setWriteErrorSnackbarOpen(true);
+  };
+
+  const closeWriteErrorSnackbar = () => {
+    setWriteErrorSnackbarOpen(false);
+  };
+
+  const retryFailedWrite = () => {
+    setWriteErrorSnackbarOpen(false);
+    if (retryAction === RETRY_ACTIONS.SAVE_EQUIPMENT) {
+      saveEquipment();
+      return;
+    }
+
+    if (retryAction === RETRY_ACTIONS.DELETE_EQUIPMENT) {
+      deleteEquipment();
+    }
+  };
+
   return (
     <React.Fragment>
+      {!isEquipmentDeletePending ? (
       <TableRow
         key={item.requestID}
-        style={{ fontSize: 18}}
-        sx={{ '& > *': { borderBottom: 'unset' } }}
+        style={{ fontSize: 18 }}
+        sx={{
+          "& > *": { borderBottom: "unset" },
+          animation: showSavePulse ? `${savePulse} 650ms ease-out` : "none",
+        }}
       >
         <TableCell key="model" align="left" component="th" scope="row">
-          {" "}
-          {isEditingEquipment ? (
-            <TextField
-              variant="outlined"
-              label="Model"
-              inputProps={{ style: { fontSize: 14 } }}
-              style={{ fontSize: 18 }}
-              size="small"
-              onChange={(e) => setModel(e.target.value.toUpperCase())}
-              value={model}
-            ></TextField>
-          ) : (
-            item.model
-          )}
+          {item.model}
         </TableCell>
 
-        {isEditingEquipment ? (
-          <TableCell key="stock" align="left">
-            <br />
-            <p>
-              <TextField
-                variant="outlined"
-                label="Stock"
-                inputProps={{ style: { fontSize: 14 } }}
-                style={{ fontSize: 18 }}
-                size="small"
-                onChange={(e) => setStock(e.target.value)}
-                value={stock}
-              ></TextField>
-            </p>
-            <br />
-            <p>
-              <small>
-                <TextField
-                  variant="outlined"
-                  label="Serial"
-                  inputProps={{ style: { fontSize: 14 } }}
-                  style={{ fontSize: 18 }}
-                  size="small"
-                  onChange={(e) => setSerial(e.target.value.toUpperCase())}
-                  value={serial}
-                ></TextField>
-              </small>
-            </p>
-          </TableCell>
-        ) : (
-          <TableCell key="serial" align="left">
-            {`Stock: ${item.stock}`}
-            <p>
-              <small>{`Serial: ${item.serial}`}</small>
-            </p>
-          </TableCell>
-        )}
+        <TableCell key="serial" align="left">
+          {`Stock: ${item.stock}`}
+          <p>
+            <small>{`Serial: ${item.serial}`}</small>
+          </p>
+        </TableCell>
+
+        <TableCell key="workOrder" align="left">
+          {item.workOrder || "-"}
+        </TableCell>
 
         <TableCell key="work" align="left">
-          {" "}
-          {isEditingEquipment ? (
-            <TextField
-              variant="outlined"
-              label="Work"
-              inputProps={{ style: { fontSize: 14 } }}
-              style={{ fontSize: 18 }}
-              size="small"
-              onChange={(e) => setWork(e.target.value)}
-              value={work}
-            ></TextField>
-          ) : (
-            item.work
-          )}
+          {item.work}
         </TableCell>
 
         <TableCell key="notes" align="left">
-          {" "}
-          {isEditingEquipment ? (
-            <TextField
-              variant="outlined"
-              label="Notes"
-              inputProps={{ style: { fontSize: 14 } }}
-              style={{ fontSize: 18 }}
-              size="small"
-              onChange={(e) => setNotes(e.target.value)}
-              value={notes}
-            ></TextField>
-          ) : (
-            item.notes
-          )}
+          {item.notes}
         </TableCell>
 
         <TableCell key="editSaveCancelbutton" align="center">
-          <IconButton
-            color="primary"
-            style={{ fontSize: 20 }}
-            onClick={editEquipment}
-          >
-            {" "}
-            {isEditingEquipment ? (
-              equipmentHasChanges ? (
-                <Tooltip title="Save">
-                  <CheckRounded color="primary" style={{ fontSize: 18 }} />
-                </Tooltip>
-              ) : (
-                <Tooltip title="Cancel">
-                  <CloseRounded color="primary" style={{ fontSize: 18 }} />
-                </Tooltip>
-              )
-            ) : (
-              <Tooltip title="Edit Equipment">
-                <EditRounded color="primary" style={{ fontSize: 18 }} />
-              </Tooltip>
-            )}
-          </IconButton>
-          {isEditingEquipment ? (
+          {readOnly ? null : (
             <IconButton
               color="primary"
               style={{ fontSize: 20 }}
-              onClick={handleToggleConfirmDialog}
+              aria-label={`Edit equipment ${item.model} ${item.stock}`}
+              onClick={handleOpenEditSheet}
             >
-              <Tooltip title="Delete Equipment">
-                <DeleteRounded color="primary" style={{ fontSize: 18 }} />
+              <Tooltip title="Edit Equipment">
+                <EditRounded color="primary" style={{ fontSize: 18 }} />
               </Tooltip>
             </IconButton>
-          ) : null}
-          <Dialog
-            onClose={handleCloseConfirmDialog}
-            open={isShowingConfirmDialog}
-          >
+          )}
+        </TableCell>
+      </TableRow>
+      ) : null}
+
+      <Dialog
+        onClose={handleCloseEditSheet}
+        open={openEditSheet}
+        fullWidth
+        maxWidth="md"
+        fullScreen={isMobile}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+            Edit Equipment
+          </Typography>
+
+          <Stack spacing={1.5}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Model"
+                value={formValues.model}
+                onChange={(event) =>
+                  handleFieldChange("model", event.target.value.toUpperCase())
+                }
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Stock"
+                value={formValues.stock}
+                onChange={(event) => handleFieldChange("stock", event.target.value)}
+              />
+            </Stack>
+
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Serial"
+                value={formValues.serial}
+                onChange={(event) =>
+                  handleFieldChange("serial", event.target.value.toUpperCase())
+                }
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Work"
+                value={formValues.work}
+                onChange={(event) => handleFieldChange("work", event.target.value)}
+              />
+            </Stack>
+
+            <TextField
+              fullWidth
+              size="small"
+              label="Notes"
+              value={formValues.notes}
+              onChange={(event) => handleFieldChange("notes", event.target.value)}
+            />
+          </Stack>
+
+          <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 2 }}>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteRounded />}
+              onClick={handleToggleConfirmDialog}
+            >
+              Delete Equipment
+            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" onClick={handleCloseEditSheet}>
+                Cancel
+              </Button>
+              <Button variant="contained" onClick={saveEquipment} disabled={!equipmentHasChanges}>
+                Save Changes
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+      </Dialog>
+
+      <Dialog onClose={handleCloseConfirmDialog} open={isShowingConfirmDialog}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            margin: "5px 25px 25px 25px",
+          }}
+        >
+          <DialogTitle>Confirm Delete</DialogTitle>
+          <div>
+            <Typography>Are you sure you want to delete</Typography>
+            <Typography>{`${item.model} from this request?`}</Typography>
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: "25px",
               }}
             >
-              <DialogTitle>Confirm Delete</DialogTitle>
-              {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Typography>Saving</Typography>
-                  <Spinner frame={false} />
-                </div>
-              ) : (
-                <div>
-                  <Typography>Are you sure you want to delete</Typography>
-                  <Typography>{`${item.model} from this request?`}</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={handleCloseConfirmDialog}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={deleteEquipment}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              )}
+              <Button variant="outlined" color="primary" onClick={handleCloseConfirmDialog}>
+                Cancel
+              </Button>
+              <Button variant="contained" color="error" onClick={deleteEquipment}>
+                Delete
+              </Button>
             </div>
-          </Dialog>
-        </TableCell>
-      </TableRow>
+          </div>
+        </div>
+      </Dialog>
+
+      <Snackbar
+        open={equipmentDeleteSnackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setEquipmentDeleteSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="warning"
+          action={
+            <Button color="inherit" size="small" onClick={undoEquipmentDelete}>
+              Undo
+            </Button>
+          }
+        >
+          Equipment deleted. Undo?
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={writeErrorSnackbarOpen}
+        autoHideDuration={7000}
+        onClose={closeWriteErrorSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          onClose={closeWriteErrorSnackbar}
+          action={
+            <Button color="inherit" size="small" onClick={retryFailedWrite}>
+              Retry
+            </Button>
+          }
+        >
+          {writeErrorMessage}
+        </Alert>
+      </Snackbar>
     </React.Fragment>
   );
 }

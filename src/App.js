@@ -1,10 +1,8 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./styles/App.css";
 import Header from "./views/Header";
 import Home from "./views/Home";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-// import { useHistory } from 'react-router-dom';
-// import Login from './Login';
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./services/firebase";
 import { useStateValue } from "./state-management/StateProvider";
@@ -27,69 +25,143 @@ const theme = createTheme({
   palette: {
     mode: "light",
     primary: {
-      main: "#367C2B",
+      main: "#2f7d31",
+      light: "#5da35f",
+      dark: "#1d5e1f",
+      contrastText: "#ffffff",
     },
     secondary: {
-      main: "#FFDE00",
+      main: "#ffd347",
+      light: "#ffe386",
+      dark: "#d5a100",
+      contrastText: "#2d2410",
     },
     success: {
-      main: "#66bb6a",
+      main: "#2e7d32",
     },
     error: {
-      main: "#f44336",
+      main: "#c62828",
     },
     info: {
-      main: "#708090",
+      main: "#275f8f",
     },
     background: {
-      default: "#e3e8e8",
+      default: "#f4f8f4",
+      paper: "#ffffff",
+    },
+    text: {
+      primary: "#1a261b",
+      secondary: "#4a5c4b",
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  typography: {
+    fontFamily: ["'Roboto'", "'Helvetica'", "'Arial'", "sans-serif"].join(","),
+    h4: {
+      fontWeight: 700,
+      letterSpacing: 0.2,
+    },
+    h5: {
+      fontWeight: 700,
+      letterSpacing: 0.2,
+    },
+    button: {
+      textTransform: "none",
+      fontWeight: 600,
+      letterSpacing: 0.2,
+    },
+  },
+  components: {
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+        },
+      },
+    },
+    MuiButton: {
+      defaultProps: {
+        disableElevation: true,
+      },
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          paddingInline: 16,
+          "&:focus-visible": {
+            outline: "3px solid rgba(47, 125, 49, 0.35)",
+            outlineOffset: 2,
+          },
+        },
+        containedPrimary: {
+          boxShadow: "0 6px 20px rgba(47, 125, 49, 0.25)",
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          minWidth: 40,
+          minHeight: 40,
+          padding: 8,
+          "&:focus-visible": {
+            outline: "3px solid rgba(47, 125, 49, 0.35)",
+            outlineOffset: 2,
+          },
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        head: {
+          fontWeight: 700,
+          color: "#1a261b",
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          borderRadius: 18,
+        },
+      },
     },
   },
 });
 
 function App() {
-  // const [{ pdfData }] = useStateValue();
   const [{ user }, dispatch] = useStateValue();
   const [loading, setLoading] = useState(true);
-  var [data, setData] = useState();
+  const [data, setData] = useState();
 
-  const fetchdata = async (user) => {
+  const fetchdata = async (activeUser) => {
     const docSnapshot = await getDoc(
-      doc(db, "users", user?.uid, "pdf", "pdfData")
+      doc(db, "users", activeUser?.uid, "pdf", "pdfData"),
     );
 
     if (docSnapshot.exists()) {
-      console.log("Document data:", docSnapshot.data());
       setData(docSnapshot.data());
-      setLoading(false);
-    } else {
-      // doc.data() will be undefined in this case
-      console.log("No such document!");
     }
   };
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/firebase.User
-        // setTimeout( function() { setLoading(false); }, 2000);
-
+    onAuthStateChanged(auth, (activeUser) => {
+      if (activeUser) {
         dispatch({
           type: "SET_USER",
-          user: user,
+          user: activeUser,
         });
-        fetchdata(user);
-        setTimeout(function () {
+        fetchdata(activeUser);
+        setTimeout(() => {
           setLoading(false);
         }, 1000);
       } else {
-        // User is signed out
         dispatch({
           type: "SET_USER",
           user: null,
         });
-        setTimeout(function () {
+        setTimeout(() => {
           setLoading(false);
         }, 500);
       }
@@ -102,15 +174,12 @@ function App() {
       <div className="app">
         <Router>
           <Switch>
-          <Route path="/transport-pdf">
+            <Route path="/transport-pdf">
               {loading ? (
                 <Spinner frame />
               ) : (
                 <PDFViewer width="100%" height="1080">
-                  <TransportPDF
-                    className="pdf"
-                    request={data?.request}
-                  />
+                  <TransportPDF className="pdf" request={data?.request} />
                 </PDFViewer>
               )}
             </Route>

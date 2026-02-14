@@ -1,49 +1,28 @@
 import React, { useState } from "react";
-import { Link, useHistory } from "react-router-dom";
+import { Link as RouterLink, useHistory } from "react-router-dom";
 import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
 } from "firebase/auth";
 import { auth, db } from "../services/firebase";
-import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
 import { branches } from "../models/branches";
 import {
   Alert,
   Avatar,
+  Box,
   Button,
   Container,
   Grid,
+  Link,
   MenuItem,
+  Paper,
   Snackbar,
   TextField,
   Typography,
 } from "@mui/material";
 import { LockOutlined } from "@mui/icons-material";
-
-// const useStyles = makeStyles((theme) => ({
-//   paper: {
-//     marginTop: theme.spacing(8),
-//     display: 'flex',
-//     flexDirection: 'column',
-//     alignItems: 'center',
-//   },
-//   avatar: {
-//     margin: theme.spacing(1),
-//     backgroundColor: theme.palette.secondary.main,
-//   },
-//   form: {
-//     width: '100%', // Fix IE 11 issue.
-//     marginTop: theme.spacing(3),
-//   },
-//   submit: {
-//     margin: theme.spacing(3, 0, 2),
-//   },
-// select: {
-
-// },
-// }));
 
 export default function SignUp() {
   const history = useHistory();
@@ -55,43 +34,37 @@ export default function SignUp() {
   const [role, setRole] = useState("");
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
-  var [validationMessage, setValidationMessage] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
 
   const roles = ["admin", "sales", "service", "parts"];
 
-  const register = (e) => {
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
+  const register = async () => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-        updateProfile(user, { displayName: `${firstName} ${lastName}` });
+      await updateProfile(user, { displayName: `${firstName} ${lastName}` });
 
-        if (user) {
-          const newUser = doc(db, "users", user.uid);
-          const userData = {
-            id: user.uid,
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            role: role,
-            branch: branch,
-          };
-          setValidationMessage("Registration successful.");
-          setOpenSuccess(true);
-          setDoc(newUser, userData, { merge: true });
-          history.push("/");
-        }
-      })
-      .catch((error) => {
-        setValidationMessage(
-          "User already registered with this email address."
-        );
-        setOpenError(true);
-      });
+      const newUser = doc(db, "users", user.uid);
+      const userData = {
+        id: user.uid,
+        firstName,
+        lastName,
+        email,
+        role,
+        branch,
+      };
+
+      await setDoc(newUser, userData, { merge: true });
+      setValidationMessage("Registration successful.");
+      setOpenSuccess(true);
+      history.push("/");
+    } catch (error) {
+      setValidationMessage("User already registered with this email address.");
+      setOpenError(true);
+    }
   };
 
-  // Squipment submission validation.
   const signUpValidation = async (event) => {
     event.preventDefault();
 
@@ -99,42 +72,46 @@ export default function SignUp() {
       setValidationMessage("First name is required to register.");
       setOpenError(true);
       return;
-    } else if (lastName === "") {
+    }
+
+    if (lastName === "") {
       setValidationMessage("Last name is required to register.");
       setOpenError(true);
       return;
-    } else if (branch === "") {
+    }
+
+    if (branch === "") {
       setValidationMessage("User must select a branch to register.");
       setOpenError(true);
       return;
-    } else if (email.includes("@sunsouth.com") === false) {
+    }
+
+    if (!email.includes("@sunsouth.com")) {
       setValidationMessage("User must register with a SunSouth company email.");
       setOpenError(true);
       return;
-    } else if (password.length < 8) {
+    }
+
+    if (password.length < 8) {
       setValidationMessage("Password must be at least 8 characters.");
       setOpenError(true);
       return;
-    } else {
-      register();
+    }
+
+    register();
+  };
+
+  const forgotPassword = async () => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setValidationMessage("An email has been sent to reset your password.");
+      setOpenSuccess(true);
+    } catch (error) {
+      setValidationMessage("Enter your account email, then try reset again.");
+      setOpenError(true);
     }
   };
 
-  // Forgot password.
-  const forgotPassword = async () => {
-    await sendPasswordResetEmail(auth, email)
-      .then(() => {
-        // Password reset email sent!
-        setValidationMessage("An email has been sent to reset your password");
-        setOpenSuccess(true);
-      })
-      .catch((error) => {
-        setValidationMessage("An email has been sent to reset your password");
-        setOpenSuccess(true);
-      });
-  };
-
-  // Handle closing of the alerts.
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -145,205 +122,166 @@ export default function SignUp() {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <div
-        style={{
-          marginTop: (theme) => theme.spacing(8),
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+    <Container component="main" maxWidth="sm" sx={{ py: { xs: 4, md: 8 } }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 3, md: 5 },
+          border: "1px solid",
+          borderColor: "rgba(47, 125, 49, 0.18)",
+          background:
+            "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(247,250,247,0.95) 100%)",
         }}
       >
-        <Avatar
-          sx={{
-            margin: (theme) => theme.spacing(1),
-            backgroundColor: (theme) => theme.palette.secondary.main,
-          }}
-        >
-          <LockOutlined />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Sign up
-        </Typography>
-        <form
-          style={{
-            width: "100%", // Fix IE 11 issue.
-            marginTop: (theme) => theme.spacing(1),
-          }}
-          noValidate
-        >
-          <Grid container spacing={2} sx={{marginTop: 1}}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                autoComplete="fname"
-                name="firstName"
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                id="firstName"
-                label="First Name"
-                autoFocus
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                id="lastName"
-                label="Last Name"
-                name="lastName"
-                autoComplete="lname"
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12} sm={5}>
-              <TextField
-                size="small"
-                variant="outlined"
-                required
-                fullWidth
-                labelId="demo-simple-select-label"
-                id="role"
-                sx={{
-                  "&:before": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                  "&:after": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                  "&:not(.Mui-disabled):hover::before": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                }}
-                value={role}
-                label="Role"
-                onChange={(e) => setRole(e.target.value)}
-                select
-              >
-                {roles.map((role) => (
-                  <MenuItem value={role}>{role}</MenuItem>
-                ))}
-              </TextField>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <Avatar sx={{ mb: 1, bgcolor: "secondary.main", color: "secondary.contrastText" }}>
+            <LockOutlined />
+          </Avatar>
+          <Typography component="h1" variant="h5" sx={{ mb: 0.5 }}>
+            Sign up
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+            Create a branch-scoped account for SunSouth operations.
+          </Typography>
+
+          <Box component="form" sx={{ width: "100%" }} noValidate>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  autoComplete="given-name"
+                  name="firstName"
+                  required
+                  fullWidth
+                  size="small"
+                  id="firstName"
+                  label="First Name"
+                  autoFocus
+                  onChange={(event) => setFirstName(event.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  id="lastName"
+                  label="Last Name"
+                  name="lastName"
+                  autoComplete="family-name"
+                  onChange={(event) => setLastName(event.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={5}>
+                <TextField
+                  size="small"
+                  required
+                  fullWidth
+                  id="role"
+                  value={role}
+                  label="Role"
+                  onChange={(event) => setRole(event.target.value)}
+                  select
+                >
+                  {roles.map((roleOption) => (
+                    <MenuItem key={roleOption} value={roleOption}>
+                      {roleOption}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} sm={7}>
+                <TextField
+                  size="small"
+                  required
+                  fullWidth
+                  id="branch"
+                  value={branch}
+                  label="Branch"
+                  onChange={(event) => setBranch(event.target.value)}
+                  select
+                >
+                  {branches.map((branchOption) => (
+                    <MenuItem key={branchOption} value={branchOption}>
+                      {branchOption}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  size="small"
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+              </Grid>
             </Grid>
 
-            <Grid item xs={12} sm={7}>
-              <TextField
-                size="small"
-                variant="outlined"
-                required
-                fullWidth
-                labelId="demo-simple-select-label"
-                id="branch"
-                sx={{
-                  "&:before": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                  "&:after": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                  "&:not(.Mui-disabled):hover::before": {
-                    borderColor: (theme) => theme.palette.secondary.main,
-                  },
-                }}
-                value={branch}
-                label="Branch"
-                onChange={(e) => setBranch(e.target.value)}
-                select
-              >
-                {branches.map((branch) => (
-                  <MenuItem value={branch}>{branch}</MenuItem>
-                ))}
-              </TextField>
-            </Grid>
+            <Snackbar open={openSuccess} autoHideDuration={3000} onClose={handleClose}>
+              <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+                {validationMessage}
+              </Alert>
+            </Snackbar>
 
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                variant="outlined"
-                required
-                fullWidth
-                size="small"
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </Grid>
-          </Grid>
+            <Snackbar open={openError} autoHideDuration={3000} onClose={handleClose}>
+              <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+                {validationMessage}
+              </Alert>
+            </Snackbar>
 
-          <Snackbar
-            open={openSuccess}
-            autoHideDuration={3000}
-            onClose={handleClose}
-          >
-            <Alert
-              onClose={handleClose}
-              severity="success"
-              sx={{ width: "100%" }}
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ mt: 2, mb: 1.5, py: 1 }}
+              onClick={signUpValidation}
             >
-              {validationMessage}
-            </Alert>
-          </Snackbar>
-
-          <Snackbar
-            open={openError}
-            autoHideDuration={3000}
-            onClose={handleClose}
-          >
-            <Alert
-              onClose={handleClose}
-              severity="error"
-              sx={{ width: "100%" }}
-            >
-              {validationMessage}
-            </Alert>
-          </Snackbar>
-
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            color="primary"
-            style={{marginTop: "10px"}}
-            onClick={signUpValidation}
-          >
-            Sign Up
-          </Button>
-          <Grid container justifyContent="space-between">
-            <Grid item>
-              <Link onClick={forgotPassword} variant="body2">
-                Forgot password?
-              </Link>
+              Sign Up
+            </Button>
+            <Grid container justifyContent="space-between">
+              <Grid item>
+                <Link
+                  component="button"
+                  type="button"
+                  variant="body2"
+                  underline="hover"
+                  onClick={forgotPassword}
+                >
+                  Forgot password?
+                </Link>
+              </Grid>
+              <Grid item>
+                <Link component={RouterLink} to="/signIn" variant="body2" underline="hover">
+                  Already have an account? Sign in
+                </Link>
+              </Grid>
             </Grid>
-            <Grid item>
-              <Link to="/signIn" variant="body2">
-                Already have an account? Sign in
-              </Link>
-            </Grid>
-          </Grid>
-        </form>
-      </div>
+          </Box>
+        </Box>
+      </Paper>
     </Container>
   );
 }

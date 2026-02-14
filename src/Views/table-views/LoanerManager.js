@@ -18,8 +18,11 @@ import Spinner from "../../components/Spinner";
 import {
   Box,
   Button,
+  Card,
+  Container,
   Dialog,
   DialogTitle,
+  Stack,
   Paper,
   Table,
   TableBody,
@@ -27,10 +30,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
-import { AddRounded, CancelOutlined } from "@mui/icons-material";
+import { AddRounded } from "@mui/icons-material";
 
 // Loaner row view:
 function Row({ loaner }) {
@@ -130,15 +134,9 @@ function Row({ loaner }) {
         </TableCell>
 
         <TableCell key={loaner.status} align="left">
-          <Tooltip title="Update Status">
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={handleToggleConfirmDialog}
-            >
-              {loaner.status}
-            </Button>
-          </Tooltip>
+          <Button size="small" variant="outlined" onClick={handleToggleConfirmDialog}>
+            {loaner.status}
+          </Button>
           <p>
             <small>{loaner.statusTimestamp}</small>
           </p>
@@ -146,55 +144,31 @@ function Row({ loaner }) {
           <Dialog
             onClose={handleCloseConfirmDialog}
             open={isShowingConfirmDialog}
+            fullWidth
+            maxWidth="xs"
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
-              }}
-            >
-              <DialogTitle>Confirm Update</DialogTitle>
+            <Box sx={{ p: 2.5 }}>
+              <DialogTitle sx={{ px: 0, pt: 0, pb: 1.25 }}>Confirm Update</DialogTitle>
               {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
+                <Box sx={{ display: "grid", placeItems: "center", py: 1 }}>
                   <Typography>Saving</Typography>
                   <Spinner frame={false} />
-                </div>
+                </Box>
               ) : (
-                <div>
+                <Box>
                   <Typography>{`Update the loaner's status from`}</Typography>
-                  <Typography>{`\"${
-                    loaner.status
-                  }" to "${statusUpdateText()}"?`}</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleCloseConfirmDialog}
-                    >
+                  <Typography sx={{ mt: 0.25 }}>{`"${loaner.status}" to "${statusUpdateText()}"?`}</Typography>
+                  <Stack direction="row" justifyContent="space-between" sx={{ mt: 2.25 }}>
+                    <Button variant="outlined" color="error" onClick={handleCloseConfirmDialog}>
                       Cancel
                     </Button>
                     <Button variant="contained" onClick={updateStatus}>
                       Update
                     </Button>
-                  </div>
-                </div>
+                  </Stack>
+                </Box>
               )}
-            </div>
+            </Box>
           </Dialog>
         </TableCell>
       </TableRow>
@@ -209,6 +183,8 @@ export default function LoanerManager() {
   const [loaners, setLoaners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openAddLoanerView, setOpenAddLoanerView] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   // #endregion
 
   const handleCloseAddLoanerView = () => {
@@ -258,63 +234,65 @@ export default function LoanerManager() {
 
   // Table UI:
   return (
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        my: "5",
-      }}
-    >
-      <Box sx={{ width: "100%", mt: 5, mx: 5 }}>
-        <Box sx={{ flexGrow: 1, my: 4 }}>
+    <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+      <Box sx={{ flexGrow: 1 }}>
           {loading ? (
             <HomeSkeleton />
           ) : (
-            <>
-              <div className="tableHead">
-                <Typography
-                  variant="h4"
-                  color="primary"
-                  style={{ marginLeft: 25, marginBottom: 10 }}
-                >
-                  {"Loaned Equipment Manager"}
-                </Typography>
+            <Card sx={{ p: { xs: 1.5, md: 2.25 }, border: "1px solid", borderColor: "divider" }}>
+              <Stack
+                direction={{ xs: "column", sm: "row" }}
+                justifyContent="space-between"
+                spacing={1}
+                sx={{ mb: 1.5 }}
+              >
+                <Box>
+                  <Typography variant="h5" color="primary" sx={{ fontSize: { xs: 22, sm: 26 } }}>
+                    Loaned Equipment Manager
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Track active loaned equipment for {userProfile?.branch}
+                  </Typography>
+                </Box>
                 <Button
                   onClick={handleToggleAddLoanerView}
                   size="small"
-                  variant="outlined"
+                  variant="contained"
                   startIcon={<AddRounded />}
-                  sx={{ mx: 4, mb: 1, mt: 1 }}
+                  sx={{ alignSelf: { xs: "stretch", sm: "flex-start" } }}
                 >
                   Add Loaner
                 </Button>
-              </div>
+              </Stack>
 
               <Dialog
                 key="dialog"
                 onClose={handleCloseAddLoanerView}
                 open={openAddLoanerView}
+                fullWidth
+                maxWidth="sm"
+                fullScreen={isMobile}
+                PaperProps={{
+                  sx: {
+                    borderRadius: { xs: 0, sm: 3 },
+                    overflow: "hidden",
+                  },
+                }}
               >
-                <div className="closeButtonContainer">
-                  <Button onClick={handleCloseAddLoanerView}>
-                    <CancelOutlined />
-                  </Button>
-                </div>
-                <div className="addLoaner">
-                  <AddLoanerView />
-                </div>
+                <Box sx={{ display: "flex", justifyContent: "center" }}>
+                  <AddLoanerView onClose={handleCloseAddLoanerView} />
+                </Box>
               </Dialog>
 
               <TableContainer
                 key="headerContainer"
                 component={Paper}
-                style={{ borderRadius: 10, paddingRight: 20 }}
+                sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", overflowX: "auto" }}
               >
                 <Table
                   size="small"
                   aria-label="collapsible table"
-                  style={{ margin: 15, paddingTop: 2 }}
+                  sx={{ minWidth: 820 }}
                 >
                   <TableHead>
                     <TableRow key="header">
@@ -365,15 +343,17 @@ export default function LoanerManager() {
 
                   <TableBody>
                     {loaners.map((loaner) => (
-                      <Row loaner={loaner} />
+                      <Row key={loaner.id} loaner={loaner} />
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
-            </>
+              <Typography variant="caption" color="text.secondary" sx={{ display: { xs: "block", sm: "none" }, mt: 0.75 }}>
+                Swipe horizontally to see all table columns.
+              </Typography>
+            </Card>
           )}
-        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 }

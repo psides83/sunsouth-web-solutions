@@ -1,5 +1,5 @@
 //Imports
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
@@ -9,7 +9,6 @@ import moment from "moment";
 import { sendNewLoanerEmail } from "../services/email-service";
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Grid,
@@ -17,9 +16,10 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { AgricultureRounded, SendRounded } from "@mui/icons-material";
+import { CloseRounded, SendRounded } from "@mui/icons-material";
 
-export default function AddLoanerView() {
+export default function AddLoanerView({ onClose }) {
+  const ADD_LOANER_DRAFT_KEY = "draft:add-loaner";
   //#region State Properties
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -31,8 +31,72 @@ export default function AddLoanerView() {
   var [dateOut, setDateOut] = useState("");
   var [customer, setCustomer] = useState("");
   var [validationMessage, setValidationMessage] = useState("");
+  const [draftLoaded, setDraftLoaded] = useState(false);
   const employee = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
+
+  const clearDraft = () => {
+    try {
+      window.localStorage.removeItem(ADD_LOANER_DRAFT_KEY);
+    } catch (error) {
+      console.error("Unable to clear add loaner draft", error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(ADD_LOANER_DRAFT_KEY);
+      if (!savedDraft) {
+        setDraftLoaded(true);
+        return;
+      }
+
+      const draft = JSON.parse(savedDraft);
+      setModel(draft.model || "");
+      setStock(draft.stock || "");
+      setSerial(draft.serial || "");
+      setHours(draft.hours || "");
+      setDateOut(draft.dateOut || "");
+      setCustomer(draft.customer || "");
+    } catch (error) {
+      console.error("Unable to restore add loaner draft", error);
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) {
+      return;
+    }
+
+    const draft = {
+      model,
+      stock,
+      serial,
+      hours,
+      dateOut,
+      customer,
+    };
+
+    const hasAnyDraftContent =
+      model !== "" ||
+      stock !== "" ||
+      serial !== "" ||
+      hours !== "" ||
+      dateOut !== "" ||
+      customer !== "";
+
+    try {
+      if (!hasAnyDraftContent) {
+        window.localStorage.removeItem(ADD_LOANER_DRAFT_KEY);
+      } else {
+        window.localStorage.setItem(ADD_LOANER_DRAFT_KEY, JSON.stringify(draft));
+      }
+    } catch (error) {
+      console.error("Unable to save add loaner draft", error);
+    }
+  }, [draftLoaded, model, stock, serial, hours, dateOut, customer]);
 
   // Handle closing of the alerts.
   const handleClose = (event, reason) => {
@@ -82,6 +146,7 @@ export default function AddLoanerView() {
 
     sendNewLoanerEmail(model, stock, dateOut, customer, employee, userProfile);
     resetForm();
+    clearDraft();
   };
 
   // Reset the form
@@ -139,37 +204,43 @@ export default function AddLoanerView() {
   // UI view of the submission form
   return (
     <Box
-      display="flex"
       sx={{
+        display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        maxWidth: "380px",
-        padding: (theme) => theme.spacing(3),
-        paddingLeft: (theme) => theme.spacing(4),
-        paddingRight: (theme) => theme.spacing(4),
-        paddingBottom: (theme) => theme.spacing(3),
+        width: "100%",
+        maxWidth: 560,
+        maxHeight: "80vh",
+        overflowY: "auto",
+        p: 2,
       }}
     >
-      <Avatar
-        key="avatar"
-        style={{
-          width: 64,
-          height: 64,
-          margin: "10px",
-          backgroundColor: "#367C2B",
+      <Box
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 2,
+          bgcolor: "background.paper",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          pt: 1,
+          pb: 1,
+          mb: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <AgricultureRounded color="secondary" fontSize="large" />
-      </Avatar>
-      <Typography
-        key="heading"
-        color="primary"
-        variant="h5"
-        style={{ fontWeight: "bold" }}
-      >
-        Log Loaned Equipment
-      </Typography>
-      <form style={{ width: "100%", marginTop: "10px" }} noValidate>
+        <Typography color="primary" variant="h6" sx={{ fontWeight: "bold" }}>
+          Log Loaned Equipment
+        </Typography>
+        {onClose ? (
+          <Button size="small" onClick={onClose} startIcon={<CloseRounded />}>
+            Close
+          </Button>
+        ) : null}
+      </Box>
+
+      <form style={{ width: "100%", marginTop: "4px" }} noValidate>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
             <TextField
@@ -181,7 +252,6 @@ export default function AddLoanerView() {
               fullWidth
               size="small"
               id="dateOut"
-              autoFocus
               onChange={(e) => setDateOut(e.target.value)}
               value={dateOut}
               InputLabelProps={{
@@ -291,8 +361,7 @@ export default function AddLoanerView() {
             </Alert>
           </Snackbar>
 
-              <Grid item xs={5}></Grid>
-          <Grid item spacing={2} xs={7}>
+          <Grid item xs={12} sx={{ display: "flex", justifyContent: "flex-end" }}>
             <Button
               size="small"
               variant="contained"

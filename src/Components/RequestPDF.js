@@ -9,7 +9,6 @@ import {
   Line,
 } from "@react-pdf/renderer";
 import moment from "moment";
-import { useStateValue } from "../state-management/StateProvider";
 
 // Create styles
 const styles = StyleSheet.create({

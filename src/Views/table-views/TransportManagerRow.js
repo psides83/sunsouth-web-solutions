@@ -1,23 +1,12 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { setDoc, doc, deleteDoc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import moment from "moment";
 import "../../styles/Table.css";
-import {
-  EquipmentTableHeaderView,
-  TransportEquipmentTableHeaderView,
-} from "../../components/TableHeaderViews";
-import {
-  sendWorkOrderEmail,
-  sendNewEquipmentEmail,
-  sendStatusEmail,
-  sendRequestDeletedEmail,
-  sendNewTransportEquipmentEmail,
-} from "../../services/email-service";
-import EquipmentRow from "./EquipmentRows";
+import { TransportEquipmentTableHeaderView } from "../../components/TableHeaderViews";
+import { sendNewTransportEquipmentEmail } from "../../services/email-service";
 import { Link } from "react-router-dom";
-import Spinner from "../../components/Spinner";
 import TransportEquipmentRow from "./TransportEquipmentRows";
 import TransportUpdateDialog from "../TransportUpdateDialog";
 import EditTransportView from "../EditTransportView";
@@ -41,11 +30,8 @@ import {
 import {
   AddRounded,
   AgricultureRounded,
-  CancelOutlined,
   CheckRounded,
   CloseRounded,
-  DeleteRounded,
-  EditRounded,
   HistoryOutlined,
   KeyboardArrowDownRounded,
   KeyboardArrowUpRounded,
@@ -64,7 +50,7 @@ import {
 export default function TransportRow(props) {
   //#region State Properties
   const { request } = props;
-  const [{ user, userProfile }, dispatch] = useStateValue();
+  const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
@@ -74,7 +60,6 @@ export default function TransportRow(props) {
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
   const [openChangeLog, setOpenChangeLog] = useState(false);
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
-  const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
   
   // #endregion
@@ -93,14 +78,6 @@ export default function TransportRow(props) {
 
   const handleToggleConfirmDialog = () => {
     setIsShowingConfirmDialog(!isShowingConfirmDialog);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setIsShowingDeleteDialog(false);
-  };
-
-  const handleToggleDeleteDialog = () => {
-    setIsShowingDeleteDialog(!isShowingConfirmDialog);
   };
 
   const resetEquipmentFields = async () => {

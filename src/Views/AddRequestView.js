@@ -1,5 +1,5 @@
 //Imports
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
@@ -9,7 +9,6 @@ import moment from "moment";
 import { sendNewRequestEmail } from "../services/email-service";
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Checkbox,
@@ -23,10 +22,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { CHANGE_ACTIONS, createChangeLogEntry } from "../utils/changeLog";
 import {
   AddCircleOutline,
   Agriculture,
-  AgricultureRounded,
+  CloseRounded,
   SendRounded,
 } from "@mui/icons-material";
 
@@ -34,7 +34,8 @@ const ListItem = styled("li")(({ theme }) => ({
   margin: theme.spacing(0.5),
 }));
 
-export default function AddRequestView() {
+export default function AddRequestView({ onClose }) {
+  const ADD_REQUEST_DRAFT_KEY = "draft:add-request";
   //#region State Properties
   const [{ userProfile }] = useStateValue();
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -57,8 +58,160 @@ export default function AddRequestView() {
   var [equipmentList, setEquepmentList] = useState([]);
   var [otherDisabled, setOtherDisabled] = useState(true);
   var [validationMessage, setValidationMessage] = useState("");
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({
+    model: "",
+    stock: "",
+    serial: "",
+    work: "",
+  });
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
+
+  const clearFieldError = (field) => {
+    setFieldErrors((previous) => ({ ...previous, [field]: "" }));
+  };
+
+  const hasWorkSelected = () => work.some(Boolean);
+
+  const stockIsValid = () => {
+    return /^\d{6}$/.test(stock);
+  };
+
+  const validateCurrentEquipment = () => {
+    const nextErrors = {
+      model: "",
+      stock: "",
+      serial: "",
+      work: "",
+    };
+
+    if (model === "") {
+      nextErrors.model = "Model is required.";
+    }
+
+    if (!stockIsValid()) {
+      nextErrors.stock = "Stock must be a 6-digit number.";
+    }
+
+    if (serial === "") {
+      nextErrors.serial = "Serial is required.";
+    }
+
+    if (!hasWorkSelected()) {
+      nextErrors.work = "Select at least one work item.";
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.values(nextErrors).every((value) => value === "");
+  };
+
+  const clearDraft = () => {
+    try {
+      window.localStorage.removeItem(ADD_REQUEST_DRAFT_KEY);
+    } catch (error) {
+      console.error("Unable to clear add request draft", error);
+    }
+  };
+
+  useEffect(() => {
+    try {
+      const savedDraft = window.localStorage.getItem(ADD_REQUEST_DRAFT_KEY);
+      if (!savedDraft) {
+        setDraftLoaded(true);
+        return;
+      }
+
+      const draft = JSON.parse(savedDraft);
+      setModel(draft.model || "");
+      setStock(draft.stock || "");
+      setSerial(draft.serial || "");
+      setWork(Array.isArray(draft.work) ? draft.work : []);
+      setNotes(draft.notes || "");
+      setOther(draft.other || "");
+      setChecked1(Boolean(draft.checked1));
+      setChecked2(Boolean(draft.checked2));
+      setChecked3(Boolean(draft.checked3));
+      setChecked4(Boolean(draft.checked4));
+      setChecked5(Boolean(draft.checked5));
+      setChecked6(Boolean(draft.checked6));
+      setChecked7(Boolean(draft.checked7));
+      setChecked8(Boolean(draft.checked8));
+      setChecked9(Boolean(draft.checked9));
+      setEquepmentList(Array.isArray(draft.equipmentList) ? draft.equipmentList : []);
+      setOtherDisabled(
+        typeof draft.otherDisabled === "boolean" ? draft.otherDisabled : true
+      );
+    } catch (error) {
+      console.error("Unable to restore add request draft", error);
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) {
+      return;
+    }
+
+    const draft = {
+      model,
+      stock,
+      serial,
+      work,
+      notes,
+      other,
+      checked1,
+      checked2,
+      checked3,
+      checked4,
+      checked5,
+      checked6,
+      checked7,
+      checked8,
+      checked9,
+      equipmentList,
+      otherDisabled,
+    };
+
+    const hasAnyDraftContent =
+      equipmentList.length > 0 ||
+      model !== "" ||
+      stock !== "" ||
+      serial !== "" ||
+      notes !== "" ||
+      other !== "" ||
+      work.some(Boolean);
+
+    try {
+      if (!hasAnyDraftContent) {
+        window.localStorage.removeItem(ADD_REQUEST_DRAFT_KEY);
+      } else {
+        window.localStorage.setItem(ADD_REQUEST_DRAFT_KEY, JSON.stringify(draft));
+      }
+    } catch (error) {
+      console.error("Unable to save add request draft", error);
+    }
+  }, [
+    draftLoaded,
+    model,
+    stock,
+    serial,
+    work,
+    notes,
+    other,
+    checked1,
+    checked2,
+    checked3,
+    checked4,
+    checked5,
+    checked6,
+    checked7,
+    checked8,
+    checked9,
+    equipmentList,
+    otherDisabled,
+  ]);
 
   // Handle closing of the alerts.
   const handleClose = (event, reason) => {
@@ -120,17 +273,23 @@ export default function AddRequestView() {
 
   // Set the state of the "other" checkbox. It's disabled if the textfield is empty.
   const enableOther = (event) => {
-    setOther(event.target.value);
+    const value = event.target.value;
+    setOther(value);
 
-    work[9] = other
-    setWork(work)
+    // Use the current input value directly so the work list doesn't lag by one character.
+    setWork((previousWork) => {
+      const nextWork = [...previousWork];
+      nextWork[8] = value || null;
+      return nextWork;
+    });
 
-    if (event.target.value !== "") {
+    if (value !== "") {
       setOtherDisabled(false);
-      setChecked9(true)
-    } else if (event.target.value === "") {
+      setChecked9(true);
+      clearFieldError("work");
+    } else if (value === "") {
       setOtherDisabled(true);
-      setChecked9(false)
+      setChecked9(false);
     }
   };
 
@@ -149,6 +308,7 @@ export default function AddRequestView() {
           setChecked1(true);
           work[0] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked1(false);
           work[0] = null;
@@ -160,6 +320,7 @@ export default function AddRequestView() {
           setChecked2(true);
           work[1] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked2(false);
           work[1] = null;
@@ -171,6 +332,7 @@ export default function AddRequestView() {
           setChecked3(true);
           work[2] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked3(false);
           work[2] = null;
@@ -182,6 +344,7 @@ export default function AddRequestView() {
           setChecked4(true);
           work[3] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked4(false);
           work[3] = null;
@@ -193,6 +356,7 @@ export default function AddRequestView() {
           setChecked5(true);
           work[4] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked5(false);
           work[4] = null;
@@ -204,6 +368,7 @@ export default function AddRequestView() {
           setChecked6(true);
           work[5] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked6(false);
           work[5] = null;
@@ -215,6 +380,7 @@ export default function AddRequestView() {
           setChecked7(true);
           work[6] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked7(false);
           work[6] = null;
@@ -226,6 +392,7 @@ export default function AddRequestView() {
           setChecked8(true);
           work[7] = event.target.value;
           setWork(work);
+          clearFieldError("work");
         } else {
           setChecked8(false);
           work[7] = null;
@@ -235,12 +402,19 @@ export default function AddRequestView() {
       case "9":
         if (!checked9) {
           setChecked9(true);
-          // work[7] = event.target.value;
-          // setWork(work);
+          setWork((previousWork) => {
+            const nextWork = [...previousWork];
+            nextWork[8] = other || null;
+            return nextWork;
+          });
+          clearFieldError("work");
         } else {
           setChecked9(false);
-          // work[7] = null;
-          // setWork(work);
+          setWork((previousWork) => {
+            const nextWork = [...previousWork];
+            nextWork[8] = null;
+            return nextWork;
+          });
         }
         break;
       default:
@@ -254,11 +428,12 @@ export default function AddRequestView() {
     const id = moment().format("yyyyMMDDHHmmss");
     const salesman = `${userProfile?.firstName} ${userProfile?.lastName}`;
     const changeLog = [
-      {
+      createChangeLogEntry({
         user: fullName,
-        change: `request created`,
-        timestamp: timestamp,
-      },
+        actionType: CHANGE_ACTIONS.REQUEST_CREATED,
+        summary: "Request created",
+        timestamp,
+      }),
     ];
 
     const firestoreRequest = {
@@ -314,6 +489,7 @@ export default function AddRequestView() {
     );
     resetForm();
     setEquepmentList([]);
+    clearDraft();
   };
 
   // Reset the form
@@ -334,6 +510,12 @@ export default function AddRequestView() {
     setChecked8(false);
     setChecked9(false);
     setWork([]);
+    setFieldErrors({
+      model: "",
+      stock: "",
+      serial: "",
+      work: "",
+    });
     console.log("form reset");
   };
 
@@ -352,11 +534,11 @@ export default function AddRequestView() {
     console.log(workString)
 
     const changeLog = [
-      {
+      createChangeLogEntry({
         user: fullName,
-        change: `equipment added to request`,
-        timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-      },
+        actionType: CHANGE_ACTIONS.EQUIPMENT_ADDED,
+        summary: "Equipment added to request",
+      }),
     ];
 
     var equipment = {
@@ -380,91 +562,32 @@ export default function AddRequestView() {
   // Squipment submission validation.
   const equipmentSubmitValidation = async (event) => {
     event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
-    if (model === "") {
-      setValidationMessage(
-        "Equipment must have a model to be added to a request"
-      );
+    if (!validateCurrentEquipment()) {
+      setValidationMessage("Please fix the highlighted fields.");
       setOpenError(true);
       return;
-    } else if (
-      stock.length !== 6 ||
-      stock.match(lowerCaseLetters) ||
-      stock.match(upperCaseLetters)
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else if (serial === "") {
-      setValidationMessage(
-        "Equipment must have a serial number to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else if (work.length === 0) {
-      setValidationMessage(
-        "Equipment must have a work requested to be added to a request"
-      );
-      setOpenError(true);
-      return;
-    } else {
-      pushEquipmentToRequest();
-      const lastIndex = equipmentList[equipmentList.length - 1]?.model;
-      setValidationMessage(lastIndex + " successfully added to the request");
-      setOpenSuccess(true);
     }
+
+    pushEquipmentToRequest();
+    const lastIndex = equipmentList[equipmentList.length - 1]?.model;
+    setValidationMessage(lastIndex + " successfully added to the request");
+    setOpenSuccess(true);
   };
 
   // Requst submission validation.
   const requestSubmitValidation = async (event) => {
     event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
-    if (model === "" && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a model to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else if (
-      (stock.length !== 6 ||
-        stock.match(lowerCaseLetters) ||
-        stock.match(upperCaseLetters)) &&
-      equipmentList.length === 0
-    ) {
-      setValidationMessage(
-        "Equipment must have a 6 digit stock number to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else if (serial === "" && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a serial number to be added to a request"
-      );
-      setOpenError(true);
-      return false;
-    } else if (work.length === 0 && equipmentList.length === 0) {
-      setValidationMessage(
-        "Equipment must have a work requested to be added to a request"
-      );
+    if (equipmentList.length === 0 && !validateCurrentEquipment()) {
+      setValidationMessage("Please fix the highlighted fields.");
       setOpenError(true);
       return false;
     } else {
       console.log("eq added directly from submit");
       if (
         model !== "" &&
-        (stock.length === 6 ||
-          stock.match(lowerCaseLetters) === false ||
-          stock.match(upperCaseLetters) === false) &&
+        stockIsValid() &&
         serial !== "" &&
-        work.length !== 0
+        hasWorkSelected()
       ) {
         console.log("another eq added first");
         await pushEquipmentToRequest();
@@ -475,44 +598,71 @@ export default function AddRequestView() {
     }
   };
 
+  // Shortcut handlers intentionally attach once for this mounted form instance.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    const onShortcutSave = () => {
+      requestSubmitValidation({ preventDefault: () => {} });
+    };
+
+    const onShortcutClose = () => {
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener("request-shortcut-save", onShortcutSave);
+    window.addEventListener("request-shortcut-close", onShortcutClose);
+
+    return () => {
+      window.removeEventListener("request-shortcut-save", onShortcutSave);
+      window.removeEventListener("request-shortcut-close", onShortcutClose);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onClose]);
+
   // UI view of the submission form
   return (
     <Box
-      display="flex"
       sx={{
+        display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        maxWidth: "400px",
-        padding: (theme) => theme.spacing(3),
-        paddingLeft: (theme) => theme.spacing(4),
-        paddingRight: (theme) => theme.spacing(4),
-        paddingBottom: (theme) => theme.spacing(3),
+        width: "100%",
+        maxWidth: 560,
+        maxHeight: "80vh",
+        overflowY: "auto",
+        p: 2,
       }}
     >
-      <Avatar
-        key="avatar"
-        style={{
-          width: 64,
-          height: 64,
-          margin: "10px",
-          backgroundColor: "#367C2B",
+      <Box
+        sx={{
+          position: "sticky",
+          top: 0,
+          zIndex: 2,
+          bgcolor: "background.paper",
+          borderBottom: "1px solid",
+          borderColor: "divider",
+          pt: 1,
+          pb: 1,
+          mb: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
       >
-        <AgricultureRounded color="secondary" fontSize="large" />
-      </Avatar>
+        <Typography color="primary" variant="h6" sx={{ fontWeight: "bold" }}>
+          Submit PDI/Setup Request
+        </Typography>
+        {onClose ? (
+          <Button size="small" onClick={onClose} startIcon={<CloseRounded />}>
+            Close
+          </Button>
+        ) : null}
+      </Box>
 
-      <Typography
-        key="heading"
-        color="primary"
-        variant="h5"
-        style={{ fontWeight: "bold" }}
-      >
-        Submit PDI/Setup Request
-      </Typography>
-
-      <form style={{ width: "100%", marginTop: "10px" }} noValidate>
+      <form style={{ width: "100%", marginTop: "4px" }} noValidate>
         <Stack mb={1}>
-          <Typography component="h1" variant="h6">
+          <Typography component="h1" variant="subtitle1">
             {heading}
           </Typography>
 
@@ -547,7 +697,7 @@ export default function AddRequestView() {
             })}
           </Box>
         </Stack>
-        <Grid container spacing={2}>
+        <Grid container spacing={1.25}>
           <Grid item xs={12} sm={6}>
             <TextField
               variant="outlined"
@@ -557,8 +707,13 @@ export default function AddRequestView() {
               id="model"
               label="Model"
               autoFocus
-              onChange={(e) => setModel(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setModel(e.target.value.toUpperCase());
+                clearFieldError("model");
+              }}
               value={model}
+              error={Boolean(fieldErrors.model)}
+              helperText={fieldErrors.model}
             />
           </Grid>
 
@@ -572,8 +727,13 @@ export default function AddRequestView() {
               id="stock"
               label="Stock"
               name="stock"
-              onChange={(e) => setStock(e.target.value)}
+              onChange={(e) => {
+                setStock(e.target.value);
+                clearFieldError("stock");
+              }}
               value={stock}
+              error={Boolean(fieldErrors.stock)}
+              helperText={fieldErrors.stock}
             />
           </Grid>
 
@@ -586,15 +746,20 @@ export default function AddRequestView() {
               required
               id="serial"
               label="Serial"
-              onChange={(e) => setSerial(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                setSerial(e.target.value.toUpperCase());
+                clearFieldError("serial");
+              }}
               value={serial}
+              error={Boolean(fieldErrors.serial)}
+              helperText={fieldErrors.serial}
             ></TextField>
           </Grid>
 
           <Grid item xs={12}>
             <div className="checkBoxes">
               <FormGroup>
-                <Typography variant="h6" style={{ fontSize: 18 }}>
+                <Typography variant="subtitle1" style={{ fontSize: 16 }}>
                   Work Required*
                 </Typography>
 
@@ -622,7 +787,7 @@ export default function AddRequestView() {
                   <FormControlLabel
                     control={
                       <Checkbox
-                        id="8"
+                        id="9"
                         checked={checked9}
                         size="small"
                         onChange={handleChange}
@@ -645,6 +810,11 @@ export default function AddRequestView() {
                     onChange={enableOther}
                   />
                 </Stack>
+                {fieldErrors.work ? (
+                  <Typography color="error" variant="caption" sx={{ mt: 0.5 }}>
+                    {fieldErrors.work}
+                  </Typography>
+                ) : null}
               </FormGroup>
             </div>
           </Grid>

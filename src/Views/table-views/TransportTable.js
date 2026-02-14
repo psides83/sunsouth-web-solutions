@@ -5,12 +5,14 @@ import TransportRow from "./TransportManagerRow";
 function TransportTable(props) {
   const { requests } = props;
   return (
-    <TableContainer component={Paper} style={{ borderRadius: 10 }}>
+    <TableContainer
+      component={Paper}
+      sx={{ borderRadius: 3, border: "1px solid", borderColor: "divider", overflowX: "auto" }}
+    >
       <Table
         size="small"
         aria-label="collapsible table"
-        // style={{ margin: 15 }}
-        sx={{ paddingTop: 2 }}
+        sx={{ minWidth: 620, paddingTop: 2 }}
       >
         {/* <TransportTableHeaderView /> */}
         <TableBody>

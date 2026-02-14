@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
 import {
   collection,
@@ -23,12 +23,17 @@ import EquipmentRow from "./EquipmentRows";
 import { Link } from "react-router-dom";
 import Spinner from "../../components/Spinner";
 import {
+  Alert,
   Box,
   Button,
+  Chip,
   Collapse,
   Dialog,
   DialogTitle,
   IconButton,
+  MenuItem,
+  Snackbar,
+  Stack,
   Table,
   TableBody,
   TableCell,
@@ -37,14 +42,11 @@ import {
   TextField,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   AddRounded,
-  AgricultureRounded,
-  Check,
-  CheckRounded,
-  Close,
-  CloseRounded,
   DeleteRounded,
   EditRounded,
   HistoryOutlined,
@@ -60,36 +62,118 @@ import {
   TimelineItem,
   TimelineSeparator,
 } from "@mui/lab";
+import { keyframes } from "@mui/system";
+import {
+  formatRelativeTimestamp,
+  formatTimestampWithRelative,
+} from "../../utils/dateTime";
+import {
+  CHANGE_ACTION_FILTER_ALL,
+  CHANGE_ACTIONS,
+  createChangeLogEntry,
+  getChangeLogActionOptions,
+  normalizeChangeLogEntry,
+} from "../../utils/changeLog";
 
-// Request row view:
-export default function RequestRow({ request }) {
-  //#region State Properties
-  const [{ user, userProfile }, dispatch] = useStateValue();
+const savePulse = keyframes`
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0.22); }
+  40% { transform: scale(1.006); box-shadow: 0 0 0 10px rgba(47, 125, 49, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0); }
+`;
+
+const toWorkOrderString = (workOrder) => {
+  if (typeof workOrder === "string") {
+    return workOrder;
+  }
+
+  if (Array.isArray(workOrder)) {
+    return workOrder.filter(Boolean).join(" / ");
+  }
+
+  if (workOrder === null || workOrder === undefined) {
+    return "";
+  }
+
+  return String(workOrder);
+};
+
+export default function RequestRow({ request, disableEditing = false }) {
+  const RETRY_ACTIONS = {
+    SAVE_WORK_ORDER: "save_work_order",
+    SAVE_EQUIPMENT: "save_equipment",
+    UPDATE_STATUS: "update_status",
+    DELETE_REQUEST: "delete_request",
+  };
+  const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
-  var [workOrder, setWorkOrder] = useState("");
-  var [currentWorkOrder, setCurrentWorkOrder] = useState("");
-  var [equipment, setEquipment] = useState([]);
-  var [model, setModel] = useState("");
-  var [stock, setStock] = useState("");
-  var [serial, setSerial] = useState("");
-  var [work, setWork] = useState("");
-  var [notes, setNotes] = useState("");
-  var [isEditingWorkOrder, setIsEditingWorkOrder] = useState(false);
-  var [isShowingAddEquipment, setIsShowingAddEquipment] = useState(false);
-  var [workOrderHasChanges, setWorkOrderHasChanges] = useState(false);
+  const [equipment, setEquipment] = useState([]);
+  const [equipmentWorkOrders, setEquipmentWorkOrders] = useState({});
+  const [newEquipment, setNewEquipment] = useState({
+    model: "",
+    stock: "",
+    serial: "",
+    work: "",
+    notes: "",
+  });
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
   const [openChangeLog, setOpenChangeLog] = useState(false);
+  const [historyActionFilter, setHistoryActionFilter] = useState(
+    CHANGE_ACTION_FILTER_ALL
+  );
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
-  // #endregion
+  const [showSavePulse, setShowSavePulse] = useState(false);
+  const [isRequestDeletePending, setIsRequestDeletePending] = useState(false);
+  const [requestDeleteSnackbarOpen, setRequestDeleteSnackbarOpen] = useState(false);
+  const [writeErrorSnackbarOpen, setWriteErrorSnackbarOpen] = useState(false);
+  const [writeErrorMessage, setWriteErrorMessage] = useState("");
+  const [retryAction, setRetryAction] = useState("");
+  const [openWorkOrderSheet, setOpenWorkOrderSheet] = useState(false);
+  const [openAddEquipmentSheet, setOpenAddEquipmentSheet] = useState(false);
+  const requestDeleteTimeoutRef = useRef(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const normalizedChangeLog = (request?.changeLog || []).map(
+    normalizeChangeLogEntry
+  );
+  const lastChangeEntry =
+    normalizedChangeLog.length > 0
+      ? normalizedChangeLog[normalizedChangeLog.length - 1]
+      : null;
+  const historyActionOptions = getChangeLogActionOptions(normalizedChangeLog);
+  const visibleChangeLog =
+    historyActionFilter === CHANGE_ACTION_FILTER_ALL
+      ? normalizedChangeLog
+      : normalizedChangeLog.filter(
+          (change) => change.actionType === historyActionFilter
+        );
+
+  const getStatusChipProps = (status) => {
+    switch (status) {
+      case "Requested":
+        return { color: "primary", variant: "outlined" };
+      case "Scheduled":
+        return { color: "secondary", variant: "filled" };
+      case "In Progress":
+        return { color: "primary", variant: "filled" };
+      case "Completed":
+        return { color: "success", variant: "filled" };
+      default:
+        return { color: "default", variant: "outlined" };
+    }
+  };
 
   const handleCloseChangeLog = () => {
     setOpenChangeLog(false);
+    setHistoryActionFilter(CHANGE_ACTION_FILTER_ALL);
   };
 
   const handleToggleChangeLog = () => {
     setOpenChangeLog(!openChangeLog);
+    if (!openChangeLog) {
+      setHistoryActionFilter(CHANGE_ACTION_FILTER_ALL);
+    }
   };
 
   const handleCloseConfirmDialog = () => {
@@ -105,10 +189,9 @@ export default function RequestRow({ request }) {
   };
 
   const handleToggleDeleteDialog = () => {
-    setIsShowingDeleteDialog(!isShowingConfirmDialog);
+    setIsShowingDeleteDialog(!isShowingDeleteDialog);
   };
 
-  // Fetches equipment from firestore:
   const fetchEquipment = useCallback(() => {
     const equipmentQuery = query(
       collection(
@@ -117,264 +200,478 @@ export default function RequestRow({ request }) {
         userProfile?.branch,
         "requests",
         request.id,
-        "equipment"
+        "equipment",
       ),
-      orderBy("timestamp", "asc")
+      orderBy("timestamp", "asc"),
     );
 
     onSnapshot(equipmentQuery, (querySnapshot) => {
       setEquipment(
-        querySnapshot.docs.map((doc) => ({
-          requestID: doc.data().requestID,
-          model: doc.data().model.toString().toUpperCase(),
-          stock: doc.data().stock,
-          serial: doc.data().serial.toString().toUpperCase(),
-          work: doc.data().work,
-          notes: doc.data().notes,
-          changeLog: doc.data().changeLog,
-        }))
+        querySnapshot.docs.map((document) => ({
+          requestID: document.data().requestID,
+          model: document.data().model.toString().toUpperCase(),
+          stock: document.data().stock,
+          serial: document.data().serial.toString().toUpperCase(),
+          workOrder: document.data().workOrder || "",
+          work: document.data().work,
+          notes: document.data().notes,
+          changeLog: document.data().changeLog,
+        })),
       );
     });
   }, [request.id, userProfile.branch]);
 
+  // Row-level shortcut listeners rely on current open-state flags.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    // Checks for changes in workOrder value and updates state
-    if (currentWorkOrder !== workOrder) {
-      setWorkOrderHasChanges(true);
-    } else {
-      setWorkOrderHasChanges(false);
-    }
-
-    // Fetch equipment data from firestore
     fetchEquipment();
-  }, [
-    fetchEquipment,
-    currentWorkOrder,
-    workOrder,
-    isShowingAddEquipment,
-    setWorkOrderHasChanges,
-  ]);
+  }, [fetchEquipment]);
 
-  // Handles adding or editing the work order number for the request:
-  const editWorkOrder = async () => {
-    if (isEditingWorkOrder) {
-      if (workOrderHasChanges) {
-        const workOrderStatus =
-          request.workOrder === ""
-            ? `Added WO # ${workOrder}`
-            : `WO # updated from ${request.workOrder} to ${workOrder}`;
-
-        const changeLogEntry = {
-          user: fullName,
-          change: workOrderStatus,
-          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-        };
-
-        if (request.workOrder !== workOrder) {
-          request.changeLog.push(changeLogEntry);
-        }
-
-        await setDoc(
-          doc(db, "branches", userProfile.branch, "requests", request.id),
-          { workOrder: workOrder, changeLog: request.changeLog },
-          { merge: true }
-        );
-        sendWorkOrderEmail(
-          equipment,
-          request,
-          workOrder,
-          fullName,
-          model,
-          userProfile
-        );
-        setIsEditingWorkOrder(false);
-      } else {
-        console.log("no changes to equipment");
-        setIsEditingWorkOrder(false);
-      }
-    } else {
-      setWorkOrder(request.workOrder);
-      setCurrentWorkOrder(request.workOrder);
-      setIsEditingWorkOrder(true);
-    }
+  const triggerSavePulse = () => {
+    setShowSavePulse(true);
+    setTimeout(() => {
+      setShowSavePulse(false);
+    }, 650);
   };
 
-  // Handles adding equipment to the request:
-  const addEquipment = async () => {
-    const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-
-    if (isShowingAddEquipment) {
-      if (model !== "" && stock !== "" && serial !== "" && work !== "") {
-        const changeLog = [
-          {
-            user: fullName,
-            change: `request created`,
-            timestamp: timestamp,
-          },
-        ];
-
-        const newEquipment = {
-          requestID: request.id,
-          timestamp: timestamp,
-          model: model,
-          stock: stock,
-          serial: serial,
-          work: work,
-          notes: notes,
-          changeLog: changeLog,
-        };
-
-        // Sets the added equipment to firestore:
-        const equipmentRef = doc(
-          db,
-          "branches",
-          userProfile.branch,
-          "requests",
-          request.id,
-          "equipment",
-          newEquipment.stock
-        );
-        await setDoc(equipmentRef, newEquipment, { merge: true });
-
-        // Append the equipment addition to the request's changealog
-        const changeLogEntry = {
-          user: fullName,
-          change: `Equipment model ${model} added to the request`,
-          timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-        };
-
-        request.changeLog.push(changeLogEntry);
-
-        const requestRef = doc(
-          db,
-          "branches",
-          userProfile.branch,
-          "requests",
-          request.id
-        );
-        await setDoc(
-          requestRef,
-          { changeLog: request.changeLog },
-          { merge: true }
-        );
-
-        // Send email about addition of equipment
-        sendNewEquipmentEmail(
-          request,
-          equipment,
-          timestamp,
-          fullName,
-          model,
-          stock,
-          serial,
-          work,
-          notes,
-          userProfile
-        );
-        // Hides add equipment TextFields
-        setIsShowingAddEquipment(false);
-        setEquipment([]);
-        setModel("");
-        setStock("");
-        setSerial("");
-        setWork("");
-        setNotes("");
-      } else {
-        setIsShowingAddEquipment(false);
+  useEffect(() => {
+    const onShortcutSave = () => {
+      if (openWorkOrderSheet) {
+        saveWorkOrder();
+        return;
       }
-    } else {
-      setIsShowingAddEquipment(true);
-    }
-  };
 
-  // Handles updating the request status:
-  const updateStatus = async () => {
-    setIsShowingSpinner(true);
-    var status = request.status;
+      if (openAddEquipmentSheet) {
+        saveNewEquipment();
+        return;
+      }
 
-    switch (status) {
-      case "Requested":
-        status = "In Progress";
-        break;
-
-      case "In Progress":
-        status = "Completed";
-        break;
-
-      default:
-        status = "Completed";
-    }
-
-    const changeLogEntry = {
-      user: fullName,
-      change: `Status updated to ${status}`,
-      timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
+      if (isShowingConfirmDialog) {
+        updateStatus();
+      }
     };
 
-    request.changeLog.push(changeLogEntry);
-    const requestRef = doc(
-      db,
-      "branches",
-      userProfile.branch,
-      "requests",
-      request.id
-    );
-    await setDoc(
-      requestRef,
-      {
-        status: status,
-        statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
-        changeLog: request.changeLog,
-      },
-      {
-        merge: true,
+    const onShortcutClose = () => {
+      if (openAddEquipmentSheet) {
+        handleCloseAddEquipmentSheet();
+        return;
       }
-    );
 
-    sendStatusEmail(status, equipment, request, fullName, userProfile);
-    handleCloseConfirmDialog();
-    setTimeout(function () {
-      setIsShowingSpinner(false);
-    }, 1000);
+      if (openWorkOrderSheet) {
+        handleCloseWorkOrderSheet();
+        return;
+      }
+
+      if (isShowingDeleteDialog) {
+        handleCloseDeleteDialog();
+        return;
+      }
+
+      if (isShowingConfirmDialog) {
+        handleCloseConfirmDialog();
+        return;
+      }
+
+      if (openChangeLog) {
+        handleCloseChangeLog();
+      }
+    };
+
+    window.addEventListener("request-shortcut-save", onShortcutSave);
+    window.addEventListener("request-shortcut-close", onShortcutClose);
+
+    return () => {
+      window.removeEventListener("request-shortcut-save", onShortcutSave);
+      window.removeEventListener("request-shortcut-close", onShortcutClose);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    openWorkOrderSheet,
+    openAddEquipmentSheet,
+    isShowingConfirmDialog,
+    isShowingDeleteDialog,
+    openChangeLog,
+    equipment,
+    equipmentWorkOrders,
+  ]);
+
+  useEffect(() => {
+    return () => {
+      if (requestDeleteTimeoutRef.current) {
+        clearTimeout(requestDeleteTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleOpenWorkOrderSheet = () => {
+    const nextWorkOrders = {};
+    equipment.forEach((item) => {
+      nextWorkOrders[item.stock] = item.workOrder || "";
+    });
+    setEquipmentWorkOrders(nextWorkOrders);
+    setOpenWorkOrderSheet(true);
   };
 
-  // Sets data for the pdf into a fire store documetnt for the current
+  const handleCloseWorkOrderSheet = () => {
+    setOpenWorkOrderSheet(false);
+  };
+
+  const compileRequestWorkOrder = (equipmentList, workOrderMap) => {
+    return equipmentList
+      .map((item) => {
+        const workOrder = (workOrderMap[item.stock] || "").trim();
+        if (!workOrder) {
+          return null;
+        }
+
+        return `${workOrder}: ${item.model} - ${item.stock}`;
+      })
+      .filter(Boolean)
+      .join(" / ");
+  };
+
+  const saveWorkOrder = async () => {
+    try {
+      const hasWorkOrderChanges = equipment.some(
+        (item) =>
+          (item.workOrder || "").trim() !==
+          (equipmentWorkOrders[item.stock] || "").trim(),
+      );
+
+      if (!hasWorkOrderChanges) {
+        setOpenWorkOrderSheet(false);
+        return;
+      }
+
+      const compiledWorkOrder = compileRequestWorkOrder(equipment, equipmentWorkOrders);
+      const hadEquipmentWorkOrders = equipment.some((item) =>
+        Boolean((item.workOrder || "").trim()),
+      );
+      const nextRequestWorkOrder =
+        !compiledWorkOrder && !hadEquipmentWorkOrders
+          ? request.workOrder || ""
+          : compiledWorkOrder;
+      const workOrderStatus = compiledWorkOrder
+        ? "Updated equipment work orders"
+        : "Cleared equipment work orders";
+
+      const changeLogEntry = createChangeLogEntry({
+        user: fullName,
+        actionType: CHANGE_ACTIONS.WORK_ORDER_UPDATED,
+        summary: workOrderStatus,
+      });
+
+      const nextChangeLog = [...(request.changeLog || []), changeLogEntry];
+
+      await Promise.all(
+        equipment.map((item) =>
+          setDoc(
+            doc(
+              db,
+              "branches",
+              userProfile.branch,
+              "requests",
+              request.id,
+              "equipment",
+              item.stock,
+            ),
+            {
+              workOrder: (equipmentWorkOrders[item.stock] || "").trim(),
+            },
+            { merge: true },
+          ),
+        ),
+      );
+
+      await setDoc(
+        doc(db, "branches", userProfile.branch, "requests", request.id),
+        {
+          workOrder: nextRequestWorkOrder,
+          changeLog: nextChangeLog,
+        },
+        { merge: true },
+      );
+
+      sendWorkOrderEmail(
+        equipment,
+        request,
+        nextRequestWorkOrder,
+        fullName,
+        "",
+        userProfile,
+      );
+      triggerSavePulse();
+      setOpenWorkOrderSheet(false);
+    } catch (error) {
+      showWriteError(
+        "Could not save work order updates. Please retry.",
+        RETRY_ACTIONS.SAVE_WORK_ORDER
+      );
+    }
+  };
+
+  const handleOpenAddEquipmentSheet = () => {
+    setNewEquipment({
+      model: "",
+      stock: "",
+      serial: "",
+      work: "",
+      notes: "",
+    });
+    setOpenAddEquipmentSheet(true);
+  };
+
+  const handleCloseAddEquipmentSheet = () => {
+    setOpenAddEquipmentSheet(false);
+  };
+
+  const handleEquipmentFieldChange = (field, value) => {
+    setNewEquipment((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  const saveNewEquipment = async () => {
+    try {
+      const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
+      const { model, stock, serial, work, notes } = newEquipment;
+
+      if (model === "" || stock === "" || serial === "" || work === "") {
+        return;
+      }
+
+      const changeLog = [
+        createChangeLogEntry({
+          user: fullName,
+          actionType: CHANGE_ACTIONS.EQUIPMENT_ADDED,
+          summary: "Equipment record created",
+          timestamp,
+        }),
+      ];
+
+      const createdEquipment = {
+        requestID: request.id,
+        timestamp,
+        model,
+        stock,
+        serial,
+        work,
+        notes,
+        changeLog,
+      };
+
+      const equipmentRef = doc(
+        db,
+        "branches",
+        userProfile.branch,
+        "requests",
+        request.id,
+        "equipment",
+        createdEquipment.stock,
+      );
+      await setDoc(equipmentRef, createdEquipment, { merge: true });
+
+      const changeLogEntry = createChangeLogEntry({
+        user: fullName,
+        actionType: CHANGE_ACTIONS.EQUIPMENT_ADDED,
+        summary: `Equipment model ${model} added to the request`,
+      });
+
+      const nextChangeLog = [...(request.changeLog || []), changeLogEntry];
+
+      const requestRef = doc(
+        db,
+        "branches",
+        userProfile.branch,
+        "requests",
+        request.id,
+      );
+      await setDoc(requestRef, { changeLog: nextChangeLog }, { merge: true });
+
+      sendNewEquipmentEmail(
+        request,
+        equipment,
+        timestamp,
+        fullName,
+        model,
+        stock,
+        serial,
+        work,
+        notes,
+        userProfile,
+      );
+
+      triggerSavePulse();
+      setOpenAddEquipmentSheet(false);
+    } catch (error) {
+      showWriteError(
+        "Could not add equipment. Please retry.",
+        RETRY_ACTIONS.SAVE_EQUIPMENT
+      );
+    }
+  };
+
+  const updateStatus = async () => {
+    setIsShowingSpinner(true);
+    try {
+      let status = request.status;
+
+      switch (status) {
+        case "Requested":
+          status = "In Progress";
+          break;
+        case "In Progress":
+          status = "Completed";
+          break;
+        default:
+          status = "Completed";
+      }
+
+      const changeLogEntry = createChangeLogEntry({
+        user: fullName,
+        actionType: CHANGE_ACTIONS.STATUS_UPDATED,
+        summary: `Status updated to ${status}`,
+      });
+
+      const nextChangeLog = [...(request.changeLog || []), changeLogEntry];
+      const requestRef = doc(
+        db,
+        "branches",
+        userProfile.branch,
+        "requests",
+        request.id,
+      );
+      await setDoc(
+        requestRef,
+        {
+          status,
+          statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
+          changeLog: nextChangeLog,
+        },
+        {
+          merge: true,
+        },
+      );
+
+      sendStatusEmail(status, equipment, request, fullName, userProfile);
+      handleCloseConfirmDialog();
+      triggerSavePulse();
+    } catch (error) {
+      showWriteError(
+        "Could not update request status. Please retry.",
+        RETRY_ACTIONS.UPDATE_STATUS
+      );
+    } finally {
+      setTimeout(() => {
+        setIsShowingSpinner(false);
+      }, 1000);
+    }
+  };
+
   const setPDFData = () => {
     const requestRef = doc(db, "users", userProfile?.id, "pdf", "pdfData");
     setDoc(
       requestRef,
       {
-        request: request,
-        equipment: equipment,
+        request,
+        equipment,
       },
       {
         merge: true,
-      }
+      },
     );
   };
 
   const statusUpdateText = () => {
     if (request.status === "Requested") {
       return "In Progress";
-    } else if (request.status === "In Progress") {
-      return "Completed";
-    } else {
-      return "Requested";
     }
+    if (request.status === "In Progress") {
+      return "Completed";
+    }
+    return "Requested";
   };
 
-  const deleteRequest = async () => {
+  const deleteRequestNow = async () => {
     await deleteDoc(
-      doc(db, "branches", userProfile.branch, "requests", request.id)
+      doc(db, "branches", userProfile.branch, "requests", request.id),
     );
-
     sendRequestDeletedEmail(equipment, request, fullName, userProfile);
   };
 
-  // Request row UI:
+  const deleteRequest = () => {
+    handleCloseDeleteDialog();
+    handleCloseWorkOrderSheet();
+    setIsRequestDeletePending(true);
+    setRequestDeleteSnackbarOpen(true);
+
+    requestDeleteTimeoutRef.current = setTimeout(async () => {
+      try {
+        await deleteRequestNow();
+      } catch (error) {
+        setIsRequestDeletePending(false);
+        showWriteError(
+          "Delete failed. Request was restored. Retry?",
+          RETRY_ACTIONS.DELETE_REQUEST
+        );
+      } finally {
+        setRequestDeleteSnackbarOpen(false);
+      }
+    }, 5000);
+  };
+
+  const undoRequestDelete = () => {
+    if (requestDeleteTimeoutRef.current) {
+      clearTimeout(requestDeleteTimeoutRef.current);
+      requestDeleteTimeoutRef.current = null;
+    }
+    setIsRequestDeletePending(false);
+    setRequestDeleteSnackbarOpen(false);
+  };
+
+  const showWriteError = (message, action) => {
+    setWriteErrorMessage(message);
+    setRetryAction(action);
+    setWriteErrorSnackbarOpen(true);
+  };
+
+  const closeWriteErrorSnackbar = () => {
+    setWriteErrorSnackbarOpen(false);
+  };
+
+  const retryFailedWrite = () => {
+    setWriteErrorSnackbarOpen(false);
+    switch (retryAction) {
+      case RETRY_ACTIONS.SAVE_WORK_ORDER:
+        saveWorkOrder();
+        break;
+      case RETRY_ACTIONS.SAVE_EQUIPMENT:
+        saveNewEquipment();
+        break;
+      case RETRY_ACTIONS.UPDATE_STATUS:
+        updateStatus();
+        break;
+      case RETRY_ACTIONS.DELETE_REQUEST:
+        deleteRequest();
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <React.Fragment>
-      <TableRow key={equipment.requestID} sx={{ '& > *': { borderBottom: 'unset' } }}>
+      {!isRequestDeletePending ? (
+        <>
+      <TableRow
+        key={request.id}
+        data-request-main-row="true"
+        sx={{
+          "& > *": { borderBottom: "unset" },
+          animation: showSavePulse ? `${savePulse} 650ms ease-out` : "none",
+        }}
+      >
         <TableCell key="expand">
           <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
             <IconButton
@@ -388,7 +685,9 @@ export default function RequestRow({ request }) {
         </TableCell>
 
         <TableCell key="model" align="left">
-          <Typography style={{fontWeight: "bold"}}>{equipment[0]?.model}</Typography>
+          <Typography sx={{ fontWeight: "bold" }}>
+            {equipment[0]?.model}
+          </Typography>
           <p>
             <small>
               {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
@@ -398,40 +697,51 @@ export default function RequestRow({ request }) {
 
         <TableCell key="salesman" align="left" scope="row">
           <Typography component="p">{request.salesman}</Typography>
-          <Typography variant="caption">{request.timestamp}</Typography>
+          <Typography variant="caption">
+            {formatTimestampWithRelative(request.timestamp)}
+          </Typography>
         </TableCell>
 
         <TableCell key="workOrder" align="left">
-          {" "}
-          {isEditingWorkOrder ? (
-            <TextField
-              variant="outlined"
-              label="Work Order"
-              inputProps={{ style: { fontSize: 14 } }}
-              size="small"
-              onChange={(e) => setWorkOrder(e.target.value)}
-              value={workOrder}
-            ></TextField>
-          ) : (
-            request.workOrder
-          )}
+          {toWorkOrderString(request.workOrder)
+            .split(" / ")
+            .filter(Boolean)
+            .map((line, index) => (
+              <Typography
+                key={`wo-${request.id}-${index}`}
+                variant="caption"
+                sx={{ display: "block" }}
+              >
+                {line}
+              </Typography>
+            ))}
+          {toWorkOrderString(request.workOrder) ? null : "-"}
         </TableCell>
 
         <TableCell key="status" align="left">
           <Tooltip title="Update Status">
-            <Button
+            <Chip
               size="small"
-              sx={{ width: "115px", pt: "5px" }}
-              variant={
-                request.status === "In Progress" ? "contained" : "outlined"
-              }
+              label={request.status}
+              clickable
               onClick={handleToggleConfirmDialog}
-            >
-              {request.status}
-            </Button>
+              sx={{
+                minWidth: 115,
+                fontWeight: 600,
+                justifyContent: "center",
+              }}
+              {...getStatusChipProps(request.status)}
+            />
           </Tooltip>
-          <Typography component="p" variant="caption">
-            {request.statusTimestamp}
+          <Typography component="p" variant="caption" color="text.secondary">
+            {`Last updated by ${lastChangeEntry?.user || "Unknown"}${
+              lastChangeEntry?.timestamp
+                ? ` ${formatRelativeTimestamp(lastChangeEntry.timestamp)}`
+                : ""
+            }`}
+          </Typography>
+          <Typography component="p" variant="caption" color="text.secondary">
+            {lastChangeEntry?.timestamp || "No update history"}
           </Typography>
 
           <Dialog
@@ -460,10 +770,8 @@ export default function RequestRow({ request }) {
                 </div>
               ) : (
                 <div>
-                  <Typography>{`Update the request's status from`}</Typography>
-                  <Typography>{`\"${
-                    request.status
-                  }" to "${statusUpdateText()}"?`}</Typography>
+                  <Typography>Update the request&apos;s status from</Typography>
+                  <Typography>{`"${request.status}" to "${statusUpdateText()}"?`}</Typography>
                   <div
                     style={{
                       display: "flex",
@@ -479,10 +787,7 @@ export default function RequestRow({ request }) {
                     >
                       Cancel
                     </Button>
-                    <Button
-                      variant="contained"
-                      onClick={updateStatus}
-                    >
+                    <Button variant="contained" onClick={updateStatus}>
                       Update
                     </Button>
                   </div>
@@ -492,94 +797,119 @@ export default function RequestRow({ request }) {
           </Dialog>
         </TableCell>
 
-        <TableCell key="buttons" align="right">
-          <div className="cellButtons">
-            <div>
-              <IconButton aria-label="show" onClick={handleToggleChangeLog}>
-                <Tooltip title="Show Changes">
-                  <HistoryOutlined />
-                </Tooltip>
-              </IconButton>
+        <TableCell
+          key="buttons"
+          align="center"
+          sx={{
+            position: "sticky",
+            right: 0,
+            zIndex: 2,
+            bgcolor: "background.paper",
+            borderLeft: "1px solid",
+            borderColor: "divider",
+            px: 0.5,
+          }}
+        >
+          <Stack direction="row" spacing={0.25} justifyContent="center">
+            <IconButton
+              aria-label={`Show request history ${request.id}`}
+              onClick={handleToggleChangeLog}
+              size="small"
+              sx={{ p: 0.75 }}
+            >
+              <Tooltip title="Show Changes">
+                <HistoryOutlined />
+              </Tooltip>
+            </IconButton>
 
-              <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
-                <DialogTitle>Request Change History</DialogTitle>
+            <Dialog
+              onClose={handleCloseChangeLog}
+              open={openChangeLog}
+              fullWidth
+              maxWidth="sm"
+              PaperProps={{
+                sx: {
+                  height: { xs: "78vh", sm: 560 },
+                  maxHeight: "78vh",
+                },
+              }}
+            >
+              <DialogTitle>Request Change History</DialogTitle>
+              <Box sx={{ px: 2, pb: 1 }}>
+                <TextField
+                  size="small"
+                  select
+                  fullWidth
+                  label="Action Type"
+                  value={historyActionFilter}
+                  onChange={(event) => setHistoryActionFilter(event.target.value)}
+                >
+                  {historyActionOptions.map((option) => (
+                    <MenuItem key={`history-filter-${option.value}`} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Box>
+              <Box sx={{ px: 1.25, pb: 1.5, height: "100%", overflowY: "auto" }}>
                 <Timeline position="alternate">
-                  {" "}
-                  {request.changeLog.map((change, index) => (
-                    <TimelineItem key={index} >
+                  {visibleChangeLog.map((change, index) => (
+                    <TimelineItem key={`${change.timestamp}-${change.user}-${index}`}>
                       <TimelineSeparator>
                         <TimelineDot variant="outlined" color="primary" />
-                        {request.changeLog.indexOf(change) + 1 !==
-                        request.changeLog.length ? (
+                        {index + 1 !== visibleChangeLog.length ? (
                           <TimelineConnector />
                         ) : null}
                       </TimelineSeparator>
                       <TimelineContent>
                         <p>
-                          <small>{change.timestamp}</small>
+                          <small>{formatTimestampWithRelative(change.timestamp)}</small>
                         </p>
                         <small>{change.user}</small>
                         <p>
-                          <small>{change.change}</small>
+                          <small>{change.summary}</small>
                         </p>
+                        {change.details.length > 0
+                          ? change.details.map((detail, detailIndex) => (
+                              <p key={`${change.timestamp}-detail-${detailIndex}`}>
+                                <small>{detail}</small>
+                              </p>
+                            ))
+                          : null}
                       </TimelineContent>
                     </TimelineItem>
                   ))}
                 </Timeline>
-              </Dialog>
-            </div>
+              </Box>
+            </Dialog>
 
-            <div>
-              <Link
-                target="_blank"
-                rel="noopener noreferrer"
-                to={"request-pdf"}
-                onClick={setPDFData}
-              >
-                <IconButton aria-label="show">
-                  <Tooltip title="Print">
-                    <PrintOutlined />
-                  </Tooltip>
-                </IconButton>
-              </Link>
-            </div>
-
-            <div className="editIcon">
-              <IconButton onClick={editWorkOrder}>
-                {" "}
-                {isEditingWorkOrder ? (
-                  workOrderHasChanges ? (
-                    <Tooltip title="Save">
-                      <Check color="primary" style={{ fontSize: 18 }} />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="Cancel">
-                      <Close color="primary" style={{ fontSize: 18 }} />
-                    </Tooltip>
-                  )
-                ) : (
-                  <div className="edit-button-bg">
-                    <Tooltip title="Edit Work Order">
-                      <EditRounded color="primary" style={{ fontSize: 16 }} />
-                    </Tooltip>
-                  </div>
-                )}
+            <Link
+              target="_blank"
+              rel="noopener noreferrer"
+              to="request-pdf"
+              onClick={setPDFData}
+            >
+              <IconButton aria-label={`Print request ${request.id}`} size="small" sx={{ p: 0.75 }}>
+                <Tooltip title="Print">
+                  <PrintOutlined />
+                </Tooltip>
               </IconButton>
-            </div>
-            <div className="delete-button">
-              {isEditingWorkOrder ? (
-                <IconButton
-                  color="primary"
-                  style={{ fontSize: 20 }}
-                  onClick={handleToggleDeleteDialog}
-                >
-                  <Tooltip title="Delete Equipment">
-                    <DeleteRounded color="error" style={{ fontSize: 18 }} />
-                  </Tooltip>
-                </IconButton>
-              ) : null}
-            </div>
-          </div>
+            </Link>
+
+            {disableEditing ? null : (
+              <IconButton
+                onClick={handleOpenWorkOrderSheet}
+                data-request-edit-btn="true"
+                aria-label={`Edit request work order ${request.id}`}
+                size="small"
+                sx={{ p: 0.75 }}
+              >
+                <Tooltip title="Edit Work Order">
+                  <EditRounded color="primary" sx={{ fontSize: 18 }} />
+                </Tooltip>
+              </IconButton>
+            )}
+          </Stack>
 
           <Dialog
             onClose={handleCloseDeleteDialog}
@@ -645,7 +975,15 @@ export default function RequestRow({ request }) {
           style={{ paddingBottom: 0, paddingTop: 0 }}
           colSpan={6}
         >
-          <Collapse in={open} timeout="auto" unmountOnExit>
+          <Collapse
+            in={open}
+            timeout={{ enter: 260, exit: 200 }}
+            easing={{
+              enter: "cubic-bezier(0.2, 0, 0, 1)",
+              exit: "cubic-bezier(0.4, 0, 1, 1)",
+            }}
+            unmountOnExit
+          >
             <Box margin={1}>
               <Typography variant="subtitle1" gutterBottom component="div">
                 {`Request ID: ${request.id}`}
@@ -653,128 +991,239 @@ export default function RequestRow({ request }) {
               <Table size="small" aria-label="equipment">
                 <EquipmentTableHeaderView />
                 <TableBody>
-                  {" "}
                   {equipment.map((item) => (
                     <EquipmentRow
                       key={item?.stock}
                       request={request}
                       item={item}
+                      readOnly={disableEditing}
                     />
                   ))}
                 </TableBody>
                 <TableFooter>
-                  {isShowingAddEquipment ? (
-                    <TableRow
-                      key="addEquipmentRow"
-                      sx={{ '& > *': { borderBottom: 'unset' } }}
-                    >
-                      <TableCell key="addModel" component="th" scope="row">
-                        <TextField
+                  <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                    <TableCell colSpan={6} align="left">
+                      {disableEditing ? null : (
+                        <Button
+                          startIcon={<AddRounded />}
                           variant="outlined"
-                          label="Model"
                           size="small"
-                          onChange={(e) =>
-                            setModel(e.target.value.toUpperCase())
-                          }
-                          value={model}
-                        ></TextField>
-                      </TableCell>
-
-                      <TableCell key="addIds">
-                        <br />
-                        <p>
-                          <TextField
-                            variant="outlined"
-                            label="Stock"
-                            size="small"
-                            onChange={(e) => setStock(e.target.value)}
-                            value={stock}
-                          ></TextField>
-                        </p>
-                        <br />
-                        <p>
-                          <TextField
-                            variant="outlined"
-                            label="Serial"
-                            size="small"
-                            onChange={(e) =>
-                              setSerial(e.target.value.toUpperCase())
-                            }
-                            value={serial}
-                          ></TextField>
-                        </p>
-                      </TableCell>
-
-                      <TableCell key="addWork">
-                        <TextField
-                          variant="outlined"
-                          label="Work"
-                          size="small"
-                          onChange={(e) => setWork(e.target.value)}
-                          value={work}
-                        ></TextField>
-                      </TableCell>
-
-                      <TableCell key="addNotes">
-                        <TextField
-                          variant="outlined"
-                          label="Notes"
-                          size="small"
-                          onChange={(e) => setNotes(e.target.value)}
-                          value={notes}
-                        ></TextField>
-                      </TableCell>
-
-                      <TableCell key="saveAddButton" align="center">
-                        <IconButton
-                          style={{ fontSize: 20 }}
-                          onClick={addEquipment}
+                          onClick={handleOpenAddEquipmentSheet}
                         >
-                          {" "}
-                          {model !== "" &&
-                          stock !== "" &&
-                          serial !== "" &&
-                          work !== "" ? (
-                            <Tooltip title="Save">
-                              <CheckRounded
-                                color="primary"
-                                style={{ fontSize: 18 }}
-                              />
-                            </Tooltip>
-                          ) : (
-                            <Tooltip title="Cancel">
-                              <CloseRounded
-                                color="primary"
-                                style={{ fontSize: 18 }}
-                              />
-                            </Tooltip>
-                          )}
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
-                  {!isShowingAddEquipment ? (
-                    <TableRow
-                      key="addButtonRow"
-                      sx={{ '& > *': { borderBottom: 'unset' } }}
-                      style={{ fontSize: 18 }}
-                    >
-                      <TableCell key="addButtonCell">
-                        <Tooltip title="Add Equipment">
-                          <Button
-                            startIcon={[<AddRounded />, <AgricultureRounded />]}
-                            onClick={addEquipment}
-                          ></Button>
-                        </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ) : null}
+                          Add Equipment
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
                 </TableFooter>
               </Table>
             </Box>
           </Collapse>
         </TableCell>
       </TableRow>
+        </>
+      ) : null}
+
+      <Dialog
+        onClose={handleCloseWorkOrderSheet}
+        open={openWorkOrderSheet}
+        fullWidth
+        maxWidth="sm"
+        fullScreen={isMobile}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+            Edit Work Order
+          </Typography>
+          <Stack
+            spacing={1.25}
+            sx={{ maxHeight: isMobile ? "unset" : 340, overflowY: "auto", pr: 0.25 }}
+          >
+            {equipment.map((item) => (
+              <Box key={`wo-field-${item.stock}`}>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+                  {`WO for: ${item.model} - ${item.stock}`}
+                </Typography>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Work Order"
+                  value={equipmentWorkOrders[item.stock] || ""}
+                  onChange={(event) =>
+                    setEquipmentWorkOrders((previous) => ({
+                      ...previous,
+                      [item.stock]: event.target.value,
+                    }))
+                  }
+                />
+              </Box>
+            ))}
+            {equipment.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No equipment found for this request.
+              </Typography>
+            ) : null}
+          </Stack>
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="space-between"
+            sx={{ mt: 2 }}
+          >
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteRounded />}
+              onClick={handleToggleDeleteDialog}
+            >
+              Delete Request
+            </Button>
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" onClick={handleCloseWorkOrderSheet}>
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                onClick={saveWorkOrder}
+                disabled={equipment.length === 0}
+              >
+                Save
+              </Button>
+            </Stack>
+          </Stack>
+        </Box>
+      </Dialog>
+
+      <Dialog
+        onClose={handleCloseAddEquipmentSheet}
+        open={openAddEquipmentSheet}
+        fullWidth
+        maxWidth="md"
+        fullScreen={isMobile}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h6" color="primary" sx={{ mb: 2 }}>
+            Add Equipment
+          </Typography>
+          <Stack spacing={1.5}>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Model"
+                value={newEquipment.model}
+                onChange={(event) =>
+                  handleEquipmentFieldChange(
+                    "model",
+                    event.target.value.toUpperCase(),
+                  )
+                }
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Stock"
+                value={newEquipment.stock}
+                onChange={(event) =>
+                  handleEquipmentFieldChange("stock", event.target.value)
+                }
+              />
+            </Stack>
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5}>
+              <TextField
+                fullWidth
+                size="small"
+                label="Serial"
+                value={newEquipment.serial}
+                onChange={(event) =>
+                  handleEquipmentFieldChange(
+                    "serial",
+                    event.target.value.toUpperCase(),
+                  )
+                }
+              />
+              <TextField
+                fullWidth
+                size="small"
+                label="Work"
+                value={newEquipment.work}
+                onChange={(event) =>
+                  handleEquipmentFieldChange("work", event.target.value)
+                }
+              />
+            </Stack>
+            <TextField
+              fullWidth
+              size="small"
+              label="Notes"
+              value={newEquipment.notes}
+              onChange={(event) =>
+                handleEquipmentFieldChange("notes", event.target.value)
+              }
+            />
+          </Stack>
+
+          <Stack
+            direction="row"
+            spacing={1}
+            justifyContent="flex-end"
+            sx={{ mt: 2 }}
+          >
+            <Button variant="outlined" onClick={handleCloseAddEquipmentSheet}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={saveNewEquipment}
+              disabled={
+                newEquipment.model === "" ||
+                newEquipment.stock === "" ||
+                newEquipment.serial === "" ||
+                newEquipment.work === ""
+              }
+            >
+              Save Equipment
+            </Button>
+          </Stack>
+        </Box>
+      </Dialog>
+
+      <Snackbar
+        open={requestDeleteSnackbarOpen}
+        autoHideDuration={5000}
+        onClose={() => setRequestDeleteSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="warning"
+          action={
+            <Button color="inherit" size="small" onClick={undoRequestDelete}>
+              Undo
+            </Button>
+          }
+        >
+          Request deleted. Undo?
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={writeErrorSnackbarOpen}
+        autoHideDuration={7000}
+        onClose={closeWriteErrorSnackbar}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          onClose={closeWriteErrorSnackbar}
+          action={
+            <Button color="inherit" size="small" onClick={retryFailedWrite}>
+              Retry
+            </Button>
+          }
+        >
+          {writeErrorMessage}
+        </Alert>
+      </Snackbar>
     </React.Fragment>
   );
 }

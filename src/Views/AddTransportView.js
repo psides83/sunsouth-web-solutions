@@ -176,13 +176,6 @@ export default function AddTransportView(props) {
   // Push equipment to a state array to later be set to firestore "equipment" collection with the "requests" collection.
   const pushEquipmentToRequest = async () => {
     const id = moment().format("yyyyMMDDHHmmss");
-    const changeLog = [
-      {
-        user: fullName,
-        change: `equipment added to request`,
-        timestamp: moment().format("DD-MMM-yyyy hh:mmA"),
-      },
-    ];
 
     var equipment = {
       id: id,
@@ -202,9 +195,6 @@ export default function AddTransportView(props) {
   // Squipment submission validation.
   const equipmentSubmitValidation = async (event) => {
     event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
 
     if (model === "") {
       setValidationMessage(
@@ -228,9 +218,6 @@ export default function AddTransportView(props) {
 
   // checks form validation to activate submit buton
   const submitIsDisabled = () => {
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
-
     if (
       requestedDate === "" ||
       name === "" ||
@@ -255,9 +242,6 @@ export default function AddTransportView(props) {
   // Requst submission validation.
   const requestSubmitValidation = async (event) => {
     event.preventDefault();
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
 
     if (model === "" && equipmentList.length === 0) {
       setValidationMessage(

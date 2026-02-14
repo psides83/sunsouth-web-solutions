@@ -1,9 +1,8 @@
 //Imports
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../services/firebase";
-import { setDoc, doc, deleteDoc } from "@firebase/firestore";
+import { setDoc, doc } from "@firebase/firestore";
 import moment from "moment";
-import { styled } from "@mui/material/styles";
 import {
   Box,
   Grid,
@@ -34,7 +33,6 @@ export default function TransportEquipmentForm(props) {
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
   var [notes, setNotes] = useState("");
-  var [changeLog, setChangeLog] = useState([]);
   var [change, setChange] = useState([]);
   const [importedData, setImportedData] = useState({});
   const [dataHasChanges, setDataHasChanges] = useState(false);
@@ -65,14 +63,12 @@ export default function TransportEquipmentForm(props) {
   };
 
   // load data from equipment
-  const loadEquipmentData = useCallback(() => {
+  useEffect(() => {
     if (isShowingDialog) {
-
       setModel(equipment.model);
       setStock(equipment.stock);
       setSerial(equipment.serial);
       setNotes(equipment.notes);
-      setChangeLog(equipment.changeLog);
       setImportedData({
         model: equipment.model,
         stock: equipment.stock,
@@ -80,11 +76,7 @@ export default function TransportEquipmentForm(props) {
         notes: equipment.notes,
       });
     }
-  }, [isShowingDialog]);
-
-  useEffect(() => {
-    loadEquipmentData();
-  }, [loadEquipmentData]);
+  }, [isShowingDialog, equipment]);
 
   const deleteEquipment = async () => {
     const requestRef = doc(db, "transport", request.id);
@@ -145,15 +137,14 @@ export default function TransportEquipmentForm(props) {
   const setEquipmentToFirestore = async () => {
     const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
     const id = equipment ? equipment.id : moment().format("yyyyMMDDHHmmss");
-    var changeString
-    logChanges()
+    let changeString;
+    logChanges();
 
-      changeString = change.toString().replace(/,/g, ", ");
-  
-      if (changeString[0] === ",") {
-        changeString = changeString.substring(1).trim();
-      }
-    
+    changeString = change.toString().replace(/,/g, ", ");
+
+    if (changeString[0] === ",") {
+      changeString = changeString.substring(1).trim();
+    }
 
     request.changeLog.push({
       id: moment().format("yyyyMMDDHHmmss"),
@@ -200,7 +191,6 @@ export default function TransportEquipmentForm(props) {
     setStock("");
     setSerial("");
     setNotes("");
-    setChangeLog([]);
     setChange([]);
     setImportedData({});
     setDataHasChanges(false);
@@ -210,9 +200,6 @@ export default function TransportEquipmentForm(props) {
   const equipmentSubmitValidation = async (event) => {
     event.preventDefault();
     setLoading(true);
-
-    const lowerCaseLetters = /[a-z]/g;
-    const upperCaseLetters = /[A-Z]/g;
 
     if (model === "") {
       return;
