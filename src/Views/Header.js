@@ -82,7 +82,7 @@ function Header() {
       position="sticky"
       elevation={0}
       sx={{
-        borderRadius: "0 0 16px 16px",
+        borderRadius: 0,
         borderBottom: "1px solid rgba(255, 255, 255, 0.12)",
         background:
           "linear-gradient(95deg, rgba(25,34,26,0.96) 0%, rgba(37,58,38,0.95) 60%, rgba(31,47,32,0.94) 100%)",

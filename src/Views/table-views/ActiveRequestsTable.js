@@ -535,7 +535,7 @@ export default function ActiveRequestsTable() {
       return statusMatch && searchMatch;
     });
 
-    return [...filtered].sort((a, b) => b.id.localeCompare(a.id));
+    return [...filtered].sort((a, b) => a.id.localeCompare(b.id));
   }, [requests, searchText, statusFilter, equipmentSearchIndex]);
 
   const visibleCompletedSearchResults = useMemo(() => {
