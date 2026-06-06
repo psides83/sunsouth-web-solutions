@@ -420,6 +420,7 @@ export default function CompletedTable() {
       workOrder: equipmentDoc.data().workOrder,
       work: equipmentDoc.data().work,
       notes: equipmentDoc.data().notes,
+      partNumbersSummary: equipmentDoc.data().partNumbersSummary || "",
     }));
   };
 

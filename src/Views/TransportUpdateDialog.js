@@ -13,6 +13,10 @@ import Spinner from "../components/Spinner";
 import moment from "moment";
 import { db } from "../services/firebase";
 import { sendTransportStatusEmail } from "../services/email-service";
+import {
+  buildTransportCustomerAccessLink,
+  createTransportAccessToken,
+} from "../utils/transportCustomerAccess";
 
 function TransportUpdateDialog(props) {
   const {
@@ -27,6 +31,21 @@ function TransportUpdateDialog(props) {
   } = props;
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
+
+  const getStatusButtonProps = (currentStatus) => {
+    switch (currentStatus) {
+      case "Requested":
+        return { color: "primary", variant: "outlined" };
+      case "Scheduled":
+        return { color: "secondary", variant: "contained" };
+      case "In Progress":
+        return { color: "primary", variant: "contained" };
+      case "Completed":
+        return { color: "success", variant: "contained" };
+      default:
+        return { color: "primary", variant: "outlined" };
+    }
+  };
 
   // Handles updating the request status:
   const updateStatus = async () => {
@@ -65,7 +84,20 @@ function TransportUpdateDialog(props) {
       request.id
     );
 
+    let customerAccessLink = request.customerAccessLink || "";
+    let customerAccessToken = request.customerAccessToken || "";
+
     if (status === "Scheduled") {
+      if (!customerAccessToken) {
+        customerAccessToken = createTransportAccessToken();
+      }
+
+      customerAccessLink = buildTransportCustomerAccessLink({
+        origin: window.location.origin,
+        branch: userProfile.branch,
+        requestId: request.id,
+        token: customerAccessToken,
+      });
 
       await setDoc(
         requestRef,
@@ -74,6 +106,10 @@ function TransportUpdateDialog(props) {
           statusTimestamp: moment().format("DD-MMM-yyyy h:mmA"),
           startDate: startDate,
           endDate: endDate,
+          customerAccessToken,
+          customerAccessLink,
+          customerAccessCreatedAt:
+            request.customerAccessCreatedAt || moment().toISOString(),
           changeLog: request.changeLog,
         },
         {
@@ -101,7 +137,8 @@ function TransportUpdateDialog(props) {
       endDate,
       request,
       fullName,
-      userProfile
+      userProfile,
+      customerAccessLink,
     );
 
     handleCloseConfirmDialog();
@@ -141,13 +178,16 @@ function TransportUpdateDialog(props) {
     return setEndDate(e.target.value);
   };
 
+  const statusButtonProps = getStatusButtonProps(request.status);
+
   return (
     <>
       <Tooltip title="Update Status">
         <Button
           size="small"
-          sx={{ width: "115px", pt: "5px" }}
-          variant={request.status === "Requested" ? "outlined" : "contained"}
+          sx={{ borderRadius: 999, minWidth: 120, px: 1.5, py: 0.25 }}
+          variant={statusButtonProps.variant}
+          color={statusButtonProps.color}
           onClick={handleToggleConfirmDialog}
         >
           {request.status}

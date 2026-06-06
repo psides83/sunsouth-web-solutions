@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { setDoc, doc, deleteDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import "../../styles/Table.css";
 import {
@@ -30,6 +30,11 @@ import {
   CHANGE_ACTIONS,
   createChangeLogEntry,
 } from "../../utils/changeLog";
+import {
+  normalizePartNumbers,
+  toPartNumberDocId,
+  toPartNumberSummary,
+} from "../../utils/partNumbers";
 
 const savePulse = keyframes`
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0.22); }
@@ -50,6 +55,7 @@ export default function EquipmentRow(props) {
     serial: "",
     work: "",
     notes: "",
+    partNumbersList: [""],
   });
   const [originalValues, setOriginalValues] = useState({
     model: "",
@@ -57,6 +63,7 @@ export default function EquipmentRow(props) {
     serial: "",
     work: "",
     notes: "",
+    partNumbersList: [""],
   });
   const [openEditSheet, setOpenEditSheet] = useState(false);
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
@@ -77,7 +84,9 @@ export default function EquipmentRow(props) {
       originalValues.stock !== formValues.stock ||
       originalValues.serial !== formValues.serial ||
       originalValues.work !== formValues.work ||
-      originalValues.notes !== formValues.notes,
+      originalValues.notes !== formValues.notes ||
+      normalizePartNumbers(originalValues.partNumbersList).join("|") !==
+        normalizePartNumbers(formValues.partNumbersList).join("|"),
     [originalValues, formValues]
   );
 
@@ -119,13 +128,36 @@ export default function EquipmentRow(props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openEditSheet, isShowingConfirmDialog, formValues, originalValues]);
 
-  const handleOpenEditSheet = () => {
+  const handleOpenEditSheet = async () => {
+    let existingPartNumbers = [""];
+    try {
+      const partNumbersSnapshot = await getDocs(
+        collection(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          item.requestID,
+          "equipment",
+          item.stock,
+          "partNumbers",
+        ),
+      );
+      const parsed = partNumbersSnapshot.docs
+        .map((partDoc) => partDoc.data().partNumber || "")
+        .filter(Boolean);
+      existingPartNumbers = parsed.length > 0 ? parsed : [""];
+    } catch (error) {
+      existingPartNumbers = [""];
+    }
+
     const currentValues = {
       model: item.model,
       stock: item.stock,
       serial: item.serial,
       work: item.work,
       notes: item.notes,
+      partNumbersList: existingPartNumbers,
     };
 
     setOriginalValues(currentValues);
@@ -150,6 +182,40 @@ export default function EquipmentRow(props) {
       ...previousValues,
       [field]: value,
     }));
+  };
+
+  const handlePartNumberRowChange = (index, value) => {
+    setFormValues((previousValues) => {
+      const nextPartNumbers = [...(previousValues.partNumbersList || [""])];
+      nextPartNumbers[index] = value.toUpperCase();
+      return {
+        ...previousValues,
+        partNumbersList: nextPartNumbers,
+      };
+    });
+  };
+
+  const handleAddPartNumberRow = () => {
+    setFormValues((previousValues) => ({
+      ...previousValues,
+      partNumbersList: [...(previousValues.partNumbersList || [""]), ""],
+    }));
+  };
+
+  const handleRemovePartNumberRow = (index) => {
+    setFormValues((previousValues) => {
+      const current = previousValues.partNumbersList || [""];
+      if (current.length <= 1) {
+        return {
+          ...previousValues,
+          partNumbersList: [""],
+        };
+      }
+      return {
+        ...previousValues,
+        partNumbersList: current.filter((_, rowIndex) => rowIndex !== index),
+      };
+    });
   };
 
   const saveEquipment = async () => {
@@ -191,6 +257,14 @@ export default function EquipmentRow(props) {
         } to ${formValues.notes}`
       );
     }
+    const originalPartNumbers = normalizePartNumbers(originalValues.partNumbersList);
+    const nextPartNumbers = normalizePartNumbers(formValues.partNumbersList);
+    const originalStock = item.stock;
+    const nextStock = formValues.stock;
+    const stockChanged = originalStock !== nextStock;
+    if (originalPartNumbers.join("|") !== nextPartNumbers.join("|")) {
+      changeDetails.push("equipment part numbers updated");
+    }
 
     try {
       const changeLogEntry = createChangeLogEntry({
@@ -210,18 +284,125 @@ export default function EquipmentRow(props) {
           "requests",
           item.requestID,
           "equipment",
-          item.stock
+          nextStock
         ),
         {
           model: formValues.model,
-          stock: formValues.stock,
+          stock: nextStock,
           serial: formValues.serial,
           work: formValues.work,
           notes: formValues.notes,
+          partNumbersSummary: toPartNumberSummary(nextPartNumbers),
           changeLog: nextEquipmentChangeLog,
         },
         { merge: true }
       );
+
+      const partNumbersCollectionRef = collection(
+        db,
+        "branches",
+        userProfile.branch,
+        "requests",
+        item.requestID,
+        "equipment",
+        nextStock,
+        "partNumbers",
+      );
+      const existingPartNumbersSnapshot = await getDocs(partNumbersCollectionRef);
+      const existingPartNumbersById = new Map(
+        existingPartNumbersSnapshot.docs.map((partDoc) => [
+          partDoc.id,
+          partDoc.data().partNumber || "",
+        ]),
+      );
+      const nextPartNumberIds = new Set(
+        nextPartNumbers.map((partNumber) => toPartNumberDocId(partNumber)),
+      );
+
+      for (const [docId] of existingPartNumbersById.entries()) {
+        if (!nextPartNumberIds.has(docId)) {
+          await deleteDoc(
+            doc(
+              db,
+              "branches",
+              userProfile.branch,
+              "requests",
+              item.requestID,
+              "equipment",
+              nextStock,
+              "partNumbers",
+              docId,
+            ),
+          );
+        }
+      }
+
+      for (const partNumber of nextPartNumbers) {
+        await setDoc(
+          doc(
+            db,
+            "branches",
+            userProfile.branch,
+            "requests",
+            item.requestID,
+            "equipment",
+            nextStock,
+            "partNumbers",
+            toPartNumberDocId(partNumber),
+          ),
+          {
+            partNumber,
+            requestID: item.requestID,
+            equipmentStock: nextStock,
+          },
+          { merge: true },
+        );
+      }
+
+      if (stockChanged) {
+        const legacyPartsSnapshot = await getDocs(
+          collection(
+            db,
+            "branches",
+            userProfile.branch,
+            "requests",
+            item.requestID,
+            "equipment",
+            originalStock,
+            "partNumbers",
+          ),
+        );
+
+        await Promise.all(
+          legacyPartsSnapshot.docs.map((partDoc) =>
+            deleteDoc(
+              doc(
+                db,
+                "branches",
+                userProfile.branch,
+                "requests",
+                item.requestID,
+                "equipment",
+                originalStock,
+                "partNumbers",
+                partDoc.id,
+              ),
+            ),
+          ),
+        );
+
+        await deleteDoc(
+          doc(
+            db,
+            "branches",
+            userProfile.branch,
+            "requests",
+            item.requestID,
+            "equipment",
+            originalStock,
+          ),
+        );
+      }
 
       sendEquipmentUpdateEmail(
         originalValues,
@@ -363,6 +544,10 @@ export default function EquipmentRow(props) {
           {item.work}
         </TableCell>
 
+        <TableCell key="partNumbers" align="left">
+          {item.partNumbersSummary || "-"}
+        </TableCell>
+
         <TableCell key="notes" align="left">
           {item.notes}
         </TableCell>
@@ -442,6 +627,43 @@ export default function EquipmentRow(props) {
               value={formValues.notes}
               onChange={(event) => handleFieldChange("notes", event.target.value)}
             />
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Part Numbers</Typography>
+              {(formValues.partNumbersList || [""]).map((partNumber, index) => (
+                <Stack
+                  key={`equipment-edit-part-${index}`}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                >
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label={`Part Number ${index + 1}`}
+                    value={partNumber}
+                    onChange={(event) =>
+                      handlePartNumberRowChange(index, event.target.value)
+                    }
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => handleRemovePartNumberRow(index)}
+                    disabled={
+                      (formValues.partNumbersList || [""]).length === 1 &&
+                      !partNumber
+                    }
+                  >
+                    Remove
+                  </Button>
+                </Stack>
+              ))}
+              <Box>
+                <Button size="small" variant="text" onClick={handleAddPartNumberRow}>
+                  Add Part Number
+                </Button>
+              </Box>
+            </Stack>
           </Stack>
 
           <Stack direction="row" spacing={1} justifyContent="space-between" sx={{ mt: 2 }}>

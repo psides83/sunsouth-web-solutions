@@ -7,7 +7,6 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./services/firebase";
 import { useStateValue } from "./state-management/StateProvider";
 import SignIn from "./views/SignIn";
-import SignUp from "./views/SignUp";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import Spinner from "./components/Spinner";
@@ -17,9 +16,12 @@ import AddLoanerView from "./views/AddLoanerView";
 import LoanerManager from "./views/table-views/LoanerManager";
 import SalesmenList from "./views/table-views/SalesmenList";
 import TransportManager from "./views/table-views/TransportManager";
+import ProfileView from "./views/ProfileView";
+import BranchUsersView from "./views/BranchUsersView";
 import { RequestPDF, TransportPDF } from "./components/RequestPDF";
 import { PDFViewer } from "@react-pdf/renderer";
 import { doc, getDoc } from "@firebase/firestore";
+import TransportCustomerView from "./views/TransportCustomerView";
 
 const theme = createTheme({
   palette: {
@@ -203,9 +205,23 @@ function App() {
               <SalesmenList />
             </Route>
 
+            <Route path="/profile">
+              <Header />
+              <ProfileView />
+            </Route>
+
+            <Route path="/branch-users">
+              <Header />
+              <BranchUsersView />
+            </Route>
+
             <Route path="/transport-manager">
               <Header />
               <TransportManager />
+            </Route>
+
+            <Route path="/transport-view/:branch/:requestId/:token">
+              <TransportCustomerView />
             </Route>
 
             <Route path="/loaner-manager">
@@ -230,10 +246,6 @@ function App() {
 
             <Route path="/signIn">
               <SignIn />
-            </Route>
-
-            <Route path="/signUp">
-              <SignUp />
             </Route>
 
             <Route path="/">

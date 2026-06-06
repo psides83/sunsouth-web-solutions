@@ -14,7 +14,7 @@ import {
   AppointmentTooltip,
 } from "@devexpress/dx-react-scheduler-material-ui";
 import moment from "moment";
-import { Grid, Stack, Typography } from "@mui/material";
+import { Button, Grid, Stack, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { PhoneRounded, Room } from "@mui/icons-material";
 
 const currentDate = moment().format();
@@ -100,11 +100,26 @@ const Content = ({ children, appointmentData, ...restProps }) => (
         {appointmentData.notes}
       </Grid>
     </Grid>
+    {appointmentData.customerAccessLink ? (
+      <Grid container alignItems="center" sx={{ mt: 1 }}>
+        <Grid item xs={12} style={{ textAlign: "center" }}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => navigator.clipboard.writeText(appointmentData.customerAccessLink)}
+          >
+            Copy Customer Link
+          </Button>
+        </Grid>
+      </Grid>
+    ) : null}
   </AppointmentTooltip.Content>
 );
 
 export default function CalendarView(props) {
   const { calendarRequests } = props;
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <Paper
@@ -114,10 +129,10 @@ export default function CalendarView(props) {
         borderRadius: "10px",
       }}
     >
-      <Scheduler height={700} data={calendarRequests}>
+      <Scheduler height={isMobile ? 520 : 700} data={calendarRequests}>
         <ViewState
           defaultCurrentDate={currentDate}
-          defaultCurrentViewName="Week"
+          defaultCurrentViewName={isMobile ? "Day" : "Week"}
         />
         <MonthView />
         <WeekView excludedDays={[0, 6]} startDayHour={6.5} endDayHour={17.5} />

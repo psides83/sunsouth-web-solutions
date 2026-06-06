@@ -1,5 +1,5 @@
 //Imports
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { db } from "../services/firebase";
 import "../styles/SignUp.css";
 import { setDoc, doc } from "@firebase/firestore";
@@ -13,6 +13,10 @@ import {
   Button,
   Checkbox,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   FormGroup,
   Grid,
@@ -23,6 +27,11 @@ import {
   Typography,
 } from "@mui/material";
 import { CHANGE_ACTIONS, createChangeLogEntry } from "../utils/changeLog";
+import {
+  normalizePartNumbers,
+  toPartNumberDocId,
+  toPartNumberSummary,
+} from "../utils/partNumbers";
 import {
   AddCircleOutline,
   Agriculture,
@@ -45,6 +54,7 @@ export default function AddRequestView({ onClose }) {
   var [serial, setSerial] = useState("");
   var [work, setWork] = useState([]);
   var [notes, setNotes] = useState("");
+  var [partNumbersList, setPartNumbersList] = useState([""]);
   var [other, setOther] = useState("");
   var [checked1, setChecked1] = useState(false);
   var [checked2, setChecked2] = useState(false);
@@ -65,6 +75,8 @@ export default function AddRequestView({ onClose }) {
     serial: "",
     work: "",
   });
+  const [openNoPartsDialog, setOpenNoPartsDialog] = useState(false);
+  const noPartsDialogResolverRef = useRef(null);
   const fullName = userProfile?.firstName + " " + userProfile?.lastName;
   //#endregion
 
@@ -114,6 +126,20 @@ export default function AddRequestView({ onClose }) {
     }
   };
 
+  const confirmNoPartsRequired = () =>
+    new Promise((resolve) => {
+      noPartsDialogResolverRef.current = resolve;
+      setOpenNoPartsDialog(true);
+    });
+
+  const closeNoPartsDialog = (confirmed) => {
+    setOpenNoPartsDialog(false);
+    if (noPartsDialogResolverRef.current) {
+      noPartsDialogResolverRef.current(confirmed);
+      noPartsDialogResolverRef.current = null;
+    }
+  };
+
   useEffect(() => {
     try {
       const savedDraft = window.localStorage.getItem(ADD_REQUEST_DRAFT_KEY);
@@ -128,6 +154,15 @@ export default function AddRequestView({ onClose }) {
       setSerial(draft.serial || "");
       setWork(Array.isArray(draft.work) ? draft.work : []);
       setNotes(draft.notes || "");
+      if (Array.isArray(draft.partNumbersList)) {
+        setPartNumbersList(
+          draft.partNumbersList.length > 0 ? draft.partNumbersList : [""],
+        );
+      } else if (typeof draft.partNumbersInput === "string") {
+        setPartNumbersList([draft.partNumbersInput]);
+      } else {
+        setPartNumbersList([""]);
+      }
       setOther(draft.other || "");
       setChecked1(Boolean(draft.checked1));
       setChecked2(Boolean(draft.checked2));
@@ -138,9 +173,11 @@ export default function AddRequestView({ onClose }) {
       setChecked7(Boolean(draft.checked7));
       setChecked8(Boolean(draft.checked8));
       setChecked9(Boolean(draft.checked9));
-      setEquepmentList(Array.isArray(draft.equipmentList) ? draft.equipmentList : []);
+      setEquepmentList(
+        Array.isArray(draft.equipmentList) ? draft.equipmentList : [],
+      );
       setOtherDisabled(
-        typeof draft.otherDisabled === "boolean" ? draft.otherDisabled : true
+        typeof draft.otherDisabled === "boolean" ? draft.otherDisabled : true,
       );
     } catch (error) {
       console.error("Unable to restore add request draft", error);
@@ -160,6 +197,7 @@ export default function AddRequestView({ onClose }) {
       serial,
       work,
       notes,
+      partNumbersList,
       other,
       checked1,
       checked2,
@@ -180,6 +218,7 @@ export default function AddRequestView({ onClose }) {
       stock !== "" ||
       serial !== "" ||
       notes !== "" ||
+      partNumbersList.some((value) => String(value || "").trim() !== "") ||
       other !== "" ||
       work.some(Boolean);
 
@@ -187,7 +226,10 @@ export default function AddRequestView({ onClose }) {
       if (!hasAnyDraftContent) {
         window.localStorage.removeItem(ADD_REQUEST_DRAFT_KEY);
       } else {
-        window.localStorage.setItem(ADD_REQUEST_DRAFT_KEY, JSON.stringify(draft));
+        window.localStorage.setItem(
+          ADD_REQUEST_DRAFT_KEY,
+          JSON.stringify(draft),
+        );
       }
     } catch (error) {
       console.error("Unable to save add request draft", error);
@@ -199,6 +241,7 @@ export default function AddRequestView({ onClose }) {
     serial,
     work,
     notes,
+    partNumbersList,
     other,
     checked1,
     checked2,
@@ -296,7 +339,7 @@ export default function AddRequestView({ onClose }) {
   // Handle deleting of equipment from the request.
   const handleDelete = (equipmentToDelete) => () => {
     setEquepmentList((equipmentList) =>
-      equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id)
+      equipmentList.filter((equiment) => equiment.id !== equipmentToDelete.id),
     );
   };
 
@@ -387,7 +430,7 @@ export default function AddRequestView({ onClose }) {
           setWork(work);
         }
         break;
-        case "8":
+      case "8":
         if (!checked8) {
           setChecked8(true);
           work[7] = event.target.value;
@@ -451,7 +494,7 @@ export default function AddRequestView({ onClose }) {
       "branches",
       userProfile.branch,
       "requests",
-      firestoreRequest.id
+      firestoreRequest.id,
     );
 
     await setDoc(requestRef, firestoreRequest, { merge: true });
@@ -465,6 +508,7 @@ export default function AddRequestView({ onClose }) {
         serial: equipmentList[i].serial,
         work: equipmentList[i].work,
         notes: equipmentList[i].notes,
+        partNumbersSummary: equipmentList[i].partNumbersSummary || "",
         changeLog: equipmentList[i].changeLog,
       };
 
@@ -475,9 +519,36 @@ export default function AddRequestView({ onClose }) {
         "requests",
         firestoreRequest.id,
         "equipment",
-        equipment.stock
+        equipment.stock,
       );
       await setDoc(equipmentRef, equipment, { merge: true });
+
+      const partNumbers = Array.isArray(equipmentList[i].partNumbers)
+        ? equipmentList[i].partNumbers
+        : [];
+      for (const partNumber of partNumbers) {
+        const partNumberRef = doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          firestoreRequest.id,
+          "equipment",
+          equipment.stock,
+          "partNumbers",
+          toPartNumberDocId(partNumber),
+        );
+        await setDoc(
+          partNumberRef,
+          {
+            partNumber,
+            timestamp: firestoreRequest.timestamp,
+            requestID: firestoreRequest.id,
+            equipmentStock: equipment.stock,
+          },
+          { merge: true },
+        );
+      }
     }
 
     sendNewRequestEmail(
@@ -485,7 +556,7 @@ export default function AddRequestView({ onClose }) {
       equipmentList,
       fullName,
       userProfile,
-      salesman
+      salesman,
     );
     resetForm();
     setEquepmentList([]);
@@ -498,6 +569,7 @@ export default function AddRequestView({ onClose }) {
     setStock("");
     setSerial("");
     setNotes("");
+    setPartNumbersList([""]);
     setOther("");
     setOtherDisabled(true);
     setChecked1(false);
@@ -531,7 +603,7 @@ export default function AddRequestView({ onClose }) {
       workString = workString.substring(1).trim();
     }
 
-    console.log(workString)
+    console.log(workString);
 
     const changeLog = [
       createChangeLogEntry({
@@ -541,6 +613,14 @@ export default function AddRequestView({ onClose }) {
       }),
     ];
 
+    const parsedPartNumbers = normalizePartNumbers(partNumbersList);
+    if (parsedPartNumbers.length === 0) {
+      const confirmedNoParts = await confirmNoPartsRequired();
+      if (!confirmedNoParts) {
+        return false;
+      }
+    }
+
     var equipment = {
       id: equipmentList.length + 1,
       model: model,
@@ -548,6 +628,8 @@ export default function AddRequestView({ onClose }) {
       serial: serial,
       work: workString,
       notes: notes,
+      partNumbers: parsedPartNumbers,
+      partNumbersSummary: toPartNumberSummary(parsedPartNumbers),
       changeLog: changeLog,
     };
 
@@ -557,6 +639,28 @@ export default function AddRequestView({ onClose }) {
     console.log(equipmentList);
 
     await resetForm();
+    return true;
+  };
+
+  const handlePartNumberRowChange = (index, value) => {
+    setPartNumbersList((previous) => {
+      const next = [...previous];
+      next[index] = value.toUpperCase();
+      return next;
+    });
+  };
+
+  const handleAddPartNumberRow = () => {
+    setPartNumbersList((previous) => [...previous, ""]);
+  };
+
+  const handleRemovePartNumberRow = (index) => {
+    setPartNumbersList((previous) => {
+      if (previous.length <= 1) {
+        return [""];
+      }
+      return previous.filter((_, rowIndex) => rowIndex !== index);
+    });
   };
 
   // Squipment submission validation.
@@ -568,7 +672,10 @@ export default function AddRequestView({ onClose }) {
       return;
     }
 
-    pushEquipmentToRequest();
+    const equipmentAdded = await pushEquipmentToRequest();
+    if (!equipmentAdded) {
+      return;
+    }
     const lastIndex = equipmentList[equipmentList.length - 1]?.model;
     setValidationMessage(lastIndex + " successfully added to the request");
     setOpenSuccess(true);
@@ -590,7 +697,10 @@ export default function AddRequestView({ onClose }) {
         hasWorkSelected()
       ) {
         console.log("another eq added first");
-        await pushEquipmentToRequest();
+        const equipmentAdded = await pushEquipmentToRequest();
+        if (!equipmentAdded) {
+          return false;
+        }
       }
       await setRequestToFirestore();
       setValidationMessage("Request successfully submitted");
@@ -618,7 +728,7 @@ export default function AddRequestView({ onClose }) {
       window.removeEventListener("request-shortcut-save", onShortcutSave);
       window.removeEventListener("request-shortcut-close", onShortcutClose);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onClose]);
 
   // UI view of the submission form
@@ -662,7 +772,7 @@ export default function AddRequestView({ onClose }) {
 
       <form style={{ width: "100%", marginTop: "4px" }} noValidate>
         <Stack mb={1}>
-          <Typography component="h1" variant="subtitle1">
+          <Typography component="h1" fontWeight="bold" variant="subtitle1">
             {heading}
           </Typography>
 
@@ -820,6 +930,50 @@ export default function AddRequestView({ onClose }) {
           </Grid>
 
           <Grid item xs={12}>
+            <Stack spacing={1}>
+              <Typography variant="subtitle1" fontWeight="bold">
+                Part Numbers
+              </Typography>
+              {partNumbersList.map((partNumber, index) => (
+                <Stack
+                  key={`part-number-row-${index}`}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                >
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    label={`Part Number ${index + 1}`}
+                    value={partNumber}
+                    onChange={(event) =>
+                      handlePartNumberRowChange(index, event.target.value)
+                    }
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => handleRemovePartNumberRow(index)}
+                    disabled={partNumbersList.length === 1 && !partNumber}
+                  >
+                    Remove
+                  </Button>
+                </Stack>
+              ))}
+              <Box>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={handleAddPartNumberRow}
+                >
+                  Add Part Number
+                </Button>
+              </Box>
+            </Stack>
+          </Grid>
+
+          <Grid item xs={12}>
             <TextField
               variant="outlined"
               fullWidth
@@ -884,6 +1038,31 @@ export default function AddRequestView({ onClose }) {
             {validationMessage}
           </Alert>
         </Snackbar>
+
+        <Dialog
+          open={openNoPartsDialog}
+          onClose={() => closeNoPartsDialog(false)}
+          fullWidth
+          maxWidth="xs"
+        >
+          <DialogTitle>Confirm No Parts Required</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2">
+              This equipment has no part numbers attached. Please confirm that
+              no parts are required for this equipment or add the required parts
+              now.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => closeNoPartsDialog(false)}>Add Parts</Button>
+            <Button
+              variant="contained"
+              onClick={() => closeNoPartsDialog(true)}
+            >
+              No Parts Required
+            </Button>
+          </DialogActions>
+        </Dialog>
       </form>
     </Box>
   );

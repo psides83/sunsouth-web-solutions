@@ -29,6 +29,8 @@ import {
   Chip,
   Collapse,
   Dialog,
+  DialogActions,
+  DialogContent,
   DialogTitle,
   IconButton,
   MenuItem,
@@ -74,6 +76,11 @@ import {
   getChangeLogActionOptions,
   normalizeChangeLogEntry,
 } from "../../utils/changeLog";
+import {
+  normalizePartNumbers,
+  toPartNumberDocId,
+  toPartNumberSummary,
+} from "../../utils/partNumbers";
 
 const savePulse = keyframes`
   0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0.22); }
@@ -114,28 +121,32 @@ export default function RequestRow({ request, disableEditing = false }) {
     serial: "",
     work: "",
     notes: "",
+    partNumbersList: [""],
   });
   const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
   const [openChangeLog, setOpenChangeLog] = useState(false);
   const [historyActionFilter, setHistoryActionFilter] = useState(
-    CHANGE_ACTION_FILTER_ALL
+    CHANGE_ACTION_FILTER_ALL,
   );
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingDeleteDialog, setIsShowingDeleteDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
   const [showSavePulse, setShowSavePulse] = useState(false);
   const [isRequestDeletePending, setIsRequestDeletePending] = useState(false);
-  const [requestDeleteSnackbarOpen, setRequestDeleteSnackbarOpen] = useState(false);
+  const [requestDeleteSnackbarOpen, setRequestDeleteSnackbarOpen] =
+    useState(false);
   const [writeErrorSnackbarOpen, setWriteErrorSnackbarOpen] = useState(false);
   const [writeErrorMessage, setWriteErrorMessage] = useState("");
   const [retryAction, setRetryAction] = useState("");
   const [openWorkOrderSheet, setOpenWorkOrderSheet] = useState(false);
   const [openAddEquipmentSheet, setOpenAddEquipmentSheet] = useState(false);
+  const [openNoPartsDialog, setOpenNoPartsDialog] = useState(false);
+  const noPartsDialogResolverRef = useRef(null);
   const requestDeleteTimeoutRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const normalizedChangeLog = (request?.changeLog || []).map(
-    normalizeChangeLogEntry
+    normalizeChangeLogEntry,
   );
   const lastChangeEntry =
     normalizedChangeLog.length > 0
@@ -146,7 +157,7 @@ export default function RequestRow({ request, disableEditing = false }) {
     historyActionFilter === CHANGE_ACTION_FILTER_ALL
       ? normalizedChangeLog
       : normalizedChangeLog.filter(
-          (change) => change.actionType === historyActionFilter
+          (change) => change.actionType === historyActionFilter,
         );
 
   const getStatusChipProps = (status) => {
@@ -206,18 +217,35 @@ export default function RequestRow({ request, disableEditing = false }) {
     );
 
     onSnapshot(equipmentQuery, (querySnapshot) => {
-      setEquipment(
-        querySnapshot.docs.map((document) => ({
-          requestID: document.data().requestID,
-          model: document.data().model.toString().toUpperCase(),
-          stock: document.data().stock,
-          serial: document.data().serial.toString().toUpperCase(),
-          workOrder: document.data().workOrder || "",
-          work: document.data().work,
-          notes: document.data().notes,
-          changeLog: document.data().changeLog,
-        })),
-      );
+      const byStock = new Map();
+      querySnapshot.docs.forEach((document) => {
+        const data = document.data();
+        const stock = data.stock;
+        const candidate = {
+          requestID: data.requestID,
+          model: (data.model || "").toString().toUpperCase(),
+          stock,
+          serial: (data.serial || "").toString().toUpperCase(),
+          workOrder: data.workOrder || "",
+          work: data.work,
+          notes: data.notes,
+          partNumbersSummary: data.partNumbersSummary || "",
+          changeLog: data.changeLog,
+          _docId: document.id,
+        };
+
+        const existing = byStock.get(stock);
+        if (!existing) {
+          byStock.set(stock, candidate);
+          return;
+        }
+
+        if (existing._docId !== existing.stock && candidate._docId === candidate.stock) {
+          byStock.set(stock, candidate);
+        }
+      });
+
+      setEquipment(Array.from(byStock.values()).map(({ _docId, ...item }) => item));
     });
   }, [request.id, userProfile.branch]);
 
@@ -284,7 +312,7 @@ export default function RequestRow({ request, disableEditing = false }) {
       window.removeEventListener("request-shortcut-save", onShortcutSave);
       window.removeEventListener("request-shortcut-close", onShortcutClose);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     openWorkOrderSheet,
     openAddEquipmentSheet,
@@ -343,7 +371,10 @@ export default function RequestRow({ request, disableEditing = false }) {
         return;
       }
 
-      const compiledWorkOrder = compileRequestWorkOrder(equipment, equipmentWorkOrders);
+      const compiledWorkOrder = compileRequestWorkOrder(
+        equipment,
+        equipmentWorkOrders,
+      );
       const hadEquipmentWorkOrders = equipment.some((item) =>
         Boolean((item.workOrder || "").trim()),
       );
@@ -405,7 +436,7 @@ export default function RequestRow({ request, disableEditing = false }) {
     } catch (error) {
       showWriteError(
         "Could not save work order updates. Please retry.",
-        RETRY_ACTIONS.SAVE_WORK_ORDER
+        RETRY_ACTIONS.SAVE_WORK_ORDER,
       );
     }
   };
@@ -417,6 +448,7 @@ export default function RequestRow({ request, disableEditing = false }) {
       serial: "",
       work: "",
       notes: "",
+      partNumbersList: [""],
     });
     setOpenAddEquipmentSheet(true);
   };
@@ -432,10 +464,25 @@ export default function RequestRow({ request, disableEditing = false }) {
     }));
   };
 
+  const confirmNoPartsRequired = () =>
+    new Promise((resolve) => {
+      noPartsDialogResolverRef.current = resolve;
+      setOpenNoPartsDialog(true);
+    });
+
+  const closeNoPartsDialog = (confirmed) => {
+    setOpenNoPartsDialog(false);
+    if (noPartsDialogResolverRef.current) {
+      noPartsDialogResolverRef.current(confirmed);
+      noPartsDialogResolverRef.current = null;
+    }
+  };
+
   const saveNewEquipment = async () => {
     try {
       const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
-      const { model, stock, serial, work, notes } = newEquipment;
+      const { model, stock, serial, work, notes, partNumbersList } =
+        newEquipment;
 
       if (model === "" || stock === "" || serial === "" || work === "") {
         return;
@@ -449,6 +496,13 @@ export default function RequestRow({ request, disableEditing = false }) {
           timestamp,
         }),
       ];
+      const parsedPartNumbers = normalizePartNumbers(partNumbersList);
+      if (parsedPartNumbers.length === 0) {
+        const confirmedNoParts = await confirmNoPartsRequired();
+        if (!confirmedNoParts) {
+          return;
+        }
+      }
 
       const createdEquipment = {
         requestID: request.id,
@@ -458,6 +512,7 @@ export default function RequestRow({ request, disableEditing = false }) {
         serial,
         work,
         notes,
+        partNumbersSummary: toPartNumberSummary(parsedPartNumbers),
         changeLog,
       };
 
@@ -471,6 +526,29 @@ export default function RequestRow({ request, disableEditing = false }) {
         createdEquipment.stock,
       );
       await setDoc(equipmentRef, createdEquipment, { merge: true });
+      for (const partNumber of parsedPartNumbers) {
+        const partNumberRef = doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          request.id,
+          "equipment",
+          createdEquipment.stock,
+          "partNumbers",
+          toPartNumberDocId(partNumber),
+        );
+        await setDoc(
+          partNumberRef,
+          {
+            partNumber,
+            timestamp,
+            requestID: request.id,
+            equipmentStock: createdEquipment.stock,
+          },
+          { merge: true },
+        );
+      }
 
       const changeLogEntry = createChangeLogEntry({
         user: fullName,
@@ -499,6 +577,7 @@ export default function RequestRow({ request, disableEditing = false }) {
         serial,
         work,
         notes,
+        createdEquipment.partNumbersSummary,
         userProfile,
       );
 
@@ -507,7 +586,7 @@ export default function RequestRow({ request, disableEditing = false }) {
     } catch (error) {
       showWriteError(
         "Could not add equipment. Please retry.",
-        RETRY_ACTIONS.SAVE_EQUIPMENT
+        RETRY_ACTIONS.SAVE_EQUIPMENT,
       );
     }
   };
@@ -560,13 +639,42 @@ export default function RequestRow({ request, disableEditing = false }) {
     } catch (error) {
       showWriteError(
         "Could not update request status. Please retry.",
-        RETRY_ACTIONS.UPDATE_STATUS
+        RETRY_ACTIONS.UPDATE_STATUS,
       );
     } finally {
       setTimeout(() => {
         setIsShowingSpinner(false);
       }, 1000);
     }
+  };
+
+  const handlePartNumberRowChange = (index, value) => {
+    setNewEquipment((previous) => {
+      const nextPartNumbers = [...(previous.partNumbersList || [""])];
+      nextPartNumbers[index] = value.toUpperCase();
+      return { ...previous, partNumbersList: nextPartNumbers };
+    });
+  };
+
+  const handleAddPartNumberRow = () => {
+    setNewEquipment((previous) => ({
+      ...previous,
+      partNumbersList: [...(previous.partNumbersList || [""]), ""],
+    }));
+  };
+
+  const handleRemovePartNumberRow = (index) => {
+    setNewEquipment((previous) => {
+      const current = previous.partNumbersList || [""];
+      if (current.length <= 1) {
+        return { ...previous, partNumbersList: [""] };
+      }
+
+      return {
+        ...previous,
+        partNumbersList: current.filter((_, rowIndex) => rowIndex !== index),
+      };
+    });
   };
 
   const setPDFData = () => {
@@ -613,7 +721,7 @@ export default function RequestRow({ request, disableEditing = false }) {
         setIsRequestDeletePending(false);
         showWriteError(
           "Delete failed. Request was restored. Retry?",
-          RETRY_ACTIONS.DELETE_REQUEST
+          RETRY_ACTIONS.DELETE_REQUEST,
         );
       } finally {
         setRequestDeleteSnackbarOpen(false);
@@ -664,363 +772,397 @@ export default function RequestRow({ request, disableEditing = false }) {
     <React.Fragment>
       {!isRequestDeletePending ? (
         <>
-      <TableRow
-        key={request.id}
-        data-request-main-row="true"
-        sx={{
-          "& > *": { borderBottom: "unset" },
-          animation: showSavePulse ? `${savePulse} 650ms ease-out` : "none",
-        }}
-      >
-        <TableCell key="expand">
-          <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
-            <IconButton
-              aria-label="expand row"
-              size="small"
-              onClick={() => setOpen(!open)}
-            >
-              {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-            </IconButton>
-          </Tooltip>
-        </TableCell>
-
-        <TableCell key="model" align="left">
-          <Typography sx={{ fontWeight: "bold" }}>
-            {equipment[0]?.model}
-          </Typography>
-          <p>
-            <small>
-              {equipment.length > 1 ? `and ${equipment.length - 1} more` : ""}
-            </small>
-          </p>
-        </TableCell>
-
-        <TableCell key="salesman" align="left" scope="row">
-          <Typography component="p">{request.salesman}</Typography>
-          <Typography variant="caption">
-            {formatTimestampWithRelative(request.timestamp)}
-          </Typography>
-        </TableCell>
-
-        <TableCell key="workOrder" align="left">
-          {toWorkOrderString(request.workOrder)
-            .split(" / ")
-            .filter(Boolean)
-            .map((line, index) => (
-              <Typography
-                key={`wo-${request.id}-${index}`}
-                variant="caption"
-                sx={{ display: "block" }}
-              >
-                {line}
-              </Typography>
-            ))}
-          {toWorkOrderString(request.workOrder) ? null : "-"}
-        </TableCell>
-
-        <TableCell key="status" align="left">
-          <Tooltip title="Update Status">
-            <Chip
-              size="small"
-              label={request.status}
-              clickable
-              onClick={handleToggleConfirmDialog}
-              sx={{
-                minWidth: 115,
-                fontWeight: 600,
-                justifyContent: "center",
-              }}
-              {...getStatusChipProps(request.status)}
-            />
-          </Tooltip>
-          <Typography component="p" variant="caption" color="text.secondary">
-            {`Last updated by ${lastChangeEntry?.user || "Unknown"}${
-              lastChangeEntry?.timestamp
-                ? ` ${formatRelativeTimestamp(lastChangeEntry.timestamp)}`
-                : ""
-            }`}
-          </Typography>
-          <Typography component="p" variant="caption" color="text.secondary">
-            {lastChangeEntry?.timestamp || "No update history"}
-          </Typography>
-
-          <Dialog
-            onClose={handleCloseConfirmDialog}
-            open={isShowingConfirmDialog}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
-              }}
-            >
-              <DialogTitle>Confirm Update</DialogTitle>
-              {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Typography>Saving</Typography>
-                  <Spinner frame={false} />
-                </div>
-              ) : (
-                <div>
-                  <Typography>Update the request&apos;s status from</Typography>
-                  <Typography>{`"${request.status}" to "${statusUpdateText()}"?`}</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      onClick={handleCloseConfirmDialog}
-                    >
-                      Cancel
-                    </Button>
-                    <Button variant="contained" onClick={updateStatus}>
-                      Update
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Dialog>
-        </TableCell>
-
-        <TableCell
-          key="buttons"
-          align="center"
-          sx={{
-            position: "sticky",
-            right: 0,
-            zIndex: 2,
-            bgcolor: "background.paper",
-            borderLeft: "1px solid",
-            borderColor: "divider",
-            px: 0.5,
-          }}
-        >
-          <Stack direction="row" spacing={0.25} justifyContent="center">
-            <IconButton
-              aria-label={`Show request history ${request.id}`}
-              onClick={handleToggleChangeLog}
-              size="small"
-              sx={{ p: 0.75 }}
-            >
-              <Tooltip title="Show Changes">
-                <HistoryOutlined />
-              </Tooltip>
-            </IconButton>
-
-            <Dialog
-              onClose={handleCloseChangeLog}
-              open={openChangeLog}
-              fullWidth
-              maxWidth="sm"
-              PaperProps={{
-                sx: {
-                  height: { xs: "78vh", sm: 560 },
-                  maxHeight: "78vh",
-                },
-              }}
-            >
-              <DialogTitle>Request Change History</DialogTitle>
-              <Box sx={{ px: 2, pb: 1 }}>
-                <TextField
-                  size="small"
-                  select
-                  fullWidth
-                  label="Action Type"
-                  value={historyActionFilter}
-                  onChange={(event) => setHistoryActionFilter(event.target.value)}
-                >
-                  {historyActionOptions.map((option) => (
-                    <MenuItem key={`history-filter-${option.value}`} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              </Box>
-              <Box sx={{ px: 1.25, pb: 1.5, height: "100%", overflowY: "auto" }}>
-                <Timeline position="alternate">
-                  {visibleChangeLog.map((change, index) => (
-                    <TimelineItem key={`${change.timestamp}-${change.user}-${index}`}>
-                      <TimelineSeparator>
-                        <TimelineDot variant="outlined" color="primary" />
-                        {index + 1 !== visibleChangeLog.length ? (
-                          <TimelineConnector />
-                        ) : null}
-                      </TimelineSeparator>
-                      <TimelineContent>
-                        <p>
-                          <small>{formatTimestampWithRelative(change.timestamp)}</small>
-                        </p>
-                        <small>{change.user}</small>
-                        <p>
-                          <small>{change.summary}</small>
-                        </p>
-                        {change.details.length > 0
-                          ? change.details.map((detail, detailIndex) => (
-                              <p key={`${change.timestamp}-detail-${detailIndex}`}>
-                                <small>{detail}</small>
-                              </p>
-                            ))
-                          : null}
-                      </TimelineContent>
-                    </TimelineItem>
-                  ))}
-                </Timeline>
-              </Box>
-            </Dialog>
-
-            <Link
-              target="_blank"
-              rel="noopener noreferrer"
-              to="request-pdf"
-              onClick={setPDFData}
-            >
-              <IconButton aria-label={`Print request ${request.id}`} size="small" sx={{ p: 0.75 }}>
-                <Tooltip title="Print">
-                  <PrintOutlined />
-                </Tooltip>
-              </IconButton>
-            </Link>
-
-            {disableEditing ? null : (
-              <IconButton
-                onClick={handleOpenWorkOrderSheet}
-                data-request-edit-btn="true"
-                aria-label={`Edit request work order ${request.id}`}
-                size="small"
-                sx={{ p: 0.75 }}
-              >
-                <Tooltip title="Edit Work Order">
-                  <EditRounded color="primary" sx={{ fontSize: 18 }} />
-                </Tooltip>
-              </IconButton>
-            )}
-          </Stack>
-
-          <Dialog
-            onClose={handleCloseDeleteDialog}
-            open={isShowingDeleteDialog}
-          >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                margin: "5px 25px 25px 25px",
-              }}
-            >
-              <DialogTitle>Confirm Delete</DialogTitle>
-              {isShowingSpinner ? (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignContent: "center",
-                    justifySelf: "center",
-                    alignSelf: "center",
-                  }}
-                >
-                  <Typography>Saving</Typography>
-                  <Spinner frame={false} />
-                </div>
-              ) : (
-                <div>
-                  <Typography>Are you sure you want to delete</Typography>
-                  <Typography>delete this request?</Typography>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                      marginTop: "25px",
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      onClick={handleCloseDeleteDialog}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="error"
-                      onClick={deleteRequest}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </Dialog>
-        </TableCell>
-      </TableRow>
-
-      <TableRow key="equipmentRow">
-        <TableCell
-          key="equipmentCell"
-          style={{ paddingBottom: 0, paddingTop: 0 }}
-          colSpan={6}
-        >
-          <Collapse
-            in={open}
-            timeout={{ enter: 260, exit: 200 }}
-            easing={{
-              enter: "cubic-bezier(0.2, 0, 0, 1)",
-              exit: "cubic-bezier(0.4, 0, 1, 1)",
+          <TableRow
+            key={request.id}
+            data-request-main-row="true"
+            sx={{
+              "& > *": { borderBottom: "unset" },
+              animation: showSavePulse ? `${savePulse} 650ms ease-out` : "none",
             }}
-            unmountOnExit
           >
-            <Box margin={1}>
-              <Typography variant="subtitle1" gutterBottom component="div">
-                {`Request ID: ${request.id}`}
+            <TableCell key="expand">
+              <Tooltip title={open ? "Hide Equipment" : "Show Equipment"}>
+                <IconButton
+                  aria-label="expand row"
+                  size="small"
+                  onClick={() => setOpen(!open)}
+                >
+                  {open ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                </IconButton>
+              </Tooltip>
+            </TableCell>
+
+            <TableCell key="model" align="left">
+              <Typography sx={{ fontWeight: "bold" }}>
+                {equipment[0]?.model}
               </Typography>
-              <Table size="small" aria-label="equipment">
-                <EquipmentTableHeaderView />
-                <TableBody>
-                  {equipment.map((item) => (
-                    <EquipmentRow
-                      key={item?.stock}
-                      request={request}
-                      item={item}
-                      readOnly={disableEditing}
-                    />
-                  ))}
-                </TableBody>
-                <TableFooter>
-                  <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
-                    <TableCell colSpan={6} align="left">
-                      {disableEditing ? null : (
+              <p>
+                <small>
+                  {equipment.length > 1
+                    ? `and ${equipment.length - 1} more`
+                    : ""}
+                </small>
+              </p>
+            </TableCell>
+
+            <TableCell key="salesman" align="left" scope="row">
+              <Typography component="p">{request.salesman}</Typography>
+              <Typography variant="caption">
+                {formatTimestampWithRelative(request.timestamp)}
+              </Typography>
+            </TableCell>
+
+            <TableCell key="workOrder" align="left">
+              {toWorkOrderString(request.workOrder)
+                .split(" / ")
+                .filter(Boolean)
+                .map((line, index) => (
+                  <Typography
+                    key={`wo-${request.id}-${index}`}
+                    variant="caption"
+                    sx={{ display: "block" }}
+                  >
+                    {line}
+                  </Typography>
+                ))}
+              {toWorkOrderString(request.workOrder) ? null : "-"}
+            </TableCell>
+
+            <TableCell key="status" align="left">
+              <Tooltip title="Update Status">
+                <Chip
+                  size="small"
+                  label={request.status}
+                  clickable
+                  onClick={handleToggleConfirmDialog}
+                  sx={{
+                    minWidth: 115,
+                    fontWeight: 600,
+                    justifyContent: "center",
+                  }}
+                  {...getStatusChipProps(request.status)}
+                />
+              </Tooltip>
+              <Typography
+                component="p"
+                variant="caption"
+                color="text.secondary"
+              >
+                {`Last updated by ${lastChangeEntry?.user || "Unknown"}${
+                  lastChangeEntry?.timestamp
+                    ? ` ${formatRelativeTimestamp(lastChangeEntry.timestamp)}`
+                    : ""
+                }`}
+              </Typography>
+              <Typography
+                component="p"
+                variant="caption"
+                color="text.secondary"
+              >
+                {lastChangeEntry?.timestamp || "No update history"}
+              </Typography>
+
+              <Dialog
+                onClose={handleCloseConfirmDialog}
+                open={isShowingConfirmDialog}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    margin: "5px 25px 25px 25px",
+                  }}
+                >
+                  <DialogTitle>Confirm Update</DialogTitle>
+                  {isShowingSpinner ? (
+                    <div
+                      style={{
+                        justifyContent: "center",
+                        alignContent: "center",
+                        justifySelf: "center",
+                        alignSelf: "center",
+                      }}
+                    >
+                      <Typography>Saving</Typography>
+                      <Spinner frame={false} />
+                    </div>
+                  ) : (
+                    <div>
+                      <Typography>
+                        Update the request&apos;s status from
+                      </Typography>
+                      <Typography>{`"${request.status}" to "${statusUpdateText()}"?`}</Typography>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          marginTop: "25px",
+                        }}
+                      >
                         <Button
-                          startIcon={<AddRounded />}
                           variant="outlined"
-                          size="small"
-                          onClick={handleOpenAddEquipmentSheet}
+                          color="error"
+                          onClick={handleCloseConfirmDialog}
                         >
-                          Add Equipment
+                          Cancel
                         </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </Box>
-          </Collapse>
-        </TableCell>
-      </TableRow>
+                        <Button variant="contained" onClick={updateStatus}>
+                          Update
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Dialog>
+            </TableCell>
+
+            <TableCell
+              key="buttons"
+              align="center"
+              sx={{
+                position: "sticky",
+                right: 0,
+                zIndex: 2,
+                bgcolor: "background.paper",
+                borderLeft: "1px solid",
+                borderColor: "divider",
+                px: 0.5,
+              }}
+            >
+              <Stack direction="row" spacing={0.25} justifyContent="center">
+                <IconButton
+                  aria-label={`Show request history ${request.id}`}
+                  onClick={handleToggleChangeLog}
+                  size="small"
+                  sx={{ p: 0.75 }}
+                >
+                  <Tooltip title="Show Changes">
+                    <HistoryOutlined />
+                  </Tooltip>
+                </IconButton>
+
+                <Dialog
+                  onClose={handleCloseChangeLog}
+                  open={openChangeLog}
+                  fullWidth
+                  maxWidth="sm"
+                  PaperProps={{
+                    sx: {
+                      height: { xs: "78vh", sm: 560 },
+                      maxHeight: "78vh",
+                    },
+                  }}
+                >
+                  <DialogTitle>Request Change History</DialogTitle>
+                  <Box sx={{ px: 2, pb: 1 }}>
+                    <TextField
+                      size="small"
+                      select
+                      fullWidth
+                      label="Action Type"
+                      value={historyActionFilter}
+                      onChange={(event) =>
+                        setHistoryActionFilter(event.target.value)
+                      }
+                    >
+                      {historyActionOptions.map((option) => (
+                        <MenuItem
+                          key={`history-filter-${option.value}`}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </MenuItem>
+                      ))}
+                    </TextField>
+                  </Box>
+                  <Box
+                    sx={{
+                      px: 1.25,
+                      pb: 1.5,
+                      height: "100%",
+                      overflowY: "auto",
+                    }}
+                  >
+                    <Timeline position="alternate">
+                      {visibleChangeLog.map((change, index) => (
+                        <TimelineItem
+                          key={`${change.timestamp}-${change.user}-${index}`}
+                        >
+                          <TimelineSeparator>
+                            <TimelineDot variant="outlined" color="primary" />
+                            {index + 1 !== visibleChangeLog.length ? (
+                              <TimelineConnector />
+                            ) : null}
+                          </TimelineSeparator>
+                          <TimelineContent>
+                            <p>
+                              <small>
+                                {formatTimestampWithRelative(change.timestamp)}
+                              </small>
+                            </p>
+                            <small>{change.user}</small>
+                            <p>
+                              <small>{change.summary}</small>
+                            </p>
+                            {change.details.length > 0
+                              ? change.details.map((detail, detailIndex) => (
+                                  <p
+                                    key={`${change.timestamp}-detail-${detailIndex}`}
+                                  >
+                                    <small>{detail}</small>
+                                  </p>
+                                ))
+                              : null}
+                          </TimelineContent>
+                        </TimelineItem>
+                      ))}
+                    </Timeline>
+                  </Box>
+                </Dialog>
+
+                <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  to="request-pdf"
+                  onClick={setPDFData}
+                >
+                  <IconButton
+                    aria-label={`Print request ${request.id}`}
+                    size="small"
+                    sx={{ p: 0.75 }}
+                  >
+                    <Tooltip title="Print">
+                      <PrintOutlined />
+                    </Tooltip>
+                  </IconButton>
+                </Link>
+
+                {disableEditing ? null : (
+                  <IconButton
+                    onClick={handleOpenWorkOrderSheet}
+                    data-request-edit-btn="true"
+                    aria-label={`Edit request work order ${request.id}`}
+                    size="small"
+                    sx={{ p: 0.75 }}
+                  >
+                    <Tooltip title="Edit Work Order">
+                      <EditRounded color="primary" sx={{ fontSize: 18 }} />
+                    </Tooltip>
+                  </IconButton>
+                )}
+              </Stack>
+
+              <Dialog
+                onClose={handleCloseDeleteDialog}
+                open={isShowingDeleteDialog}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    margin: "5px 25px 25px 25px",
+                  }}
+                >
+                  <DialogTitle>Confirm Delete</DialogTitle>
+                  {isShowingSpinner ? (
+                    <div
+                      style={{
+                        justifyContent: "center",
+                        alignContent: "center",
+                        justifySelf: "center",
+                        alignSelf: "center",
+                      }}
+                    >
+                      <Typography>Saving</Typography>
+                      <Spinner frame={false} />
+                    </div>
+                  ) : (
+                    <div>
+                      <Typography>Are you sure you want to delete</Typography>
+                      <Typography>delete this request?</Typography>
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "row",
+                          justifyContent: "space-between",
+                          marginTop: "25px",
+                        }}
+                      >
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          onClick={handleCloseDeleteDialog}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="error"
+                          onClick={deleteRequest}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Dialog>
+            </TableCell>
+          </TableRow>
+
+          <TableRow key="equipmentRow">
+            <TableCell
+              key="equipmentCell"
+              style={{ paddingBottom: 0, paddingTop: 0 }}
+              colSpan={6}
+            >
+              <Collapse
+                in={open}
+                timeout={{ enter: 260, exit: 200 }}
+                easing={{
+                  enter: "cubic-bezier(0.2, 0, 0, 1)",
+                  exit: "cubic-bezier(0.4, 0, 1, 1)",
+                }}
+                unmountOnExit
+              >
+                <Box margin={1}>
+                  <Typography variant="subtitle1" gutterBottom component="div">
+                    {`Request ID: ${request.id}`}
+                  </Typography>
+                  <Table size="small" aria-label="equipment">
+                    <EquipmentTableHeaderView />
+                    <TableBody>
+                      {equipment.map((item) => (
+                        <EquipmentRow
+                          key={item?.stock}
+                          request={request}
+                          item={item}
+                          readOnly={disableEditing}
+                        />
+                      ))}
+                    </TableBody>
+                    <TableFooter>
+                      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+                        <TableCell colSpan={7} align="left">
+                          {disableEditing ? null : (
+                            <Button
+                              startIcon={<AddRounded />}
+                              variant="outlined"
+                              size="small"
+                              onClick={handleOpenAddEquipmentSheet}
+                            >
+                              Add Equipment
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    </TableFooter>
+                  </Table>
+                </Box>
+              </Collapse>
+            </TableCell>
+          </TableRow>
         </>
       ) : null}
 
@@ -1037,11 +1179,19 @@ export default function RequestRow({ request, disableEditing = false }) {
           </Typography>
           <Stack
             spacing={1.25}
-            sx={{ maxHeight: isMobile ? "unset" : 340, overflowY: "auto", pr: 0.25 }}
+            sx={{
+              maxHeight: isMobile ? "unset" : 340,
+              overflowY: "auto",
+              pr: 0.25,
+            }}
           >
             {equipment.map((item) => (
               <Box key={`wo-field-${item.stock}`}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ display: "block", mb: 0.5 }}
+                >
                   {`WO for: ${item.model} - ${item.stock}`}
                 </Typography>
                 <TextField
@@ -1161,6 +1311,49 @@ export default function RequestRow({ request, disableEditing = false }) {
                 handleEquipmentFieldChange("notes", event.target.value)
               }
             />
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Part Numbers</Typography>
+              {(newEquipment.partNumbersList || [""]).map(
+                (partNumber, index) => (
+                  <Stack
+                    key={`active-add-eq-part-${index}`}
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={1}
+                  >
+                    <TextField
+                      fullWidth
+                      size="small"
+                      label={`Part Number ${index + 1}`}
+                      value={partNumber}
+                      onChange={(event) =>
+                        handlePartNumberRowChange(index, event.target.value)
+                      }
+                    />
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="inherit"
+                      onClick={() => handleRemovePartNumberRow(index)}
+                      disabled={
+                        (newEquipment.partNumbersList || [""]).length === 1 &&
+                        !partNumber
+                      }
+                    >
+                      Remove
+                    </Button>
+                  </Stack>
+                ),
+              )}
+              <Box>
+                <Button
+                  size="small"
+                  variant="text"
+                  onClick={handleAddPartNumberRow}
+                >
+                  Add Part Number
+                </Button>
+              </Box>
+            </Stack>
           </Stack>
 
           <Stack
@@ -1186,6 +1379,27 @@ export default function RequestRow({ request, disableEditing = false }) {
             </Button>
           </Stack>
         </Box>
+      </Dialog>
+
+      <Dialog
+        open={openNoPartsDialog}
+        onClose={() => closeNoPartsDialog(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Confirm No Parts Required</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            This equipment has no part numbers attached. Please confirm that no
+            parts are required for this equipment or add the required parts now.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => closeNoPartsDialog(false)}>Add Parts</Button>
+          <Button variant="contained" onClick={() => closeNoPartsDialog(true)}>
+            No Parts Required
+          </Button>
+        </DialogActions>
       </Dialog>
 
       <Snackbar

@@ -20,6 +20,11 @@ const roles = {
   transport: ["admin", "service"],
 };
 
+const formatPartNumbersForEmail = (partNumbersSummary) => {
+  const normalized = String(partNumbersSummary || "").trim();
+  return normalized === "" ? "None required" : normalized;
+};
+
 // Sets recipients based on type of send email called
 const setRecipients = async (recipientRoles, userProfile, salesman) => {
   if (userProfile) {
@@ -177,6 +182,7 @@ const sendNewEquipmentEmail = async (
   serial,
   work,
   notes,
+  partNumbersSummary,
   userProfile
 ) => {
   console.log(equipment);
@@ -207,6 +213,9 @@ const sendNewEquipmentEmail = async (
                     <p>Stock Number: ${stock}</p>
                     <p>Serial Number: ${serial}</p>
                     <p>Work Required: ${work}</p>
+                    <p>Part Numbers: ${formatPartNumbersForEmail(
+                      partNumbersSummary
+                    )}</p>
                     <p>Additional Notes: ${notes}</p>
                 </section>
             <body>`;
@@ -378,6 +387,9 @@ const sendNewRequestEmail = async (
                     <p>Stock Number: ${equipmentList[i].stock}</p>
                     <p>Serial Number: ${equipmentList[i].serial}</p>
                     <p>Work Required: ${equipmentList[i].work}</p>
+                    <p>Part Numbers: ${formatPartNumbersForEmail(
+                      equipmentList[i].partNumbersSummary
+                    )}</p>
                     <p>Additional Notes: ${equipmentList[i].notes}</p>
                 </section>`;
   }
@@ -560,7 +572,8 @@ const sendTransportStatusEmail = async (
   endDate,
   transportRequest,
   fullName,
-  userProfile
+  userProfile,
+  customerAccessLink = ""
 ) => {
   // creates the paramaters for the email template
   const timestamp = moment().format("DD-MMM-yyyy hh:mmA");
@@ -600,6 +613,11 @@ const sendTransportStatusEmail = async (
                     <p><strong>Scheduled ${transportRequest.type} Time Window:</strong> ${moment(
         startDate
       ).format("LT")} - ${moment(endDate).format("LT")}</p>
+                    ${
+                      customerAccessLink
+                        ? `<p><strong>Customer View Link:</strong> <a href="${customerAccessLink}">${customerAccessLink}</a></p>`
+                        : ""
+                    }
                     <p>Updated By: ${fullName}</p>
                 <body>`;
     }

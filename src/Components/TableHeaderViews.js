@@ -24,7 +24,7 @@ function TransportTableHeaderView() {
 }
 
 function EquipmentTableHeaderView() {
-  return <HeaderRow headers={["Model", "ID #'s", "Work Order", "Work Require", "Notes"]} />;
+  return <HeaderRow headers={["Model", "ID #'s", "Work Order", "Work Required", "Part Numbers", "Notes"]} />;
 }
 
 function TransportEquipmentTableHeaderView() {

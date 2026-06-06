@@ -11,12 +11,16 @@ import TransportEquipmentRow from "./TransportEquipmentRows";
 import TransportUpdateDialog from "../TransportUpdateDialog";
 import EditTransportView from "../EditTransportView";
 import {
+  Alert,
   Box,
   Button,
+  Card,
   Collapse,
+  Divider,
   Dialog,
   DialogTitle,
   IconButton,
+  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -32,6 +36,7 @@ import {
   AgricultureRounded,
   CheckRounded,
   CloseRounded,
+  ContentCopyRounded,
   HistoryOutlined,
   KeyboardArrowDownRounded,
   KeyboardArrowUpRounded,
@@ -49,9 +54,10 @@ import {
 // Request row view:
 export default function TransportRow(props) {
   //#region State Properties
-  const { request } = props;
+  const { request, cardMode = false } = props;
   const [{ userProfile }] = useStateValue();
   const [open, setOpen] = useState(false);
+  const [openCustomerInfo, setOpenCustomerInfo] = useState(false);
   var [model, setModel] = useState("");
   var [stock, setStock] = useState("");
   var [serial, setSerial] = useState("");
@@ -61,6 +67,7 @@ export default function TransportRow(props) {
   const [openChangeLog, setOpenChangeLog] = useState(false);
   const [isShowingConfirmDialog, setIsShowingConfirmDialog] = useState(false);
   const [isShowingSpinner, setIsShowingSpinner] = useState(false);
+  const [copyLinkSnackbarOpen, setCopyLinkSnackbarOpen] = useState(false);
   
   // #endregion
 
@@ -165,6 +172,308 @@ export default function TransportRow(props) {
     );
   };
 
+  const copyCustomerLink = async () => {
+    if (!request.customerAccessLink) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(request.customerAccessLink);
+      setCopyLinkSnackbarOpen(true);
+    } catch (error) {
+      window.open(request.customerAccessLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  // Request row UI:
+  if (cardMode) {
+    return (
+      <React.Fragment>
+        <Card sx={{ p: 1.25 }}>
+          <Stack spacing={0.85}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr auto auto" },
+                gap: 0.9,
+                alignItems: "start",
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                  {request.type}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                  {`WO#: ${request.workOrder || "-"}`}
+                </Typography>
+                <Typography variant="caption" color="text.secondary" noWrap>
+                  {request.equipment?.[0]?.model || "-"}
+                  {request.equipment?.length > 1
+                    ? ` and ${request.equipment.length - 1} more`
+                    : ""}
+                </Typography>
+              </Box>
+
+              <Box sx={{ justifySelf: { xs: "start", sm: "center" } }}>
+                <TransportUpdateDialog
+                  request={request}
+                  handleCloseConfirmDialog={handleCloseConfirmDialog}
+                  isShowingConfirmDialog={isShowingConfirmDialog}
+                  handleToggleConfirmDialog={handleToggleConfirmDialog}
+                  fullName={fullName}
+                  userProfile={userProfile}
+                  isShowingSpinner={isShowingSpinner}
+                  setIsShowingSpinner={setIsShowingSpinner}
+                />
+              </Box>
+
+              <Stack direction="row" spacing={0.25} justifySelf={{ xs: "start", sm: "end" }}>
+                <IconButton aria-label="show changes" onClick={handleToggleChangeLog} size="small">
+                  <Tooltip title="Show Changes">
+                    <HistoryOutlined />
+                  </Tooltip>
+                </IconButton>
+                <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  to={"transport-pdf"}
+                  onClick={setPDFData}
+                >
+                  <IconButton aria-label="print request" size="small">
+                    <Tooltip title="Print">
+                      <PrintOutlined />
+                    </Tooltip>
+                  </IconButton>
+                </Link>
+                <EditTransportView transportRequest={request} />
+              </Stack>
+
+              <Box
+                sx={{
+                  gridColumn: "1 / -1",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, whiteSpace: "normal", wordBreak: "break-word" }}
+                >
+                  {request.name}
+                </Typography>
+                {request.customerAccessLink ? (
+                  <Stack direction="row" spacing={0.25} alignItems="center" sx={{ flexShrink: 0 }}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      component="a"
+                      href={request.customerAccessLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ px: 0.5, minWidth: 0, whiteSpace: "nowrap" }}
+                    >
+                      Customer View
+                    </Button>
+                    <IconButton
+                      size="small"
+                      aria-label="Copy customer view link"
+                      onClick={copyCustomerLink}
+                    >
+                      <ContentCopyRounded fontSize="inherit" />
+                    </IconButton>
+                  </Stack>
+                ) : null}
+              </Box>
+            </Box>
+
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={0.75}
+              justifyContent="flex-start"
+              alignItems={{ xs: "stretch", sm: "center" }}
+            >
+              <Button
+                size="small"
+                variant="text"
+                startIcon={openCustomerInfo ? <KeyboardArrowUpRounded /> : <KeyboardArrowDownRounded />}
+                onClick={() => setOpenCustomerInfo((previous) => !previous)}
+                sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}
+              >
+                {openCustomerInfo ? "Hide Customer Info" : "Show Customer Info"}
+              </Button>
+              <Button
+                size="small"
+                variant="text"
+                startIcon={open ? <KeyboardArrowUpRounded /> : <KeyboardArrowDownRounded />}
+                onClick={() => setOpen(!open)}
+                sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}
+              >
+                {open ? "Hide Equipment" : "Show Equipment"}
+              </Button>
+            </Stack>
+
+          </Stack>
+
+          <Collapse in={openCustomerInfo} timeout="auto" unmountOnExit>
+            <Divider sx={{ my: 1 }} />
+            <Stack spacing={0.35}>
+              <Typography variant="caption" color="text.secondary">
+                {`Customer: ${request.name || "-"}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Phone: ${request.phone || "-"}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Address: ${request.street || "-"}, ${request.city || "-"}, ${request.state || "-"} ${request.zip || "-"}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Requested Date: ${request.requestedDate || "-"}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Status Updated: ${request.statusTimestamp || "-"}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                {`Notes: ${request.notes || "-"}`}
+              </Typography>
+            </Stack>
+          </Collapse>
+
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Divider sx={{ my: 1 }} />
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                {`Request ID: ${request.id}`}
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 0.5 }}>
+                {`Created By: ${request.salesman}`}
+              </Typography>
+              <Table size="small" aria-label="equipment">
+                <TransportEquipmentTableHeaderView />
+                <TableBody>
+                  {request.equipment.map((item) => (
+                    <TransportEquipmentRow key={item?.id} request={request} item={item} />
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  {isShowingAddEquipment ? (
+                    <TableRow key="addEquipmentRow" sx={{ "& > *": { borderBottom: "unset" } }}>
+                      <TableCell key="addModel" component="th" scope="row">
+                        <TextField
+                          variant="outlined"
+                          label="Model"
+                          size="small"
+                          onChange={(e) => setModel(e.target.value.toUpperCase())}
+                          value={model}
+                        />
+                      </TableCell>
+
+                      <TableCell key="addIds">
+                        <br />
+                        <p>
+                          <TextField
+                            variant="outlined"
+                            label="Stock"
+                            size="small"
+                            onChange={(e) => setStock(e.target.value)}
+                            value={stock}
+                          />
+                        </p>
+                        <br />
+                        <p>
+                          <TextField
+                            variant="outlined"
+                            label="Serial"
+                            size="small"
+                            onChange={(e) => setSerial(e.target.value.toUpperCase())}
+                            value={serial}
+                          />
+                        </p>
+                      </TableCell>
+
+                      <TableCell key="addNotes">
+                        <TextField
+                          variant="outlined"
+                          label="Notes"
+                          size="small"
+                          onChange={(e) => setNotes(e.target.value)}
+                          value={notes}
+                        />
+                      </TableCell>
+
+                      <TableCell key="saveAddButton" align="center">
+                        <IconButton style={{ fontSize: 20 }} onClick={addEquipment}>
+                          {model !== "" && stock !== "" && serial !== "" ? (
+                            <Tooltip title="Save">
+                              <CheckRounded color="primary" style={{ fontSize: 18 }} />
+                            </Tooltip>
+                          ) : (
+                            <Tooltip title="Cancel">
+                              <CloseRounded color="error" style={{ fontSize: 18 }} />
+                            </Tooltip>
+                          )}
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                  {!isShowingAddEquipment ? (
+                    <TableRow key="addButtonRow" sx={{ "& > *": { borderBottom: "unset" } }}>
+                      <TableCell key="addButtonCell">
+                        <Tooltip title="Add Equipment">
+                          <Button
+                            startIcon={[<AddRounded />, <AgricultureRounded />]}
+                            onClick={addEquipment}
+                          />
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ) : null}
+                </TableFooter>
+              </Table>
+            </Box>
+          </Collapse>
+        </Card>
+
+        <Dialog onClose={handleCloseChangeLog} open={openChangeLog}>
+          <DialogTitle>Request Change History</DialogTitle>
+          <Timeline position="alternate">
+            {request.changeLog.map((change, index) => (
+              <TimelineItem key={index}>
+                <TimelineSeparator>
+                  <TimelineDot variant="outlined" color="primary" />
+                  {request.changeLog.indexOf(change) + 1 !== request.changeLog.length ? (
+                    <TimelineConnector />
+                  ) : null}
+                </TimelineSeparator>
+                <TimelineContent>
+                  <p>
+                    <small>{change.timestamp}</small>
+                  </p>
+                  <small>{change.user}</small>
+                  <p>
+                    <small>{change.change}</small>
+                  </p>
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </Dialog>
+
+        <Snackbar
+          open={copyLinkSnackbarOpen}
+          autoHideDuration={2200}
+          onClose={() => setCopyLinkSnackbarOpen(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert severity="success" onClose={() => setCopyLinkSnackbarOpen(false)}>
+            Customer link copied
+          </Alert>
+        </Snackbar>
+      </React.Fragment>
+    );
+  }
+
   // Request row UI:
   return (
     <React.Fragment>
@@ -195,9 +504,52 @@ export default function TransportRow(props) {
         </TableCell>
 
         <TableCell key="model" align="left">
-          <Typography style={{ fontWeight: "bold" }}>
-            {request.name}
-          </Typography>
+          <Stack
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 1,
+              width: "100%",
+            }}
+          >
+            <Typography
+              style={{
+                fontWeight: "bold",
+                whiteSpace: "normal",
+                wordBreak: "break-word",
+              }}
+            >
+              {request.name}
+            </Typography>
+            {request.customerAccessLink ? (
+              <Stack
+                direction="row"
+                spacing={0.25}
+                alignItems="center"
+                sx={{ pl: 0.5, flexShrink: 0 }}
+              >
+                <Button
+                  size="small"
+                  variant="text"
+                  component="a"
+                  href={request.customerAccessLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{ px: 0.5, minWidth: 0, whiteSpace: "nowrap" }}
+                >
+                  Customer View
+                </Button>
+                <IconButton
+                  size="small"
+                  aria-label="Copy customer view link"
+                  onClick={copyCustomerLink}
+                >
+                  <ContentCopyRounded fontSize="inherit" />
+                </IconButton>
+              </Stack>
+            ) : null}
+          </Stack>
           <Typography variant="body2">{request.equipment[0]?.model}</Typography>
           <Typography variant="caption">
             {request.equipment?.length > 1
@@ -280,6 +632,17 @@ export default function TransportRow(props) {
           
         </TableCell>
       </TableRow>
+
+      <Snackbar
+        open={copyLinkSnackbarOpen}
+        autoHideDuration={2200}
+        onClose={() => setCopyLinkSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity="success" onClose={() => setCopyLinkSnackbarOpen(false)}>
+          Customer link copied
+        </Alert>
+      </Snackbar>
 
       <TableRow key="equipmentRow">
         <TableCell

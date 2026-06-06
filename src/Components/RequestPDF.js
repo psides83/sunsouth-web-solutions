@@ -74,6 +74,9 @@ export const RequestPDF = ({ request, equipment }) => (
           <Text style={styles.text}>{`Stock:   ${item.stock}`}</Text>
           <Text style={styles.text}>{`Serial:   ${item.serial}`}</Text>
           <Text style={styles.text}>{`Work:    ${item.work}`}</Text>
+          <Text style={styles.text}>{`Part Numbers:   ${
+            item.partNumbersSummary || "None required"
+          }`}</Text>
           <Text style={styles.text}>{`Notes:   ${item.notes}`}</Text>
         </View>
       ))}

@@ -36,6 +36,10 @@ import {
   LocalShippingRounded,
   SendRounded,
 } from "@mui/icons-material";
+import {
+  buildTransportCustomerAccessLink,
+  createTransportAccessToken,
+} from "../utils/transportCustomerAccess";
 
 export default function EditTransportView(props) {
   //#region State Properties
@@ -282,6 +286,21 @@ export default function EditTransportView(props) {
 
     transportRequest.changeLog.push(changeLogEntry);
 
+    let customerAccessToken = transportRequest.customerAccessToken || "";
+    let customerAccessLink = transportRequest.customerAccessLink || "";
+    if (status === "Scheduled") {
+      if (!customerAccessToken) {
+        customerAccessToken = createTransportAccessToken();
+      }
+
+      customerAccessLink = buildTransportCustomerAccessLink({
+        origin: window.location.origin,
+        branch: userProfile.branch,
+        requestId: transportRequest.id,
+        token: customerAccessToken,
+      });
+    }
+
     const firestoreTransportRequest = {
       workOrder: workOrder,
       status: status,
@@ -297,6 +316,10 @@ export default function EditTransportView(props) {
       type: type,
       hasTrade: hasTrade,
       notes: notes,
+      customerAccessToken,
+      customerAccessLink,
+      customerAccessCreatedAt:
+        transportRequest.customerAccessCreatedAt || moment().toISOString(),
       changeLog: transportRequest.changeLog,
     };
 

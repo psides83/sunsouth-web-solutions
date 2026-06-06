@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -28,6 +29,8 @@ import {
   Divider,
   Drawer,
   Dialog,
+  DialogActions,
+  DialogContent,
   DialogTitle,
   IconButton,
   MenuItem,
@@ -72,6 +75,11 @@ import {
   getChangeLogActionOptions,
   normalizeChangeLogEntry,
 } from "../../utils/changeLog";
+import {
+  normalizePartNumbers,
+  toPartNumberDocId,
+  toPartNumberSummary,
+} from "../../utils/partNumbers";
 import useAlgoliaRequestSearch from "../../hooks/useAlgoliaRequestSearch";
 
 const toWorkOrderString = (workOrder) => {
@@ -139,6 +147,8 @@ export default function ActiveRequestsTable() {
   const [openEditEquipmentDialog, setOpenEditEquipmentDialog] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState(null);
   const [openAddEquipmentDialog, setOpenAddEquipmentDialog] = useState(false);
+  const [openNoPartsDialog, setOpenNoPartsDialog] = useState(false);
+  const noPartsDialogResolverRef = useRef(null);
   const [completedSearchResults, setCompletedSearchResults] = useState([]);
   const [isLoadingCompletedSearchResults, setIsLoadingCompletedSearchResults] =
     useState(false);
@@ -149,6 +159,7 @@ export default function ActiveRequestsTable() {
     workOrder: "",
     work: "",
     notes: "",
+    partNumbersList: [""],
   });
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -559,16 +570,35 @@ export default function ActiveRequestsTable() {
         "equipment",
       ),
     );
+    const byStock = new Map();
+    equipmentSnapshot.docs.forEach((equipmentDoc) => {
+      const data = equipmentDoc.data();
+      const stock = data.stock || "";
+      const candidate = {
+        model: data.model || "",
+        stock,
+        serial: data.serial || "",
+        workOrder: data.workOrder || "",
+        work: data.work || "",
+        notes: data.notes || "",
+        partNumbersSummary: data.partNumbersSummary || "",
+        requestID: request.id,
+        _docId: equipmentDoc.id,
+      };
 
-    return equipmentSnapshot.docs.map((equipmentDoc) => ({
-      model: equipmentDoc.data().model || "",
-      stock: equipmentDoc.data().stock || "",
-      serial: equipmentDoc.data().serial || "",
-      workOrder: equipmentDoc.data().workOrder || "",
-      work: equipmentDoc.data().work || "",
-      notes: equipmentDoc.data().notes || "",
-      requestID: request.id,
-    }));
+      const existing = byStock.get(stock);
+      if (!existing) {
+        byStock.set(stock, candidate);
+        return;
+      }
+
+      // Prefer canonical record whose document id matches stock.
+      if (existing._docId !== existing.stock && candidate._docId === candidate.stock) {
+        byStock.set(stock, candidate);
+      }
+    });
+
+    return Array.from(byStock.values()).map(({ _docId, ...item }) => item);
   };
 
   const openDetails = async (request) => {
@@ -778,8 +808,35 @@ export default function ActiveRequestsTable() {
     );
   }, [historyActionFilter, historyChangeLog]);
 
-  const handleOpenEditEquipmentDialog = (item) => {
-    setEditingEquipment({ ...item });
+  const handleOpenEditEquipmentDialog = async (item) => {
+    const originalStock = item.originalStock || item.stock;
+    let existingPartNumbers = [""];
+    try {
+      const partNumbersSnapshot = await getDocs(
+        collection(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          selectedRequest.id,
+          "equipment",
+          originalStock,
+          "partNumbers",
+        ),
+      );
+      const parsed = partNumbersSnapshot.docs
+        .map((partDoc) => partDoc.data().partNumber || "")
+        .filter(Boolean);
+      existingPartNumbers = parsed.length > 0 ? parsed : [""];
+    } catch (error) {
+      existingPartNumbers = [""];
+    }
+
+    setEditingEquipment({
+      ...item,
+      originalStock,
+      partNumbersList: existingPartNumbers,
+    });
     setOpenEditEquipmentDialog(true);
   };
 
@@ -792,10 +849,58 @@ export default function ActiveRequestsTable() {
     setEditingEquipment((previous) => ({ ...previous, [field]: value }));
   };
 
+  const handleEditPartNumberRowChange = (index, value) => {
+    setEditingEquipment((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      const nextPartNumbers = [...(previous.partNumbersList || [""])];
+      nextPartNumbers[index] = value.toUpperCase();
+      return { ...previous, partNumbersList: nextPartNumbers };
+    });
+  };
+
+  const handleAddEditPartNumberRow = () => {
+    setEditingEquipment((previous) => {
+      if (!previous) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        partNumbersList: [...(previous.partNumbersList || [""]), ""],
+      };
+    });
+  };
+
+  const handleRemoveEditPartNumberRow = (index) => {
+    setEditingEquipment((previous) => {
+      if (!previous) {
+        return previous;
+      }
+      const current = previous.partNumbersList || [""];
+      if (current.length <= 1) {
+        return { ...previous, partNumbersList: [""] };
+      }
+
+      return {
+        ...previous,
+        partNumbersList: current.filter((_, rowIndex) => rowIndex !== index),
+      };
+    });
+  };
+
   const saveEditedEquipment = async () => {
     if (!editingEquipment || !selectedRequest) {
       return;
     }
+
+    const nextPartNumbers = normalizePartNumbers(
+      editingEquipment.partNumbersList || [""],
+    );
+    const originalStock = editingEquipment.originalStock || editingEquipment.stock;
+    const nextStock = editingEquipment.stock;
+    const stockChanged = originalStock !== nextStock;
 
     await setDoc(
       doc(
@@ -805,18 +910,123 @@ export default function ActiveRequestsTable() {
         "requests",
         selectedRequest.id,
         "equipment",
-        editingEquipment.stock,
+        nextStock,
       ),
       {
         model: editingEquipment.model,
-        stock: editingEquipment.stock,
+        stock: nextStock,
         serial: editingEquipment.serial,
         workOrder: editingEquipment.workOrder || "",
         work: editingEquipment.work,
         notes: editingEquipment.notes,
+        partNumbersSummary: toPartNumberSummary(nextPartNumbers),
       },
       { merge: true },
     );
+
+    const partNumbersCollectionRef = collection(
+      db,
+      "branches",
+      userProfile.branch,
+      "requests",
+      selectedRequest.id,
+      "equipment",
+      nextStock,
+      "partNumbers",
+    );
+    const existingPartNumbersSnapshot = await getDocs(partNumbersCollectionRef);
+    const nextPartNumberIds = new Set(
+      nextPartNumbers.map((partNumber) => toPartNumberDocId(partNumber)),
+    );
+
+    await Promise.all(
+      existingPartNumbersSnapshot.docs
+        .filter((partDoc) => !nextPartNumberIds.has(partDoc.id))
+        .map((partDoc) =>
+          deleteDoc(
+            doc(
+              db,
+              "branches",
+              userProfile.branch,
+              "requests",
+              selectedRequest.id,
+              "equipment",
+              nextStock,
+              "partNumbers",
+              partDoc.id,
+            ),
+          ),
+        ),
+    );
+
+    await Promise.all(
+      nextPartNumbers.map((partNumber) =>
+        setDoc(
+          doc(
+            db,
+            "branches",
+            userProfile.branch,
+            "requests",
+            selectedRequest.id,
+            "equipment",
+            nextStock,
+            "partNumbers",
+            toPartNumberDocId(partNumber),
+          ),
+          {
+            partNumber,
+            requestID: selectedRequest.id,
+            equipmentStock: nextStock,
+          },
+          { merge: true },
+        ),
+      ),
+    );
+
+    if (stockChanged) {
+      const legacyPartsSnapshot = await getDocs(
+        collection(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          selectedRequest.id,
+          "equipment",
+          originalStock,
+          "partNumbers",
+        ),
+      );
+
+      await Promise.all(
+        legacyPartsSnapshot.docs.map((partDoc) =>
+          deleteDoc(
+            doc(
+              db,
+              "branches",
+              userProfile.branch,
+              "requests",
+              selectedRequest.id,
+              "equipment",
+              originalStock,
+              "partNumbers",
+              partDoc.id,
+            ),
+          ),
+        ),
+      );
+
+      await deleteDoc(
+        doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          selectedRequest.id,
+          "equipment",
+          originalStock,
+        ),
+      );
+    }
 
     const refreshed = await loadRequestEquipment(selectedRequest);
     setSelectedEquipment(refreshed);
@@ -831,6 +1041,7 @@ export default function ActiveRequestsTable() {
       workOrder: "",
       work: "",
       notes: "",
+      partNumbersList: [""],
     });
     setOpenAddEquipmentDialog(true);
   };
@@ -841,6 +1052,49 @@ export default function ActiveRequestsTable() {
 
   const handleNewEquipmentField = (field, value) => {
     setNewEquipment((previous) => ({ ...previous, [field]: value }));
+  };
+
+  const confirmNoPartsRequired = () =>
+    new Promise((resolve) => {
+      noPartsDialogResolverRef.current = resolve;
+      setOpenNoPartsDialog(true);
+    });
+
+  const closeNoPartsDialog = (confirmed) => {
+    setOpenNoPartsDialog(false);
+    if (noPartsDialogResolverRef.current) {
+      noPartsDialogResolverRef.current(confirmed);
+      noPartsDialogResolverRef.current = null;
+    }
+  };
+
+  const handlePartNumberRowChange = (index, value) => {
+    setNewEquipment((previous) => {
+      const nextPartNumbers = [...(previous.partNumbersList || [""])];
+      nextPartNumbers[index] = value.toUpperCase();
+      return { ...previous, partNumbersList: nextPartNumbers };
+    });
+  };
+
+  const handleAddPartNumberRow = () => {
+    setNewEquipment((previous) => ({
+      ...previous,
+      partNumbersList: [...(previous.partNumbersList || [""]), ""],
+    }));
+  };
+
+  const handleRemovePartNumberRow = (index) => {
+    setNewEquipment((previous) => {
+      const current = previous.partNumbersList || [""];
+      if (current.length <= 1) {
+        return { ...previous, partNumbersList: [""] };
+      }
+
+      return {
+        ...previous,
+        partNumbersList: current.filter((_, rowIndex) => rowIndex !== index),
+      };
+    });
   };
 
   const saveNewEquipment = async () => {
@@ -857,6 +1111,7 @@ export default function ActiveRequestsTable() {
       workOrder: newEquipment.workOrder || "",
       work: newEquipment.work,
       notes: newEquipment.notes,
+      partNumbersSummary: "",
       changeLog: [
         createChangeLogEntry({
           user: `${userProfile?.firstName} ${userProfile?.lastName}`,
@@ -865,6 +1120,16 @@ export default function ActiveRequestsTable() {
         }),
       ],
     };
+    const parsedPartNumbers = normalizePartNumbers(
+      newEquipment.partNumbersList || [""],
+    );
+    if (parsedPartNumbers.length === 0) {
+      const confirmedNoParts = await confirmNoPartsRequired();
+      if (!confirmedNoParts) {
+        return;
+      }
+    }
+    createdEquipment.partNumbersSummary = toPartNumberSummary(parsedPartNumbers);
 
     if (
       createdEquipment.model === "" ||
@@ -888,6 +1153,28 @@ export default function ActiveRequestsTable() {
       createdEquipment,
       { merge: true },
     );
+    for (const partNumber of parsedPartNumbers) {
+      await setDoc(
+        doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          selectedRequest.id,
+          "equipment",
+          createdEquipment.stock,
+          "partNumbers",
+          toPartNumberDocId(partNumber),
+        ),
+        {
+          partNumber,
+          timestamp: createdEquipment.timestamp,
+          requestID: selectedRequest.id,
+          equipmentStock: createdEquipment.stock,
+        },
+        { merge: true },
+      );
+    }
 
     const fullName = `${userProfile?.firstName} ${userProfile?.lastName}`;
     const nextChangeLog = [...(selectedRequest.changeLog || [])];
@@ -1934,6 +2221,49 @@ export default function ActiveRequestsTable() {
                   handleEditEquipmentField("notes", event.target.value)
                 }
               />
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Part Numbers</Typography>
+                {(editingEquipment.partNumbersList || [""]).map(
+                  (partNumber, index) => (
+                    <Stack
+                      key={`requests-edit-eq-part-${index}`}
+                      direction={{ xs: "column", sm: "row" }}
+                      spacing={1}
+                    >
+                      <TextField
+                        size="small"
+                        label={`Part Number ${index + 1}`}
+                        value={partNumber}
+                        onChange={(event) =>
+                          handleEditPartNumberRowChange(index, event.target.value)
+                        }
+                        fullWidth
+                      />
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="inherit"
+                        onClick={() => handleRemoveEditPartNumberRow(index)}
+                        disabled={
+                          (editingEquipment.partNumbersList || [""]).length === 1 &&
+                          !partNumber
+                        }
+                      >
+                        Remove
+                      </Button>
+                    </Stack>
+                  ),
+                )}
+                <Box>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={handleAddEditPartNumberRow}
+                  >
+                    Add Part Number
+                  </Button>
+                </Box>
+              </Stack>
             </Stack>
           ) : null}
           <Box sx={{ mt: 1.5, textAlign: "right" }}>
@@ -2020,6 +2350,43 @@ export default function ActiveRequestsTable() {
                 handleNewEquipmentField("notes", event.target.value)
               }
             />
+            <Stack spacing={1}>
+              <Typography variant="subtitle2">Part Numbers</Typography>
+              {(newEquipment.partNumbersList || [""]).map((partNumber, index) => (
+                <Stack
+                  key={`requests-add-eq-part-${index}`}
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                >
+                  <TextField
+                    size="small"
+                    label={`Part Number ${index + 1}`}
+                    value={partNumber}
+                    onChange={(event) =>
+                      handlePartNumberRowChange(index, event.target.value)
+                    }
+                    fullWidth
+                  />
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="inherit"
+                    onClick={() => handleRemovePartNumberRow(index)}
+                    disabled={
+                      (newEquipment.partNumbersList || [""]).length === 1 &&
+                      !partNumber
+                    }
+                  >
+                    Remove
+                  </Button>
+                </Stack>
+              ))}
+              <Box>
+                <Button size="small" variant="text" onClick={handleAddPartNumberRow}>
+                  Add Part Number
+                </Button>
+              </Box>
+            </Stack>
           </Stack>
           <Box sx={{ mt: 1.5, textAlign: "right" }}>
             <Button
@@ -2034,6 +2401,27 @@ export default function ActiveRequestsTable() {
             </Button>
           </Box>
         </Box>
+      </Dialog>
+
+      <Dialog
+        open={openNoPartsDialog}
+        onClose={() => closeNoPartsDialog(false)}
+        fullWidth
+        maxWidth="xs"
+      >
+        <DialogTitle>Confirm No Parts Required</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            This equipment has no part numbers attached. Please confirm that no
+            parts are required for this equipment or add the required parts now.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => closeNoPartsDialog(false)}>Add Parts</Button>
+          <Button variant="contained" onClick={() => closeNoPartsDialog(true)}>
+            No Parts Required
+          </Button>
+        </DialogActions>
       </Dialog>
     </React.Fragment>
   );

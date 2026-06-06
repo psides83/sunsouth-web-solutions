@@ -30,6 +30,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [branch, setBranch] = useState("");
   const [role, setRole] = useState("");
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -51,6 +52,7 @@ export default function SignUp() {
         firstName,
         lastName,
         email,
+        phone,
         role,
         branch,
       };
@@ -209,6 +211,17 @@ export default function SignUp() {
                 </TextField>
               </Grid>
 
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  id="phone"
+                  label="Phone Number (Optional)"
+                  name="phone"
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                />
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   required

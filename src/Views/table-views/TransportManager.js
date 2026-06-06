@@ -94,6 +94,9 @@ export default function TransportManager() {
           statusTimestamp: doc.data().statusTimestamp,
           equipment: doc.data().equipment,
           changeLog: doc.data().changeLog,
+          customerAccessToken: doc.data().customerAccessToken || "",
+          customerAccessLink: doc.data().customerAccessLink || "",
+          customerAccessCreatedAt: doc.data().customerAccessCreatedAt || "",
         }))
       );
 
@@ -114,6 +117,7 @@ export default function TransportManager() {
           type: doc.data().type,
           hasTrade: doc.data().hasTrade,
           notes: doc.data().notes,
+          customerAccessLink: doc.data().customerAccessLink || "",
         }))
       );
       setTimeout(function () {
@@ -195,10 +199,10 @@ export default function TransportManager() {
             }}
             spacing={2}
           >
-            <Grid item xs={12} sm={12} md={5} lg={5}>
+            <Grid item xs={12} sm={12} md={4} lg={4}>
               <TransportTable requests={requests} />
             </Grid>
-            <Grid item xs={12} sm={12} md={7} lg={7}>
+            <Grid item xs={12} sm={12} md={8} lg={8}>
               <CalendarView calendarRequests={calendarRequests} />
             </Grid>
           </Grid>
