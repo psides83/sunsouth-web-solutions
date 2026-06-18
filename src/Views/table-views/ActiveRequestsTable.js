@@ -582,6 +582,8 @@ export default function ActiveRequestsTable() {
         work: data.work || "",
         notes: data.notes || "",
         partNumbersSummary: data.partNumbersSummary || "",
+        timestamp: data.timestamp || "",
+        changeLog: data.changeLog || [],
         requestID: request.id,
         _docId: equipmentDoc.id,
       };
@@ -901,6 +903,20 @@ export default function ActiveRequestsTable() {
     const originalStock = editingEquipment.originalStock || editingEquipment.stock;
     const nextStock = editingEquipment.stock;
     const stockChanged = originalStock !== nextStock;
+    const originalEquipmentSnapshot = await getDoc(
+      doc(
+        db,
+        "branches",
+        userProfile.branch,
+        "requests",
+        selectedRequest.id,
+        "equipment",
+        originalStock,
+      ),
+    );
+    const originalEquipmentData = originalEquipmentSnapshot.exists()
+      ? originalEquipmentSnapshot.data()
+      : {};
 
     await setDoc(
       doc(
@@ -920,6 +936,15 @@ export default function ActiveRequestsTable() {
         work: editingEquipment.work,
         notes: editingEquipment.notes,
         partNumbersSummary: toPartNumberSummary(nextPartNumbers),
+        timestamp:
+          editingEquipment.timestamp ||
+          originalEquipmentData.timestamp ||
+          moment().format("DD-MMM-yyyy hh:mmA"),
+        requestID:
+          editingEquipment.requestID ||
+          originalEquipmentData.requestID ||
+          selectedRequest.id,
+        changeLog: editingEquipment.changeLog || originalEquipmentData.changeLog || [],
       },
       { merge: true },
     );
@@ -1029,6 +1054,41 @@ export default function ActiveRequestsTable() {
     }
 
     const refreshed = await loadRequestEquipment(selectedRequest);
+    const refreshedWorkOrderMap = {};
+    refreshed.forEach((item) => {
+      refreshedWorkOrderMap[item.stock] = item.workOrder || "";
+    });
+    const hasEquipmentWorkOrders = refreshed.some((item) =>
+      Boolean((item.workOrder || "").trim()),
+    );
+
+    if (hasEquipmentWorkOrders) {
+      const nextRequestWorkOrder = compileRequestWorkOrder(
+        refreshed,
+        refreshedWorkOrderMap,
+      );
+
+      await setDoc(
+        doc(db, "branches", userProfile.branch, "requests", selectedRequest.id),
+        {
+          workOrder: nextRequestWorkOrder,
+        },
+        { merge: true },
+      );
+      setSelectedRequest((previous) =>
+        previous?.id === selectedRequest.id
+          ? { ...previous, workOrder: nextRequestWorkOrder }
+          : previous,
+      );
+      setRequests((previous) =>
+        previous.map((request) =>
+          request.id === selectedRequest.id
+            ? { ...request, workOrder: nextRequestWorkOrder }
+            : request,
+        ),
+      );
+    }
+
     setSelectedEquipment(refreshed);
     handleCloseEditEquipmentDialog();
   };

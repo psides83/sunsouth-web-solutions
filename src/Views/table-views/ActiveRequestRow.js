@@ -3,7 +3,6 @@ import { useStateValue } from "../../state-management/StateProvider";
 import {
   collection,
   query,
-  orderBy,
   onSnapshot,
   setDoc,
   doc,
@@ -213,7 +212,6 @@ export default function RequestRow({ request, disableEditing = false }) {
         request.id,
         "equipment",
       ),
-      orderBy("timestamp", "asc"),
     );
 
     onSnapshot(equipmentQuery, (querySnapshot) => {
@@ -231,6 +229,7 @@ export default function RequestRow({ request, disableEditing = false }) {
           notes: data.notes,
           partNumbersSummary: data.partNumbersSummary || "",
           changeLog: data.changeLog,
+          timestamp: data.timestamp || "",
           _docId: document.id,
         };
 
@@ -245,7 +244,11 @@ export default function RequestRow({ request, disableEditing = false }) {
         }
       });
 
-      setEquipment(Array.from(byStock.values()).map(({ _docId, ...item }) => item));
+      setEquipment(
+        Array.from(byStock.values())
+          .map(({ _docId, ...item }) => item)
+          .sort((a, b) => String(a.timestamp || "").localeCompare(String(b.timestamp || ""))),
+      );
     });
   }, [request.id, userProfile.branch]);
 

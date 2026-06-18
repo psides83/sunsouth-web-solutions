@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useStateValue } from "../../state-management/StateProvider";
-import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import "../../styles/Table.css";
 import {
@@ -41,6 +41,19 @@ const savePulse = keyframes`
   40% { transform: scale(1.005); box-shadow: 0 0 0 8px rgba(47, 125, 49, 0); }
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(47, 125, 49, 0); }
 `;
+
+const compileEquipmentWorkOrders = (equipmentList) =>
+  equipmentList
+    .map((equipmentItem) => {
+      const workOrder = (equipmentItem.workOrder || "").trim();
+      if (!workOrder) {
+        return null;
+      }
+
+      return `${workOrder}: ${equipmentItem.model || ""} - ${equipmentItem.stock || ""}`;
+    })
+    .filter(Boolean)
+    .join(" / ");
 
 export default function EquipmentRow(props) {
   const RETRY_ACTIONS = {
@@ -275,6 +288,20 @@ export default function EquipmentRow(props) {
       });
 
       const nextEquipmentChangeLog = [...(item.changeLog || []), changeLogEntry];
+      const originalEquipmentSnapshot = await getDoc(
+        doc(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          item.requestID,
+          "equipment",
+          originalStock,
+        ),
+      );
+      const originalEquipmentData = originalEquipmentSnapshot.exists()
+        ? originalEquipmentSnapshot.data()
+        : {};
 
       await setDoc(
         doc(
@@ -290,10 +317,16 @@ export default function EquipmentRow(props) {
           model: formValues.model,
           stock: nextStock,
           serial: formValues.serial,
+          workOrder: item.workOrder || originalEquipmentData.workOrder || "",
           work: formValues.work,
           notes: formValues.notes,
           partNumbersSummary: toPartNumberSummary(nextPartNumbers),
           changeLog: nextEquipmentChangeLog,
+          timestamp:
+            item.timestamp ||
+            originalEquipmentData.timestamp ||
+            new Date().toISOString(),
+          requestID: item.requestID || originalEquipmentData.requestID,
         },
         { merge: true }
       );
@@ -401,6 +434,33 @@ export default function EquipmentRow(props) {
             "equipment",
             originalStock,
           ),
+        );
+      }
+
+      const refreshedEquipmentSnapshot = await getDocs(
+        collection(
+          db,
+          "branches",
+          userProfile.branch,
+          "requests",
+          item.requestID,
+          "equipment",
+        ),
+      );
+      const refreshedEquipment = refreshedEquipmentSnapshot.docs.map(
+        (equipmentDocument) => equipmentDocument.data(),
+      );
+      const hasEquipmentWorkOrders = refreshedEquipment.some((equipmentItem) =>
+        Boolean((equipmentItem.workOrder || "").trim()),
+      );
+
+      if (hasEquipmentWorkOrders) {
+        await setDoc(
+          doc(db, "branches", userProfile.branch, "requests", item.requestID),
+          {
+            workOrder: compileEquipmentWorkOrders(refreshedEquipment),
+          },
+          { merge: true },
         );
       }
 
